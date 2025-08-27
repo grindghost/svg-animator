@@ -34,6 +34,10 @@ body {
     min-height: 100vh;
 }
 
+svg {
+    overflow: hidden !important;
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;

@@ -356,7 +356,16 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
 
         removeStyleTag(animationName);
 
-        // Build keyframes
+        // ✅ Restore parameters if they exist in savedAnimations
+        if (savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].params) {
+            animationData.params = {
+                ...animationData.params,
+                ...savedAnimations[selectedAnimation].params
+            };
+        }
+        
+
+        // ✅ Now build keyframes with the restored params
         let keyframes = animationData.generateKeyframes
             ? animationData.generateKeyframes(animationData.params)
             : animationData.keyframes;
