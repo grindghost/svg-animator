@@ -52,7 +52,7 @@ function CleanAnimationStyle(element, animation_name) {
 function stopAnimation(element, animName = undefined) {
     if (!element) return;
 
-    // Step 1: Find the nearest anim-wrapper (element might be a shape or a wrapper itself)
+    // ✅ normalize: work on wrapper if shape is inside one
     let wrapper = element;
     if (!(wrapper.classList && wrapper.classList.contains("anim-wrapper"))) {
         if (wrapper.parentNode && wrapper.parentNode.classList.contains("anim-wrapper")) {
@@ -62,27 +62,50 @@ function stopAnimation(element, animName = undefined) {
         }
     }
 
+    // ✅ Case 1: stopping preview animation
+    if (wrapper.classList.contains("temp-anim")) {
+        unwrapWrapper(wrapper);
+        return;
+    }
+
+    // ✅ Case 2: stopping permanent animation(s)
     if (animName) {
-        // Step 2a: Remove just this animation wrapper if its animation matches animName
+        // remove only if wrapper matches that animation
         if (
             wrapper.style.animation.includes(animName) ||
             wrapper.classList.contains(`${animName}-animation-class`)
         ) {
             unwrapWrapper(wrapper);
+        } else {
+            // might be nested: recurse upwards
+            const parentWrapper = wrapper.parentNode.closest(".anim-wrapper");
+            if (parentWrapper) stopAnimation(parentWrapper, animName);
         }
     } else {
-        // Step 2b: Remove ALL animation wrappers (unroll until no anim-wrapper)
+        // stop all: unwrap everything up the chain
         while (wrapper && wrapper.classList.contains("anim-wrapper")) {
             const parent = unwrapWrapper(wrapper);
-            wrapper = parent.closest(".anim-wrapper"); // check if there's another one up the chain
+            wrapper = parent.closest(".anim-wrapper");
         }
     }
 
-    // Clean up any leftover selection box
+    // ✅ Clean up selection box
     try {
         document.getElementById("selection-box").remove();
     } catch (e) {}
 }
+
+
+// helper: unwrap a wrapper group and return parent
+function unwrapWrapper(wrapper) {
+    const parent = wrapper.parentNode;
+    while (wrapper.firstChild) {
+        parent.insertBefore(wrapper.firstChild, wrapper);
+    }
+    parent.removeChild(wrapper);
+    return parent;
+}
+
 
 function unwrapWrapper(wrapper) {
     const parent = wrapper.parentNode;
@@ -93,60 +116,27 @@ function unwrapWrapper(wrapper) {
     return parent;
 }
 
-// Stop animation on element
-function _stopAnimation(element, animName=undefined) {
-    if (!element) return;
 
-    // If a specific animation is provided, remove just that one
-    if (animName) {
-        // Remove the class
-        element.classList.remove(`${animName}-animation-class`);
-        element.classList.remove(`application-animation-class`);
+function applyTempAnimation(element, speed, animName = undefined) {
+    if (document.getElementById("selection-box")) {
+        document.getElementById("selection-box").remove();
+    }
 
-        let animations = element.style.animation.split(', ');
-        animations = animations.filter(animation => {
-            return !animation.includes(animName);
-        });
-        element.style.animation = animations.join(', ');
+    removeStyleTag("temp-generic");
 
+    // ✅ Find or create a temp wrapper
+    let wrapper;
+    if (element.closest && element.closest(".anim-wrapper.temp-anim")) {
+        wrapper = element.closest(".anim-wrapper.temp-anim");
     } else {
-        // If no specific animation is provided, remove all animations from the element
-        element.style.animation = '';
-
-        // Check if the element is an SVG element
-        if (element instanceof SVGElement) {
-            const classes = Array.from(element.classList)
-                .filter(cls => !cls.endsWith('-animation-class'));
-            element.setAttribute('class', classes.join(' '));
-        } else {
-            element.className = element.className
-                .split(' ')
-                .filter(cls => !cls.endsWith('-animation-class'))
-                .join(' ');
-        }
+        wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        wrapper.classList.add("anim-wrapper", "temp-anim");
+        element.parentNode.insertBefore(wrapper, element);
+        wrapper.appendChild(element);
     }
 
-    try {
-        document.getElementById('selection-box').remove();
-    } catch(e) {
-        // Error handling if needed
-    }
-}
-
-function applyTempAnimation(element, speed, animName = undefined, save = true) {
-    if (document.getElementById('selection-box')) {
-        document.getElementById('selection-box').remove();
-    }
-
-    removeStyleTag();
-    CleanAnimationStyle(element, "temp-generic");
-
-    const wrapper = wrapForAnimation(element); // ✅ always add a NEW wrapper for compounding
- // ✅ wrap the element
-    const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
     const animationName = "temp-generic";
-
-    const current_selected_anim_in_dropdown = document.getElementById('animation-type').value;
+    const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
     const animationData = animationsData[current_selected_anim_in_dropdown];
     if (!animationData) {
         console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
@@ -154,16 +144,16 @@ function applyTempAnimation(element, speed, animName = undefined, save = true) {
     }
 
     // Build keyframes
-    let keyframes = animationData.generateKeyframes
+    const keyframes = animationData.generateKeyframes
         ? animationData.generateKeyframes(animationData.params)
         : animationData.keyframes;
 
-    let keyframesString = '';
+    let keyframesString = "";
     for (let percentage in keyframes) {
         let properties = keyframes[percentage];
-        let propsString = Object.keys(properties).map(prop => {
-            return `${prop}: ${properties[prop]};`;
-        }).join(' ');
+        let propsString = Object.keys(properties)
+            .map(prop => `${prop}: ${properties[prop]};`)
+            .join(" ");
         keyframesString += `${percentage} { ${propsString} } `;
     }
 
@@ -174,139 +164,102 @@ function applyTempAnimation(element, speed, animName = undefined, save = true) {
             }
         </style>
     `;
-    svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
+    svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
 
-    CleanAnimationStyle(wrapper, animationName);
-
-    const existingAnimation = wrapper.style.animation;
+    // Apply animation only to temp wrapper
     const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
-    const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
-
-    wrapper.style.animation = combinedAnimation;
+    wrapper.style.animation = newAnimation;
 
     setCorrectTransformOrigin(wrapper);
-    wrapper.classList.add(`application-animation-class`);
-
-    if (save === true) {
-        const elementId2 = element.getAttribute('id') || element.tagName;
-        saveAnimation(elementId2, "temp", { speed: `${speed}`, animationName: animationName });
-
-        // Reset controls
-        document.getElementById('animation-type').value = "none";
-        const event = new Event('change');
-        document.getElementById('animation-type').dispatchEvent(event);
-        document.getElementById('speed-slider').value = '1.5';
-        document.getElementById('speedDisplay').textContent = '1.5s';
-    }
+    wrapper.classList.add("application-animation-class");
 }
 
 
+function applyAnimation(element, speed, animName = undefined, save = true) {
+    try {
+        removeStyleTag("temp-generic");
 
+        // ✅ If a temp wrapper exists, promote it
+        let wrapper = element.closest
+            ? element.closest(".anim-wrapper.temp-anim")
+            : null;
 
-// Apply temporary animation for preview
-function _applyTempAnimation(element, speed, animName=undefined, save=true) {
-    // Remove the selection bounding box (better preview)
-    if (document.getElementById('selection-box')) {
-        document.getElementById('selection-box').remove();
-    }
+        if (wrapper) {
+            wrapper.classList.remove("temp-anim"); // promotion
+        } else {
+            wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            wrapper.classList.add("anim-wrapper");
+            element.parentNode.insertBefore(wrapper, element);
+            wrapper.appendChild(element);
+        }
 
-    removeStyleTag()
+        const elementId = wrapper.getAttribute("id") || element.getAttribute("id") || element.tagName;
+        const selectedAnimation = animName || document.getElementById("animation-type").value;
+        const savedAnimations = getSavedAnimations().animations[elementId] || {};
+        const existingAnimationName =
+            savedAnimations[selectedAnimation] &&
+            savedAnimations[selectedAnimation].animationName;
+        const animationName = uniqueID(existingAnimationName);
 
-    // 👽 Remove any temp-generic animations when applying the selected animation
-    CleanAnimationStyle(element, "temp-generic")
+        const animationData = animationsData[selectedAnimation];
+        if (!animationData) {
+            throw new Error(`Animation "${selectedAnimation}" not found.`);
+        }
 
-    // Don't apply the animation, if already exist...
-    const elementId = element.getAttribute('id') || element.tagName;
+        removeStyleTag(animationName);
 
-    let animationName;
+        // Build keyframes
+        const keyframes = animationData.generateKeyframes
+            ? animationData.generateKeyframes(animationData.params)
+            : animationData.keyframes;
 
-    // Get a temporary animation name
-    selectedAnimation = "temp"
+        let keyframesString = "";
+        for (let percentage in keyframes) {
+            let properties = keyframes[percentage];
+            let propsString = Object.keys(properties)
+                .map(prop => `${prop}: ${properties[prop]};`)
+                .join(" ");
+            keyframesString += `${percentage} { ${propsString} } `;
+        }
 
-    // Get saved animations for this element
-    const savedAnimations = getSavedAnimations().animations[elementId] || {};
+        const embeddedStyle = `
+            <style id="${animationName}" data-anikit="">
+                @keyframes ${animationName} {
+                    ${keyframesString}
+                }
+            </style>
+        `;
+        svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
 
-    // If an animation of the same type already exists for this element, use its existing unique ID
-    const existingAnimationName = savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].animationName;
+        // Apply permanent animation
+        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+        wrapper.style.animation = newAnimation;
 
-    // Use existing name if present, otherwise generate a new one
-    animationName = "temp-generic"
+        setCorrectTransformOrigin(wrapper);
+        wrapper.classList.add("application-animation-class");
+        wrapper.classList.add(`${selectedAnimation}-animation-class`);
 
-    const current_selected_anim_in_dropdown = document.getElementById('animation-type').value;
-
-    const animationData = animationsData[current_selected_anim_in_dropdown];
-
-    if (!animationData) {
-        console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
-        return;
-    }
-
-    // Handle both parametric and static animations
-    let keyframes;
-    if (animationData.generateKeyframes) {
-        // Parametric animation - generate keyframes from current parameters
-        keyframes = animationData.generateKeyframes(animationData.params);
-    } else {
-        // Legacy static animation
-        keyframes = animationData.keyframes;
-    }
-
-    // Extract the current transform style
-    const initialTransformValue = element.style.transform;
-
-    // When defining your keyframes, make sure the initial keyframe starts with the current transform state
-    let keyframesString = '';
-    for (let percentage in keyframes) {
-        let properties = keyframes[percentage];
-        let propsString = Object.keys(properties).map(prop => {
-            // ... Add the initial transforms in the animation...
-            return `${prop}: ${initialTransformValue} ${properties[prop]};`;
-        }).join(' ');
-        keyframesString += `${percentage} { ${propsString} } `;
-    }
-
-    const embeddedStyle = `
-        <style id="${animationName}" data-anikit="">
-            @keyframes ${animationName} {
-                ${keyframesString}
+        if (save === true) {
+            const propertiesToSave = {
+                speed: `${speed}`,
+                animationName: animationName
+            };
+            if (animationData.generateKeyframes && animationData.params) {
+                propertiesToSave.params = { ...animationData.params };
             }
-        </style>
-    `;
+            saveAnimation(elementId, selectedAnimation, propertiesToSave);
 
-    // Add the embedded style. No need to check for existing style as each animation has a unique name
-    svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
-
-    // Don't add the animation with the same name multiple times
-    CleanAnimationStyle(element, animationName)
-
-    // Check if the element already has animations and combine them
-    const existingAnimation = element.style.animation;
-    const existingTransform = element.style.transform;
-    console.log(existingTransform)
-    const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
-    const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
-
-    // element.style.animation = combinedAnimation;
-    element.setAttribute('style', `animation: ${combinedAnimation} !important; transform: ${existingTransform}`);
-
-    setCorrectTransformOrigin(element)
-    //element.style.transformOrigin = "50% 50%";
-
-    element.classList.add(`application-animation-class`)
-
-    // Save this animation. If you're using a function to save animations, you might need to modify it to support multiple animations
-    if (save == true) {
-        const elementId2 = element.getAttribute('id') || element.tagName;
-        saveAnimation(elementId2, selectedAnimation, { speed: `${speed}`, animationName: animationName });
-
-        // Reset the apply animation controls
-        document.getElementById('animation-type').value = "none";
-        const event = new Event('change');
-        document.getElementById('animation-type').dispatchEvent(event);
-        document.getElementById('speed-slider').value = '1.5';
-        document.getElementById('speedDisplay').textContent = '1.5s';
+            resetControls();
+            updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
+            showNotification(`Animation "${selectedAnimation}" applied successfully!`, "success");
+        }
+    } catch (error) {
+        console.error("Error applying animation:", error);
+        updateStatusBar("Error applying animation! ❌");
+        showNotification(`Failed to apply animation: ${error.message}`, "error");
     }
 }
+
 
 // Apply animation to image with wrapper
 function applyAnimationToImage(element, speed, animName) {
@@ -336,93 +289,7 @@ function applyAnimationToImage(element, speed, animName) {
     applyTempAnimation(gWrapper, speed, animName, false);
 }
 
-function applyAnimation(element, speed, animName = undefined, save = true) {
-    try {
-        removeStyleTag();
 
-        const wrapper = wrapForAnimation(element); // ✅ always add a NEW wrapper for compounding
- // ✅ wrap the element
-        const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
-
-        const selectedAnimation = animName || document.getElementById('animation-type').value;
-        const savedAnimations = getSavedAnimations().animations[elementId] || {};
-        const existingAnimationName = savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].animationName;
-        const animationName = uniqueID(existingAnimationName);
-
-        const animationData = animationsData[selectedAnimation];
-        if (!animationData) {
-            throw new Error(`Animation "${selectedAnimation}" not found.`);
-        }
-
-        removeStyleTag(animationName);
-
-        // ✅ Restore parameters if they exist in savedAnimations
-        if (savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].params) {
-            animationData.params = {
-                ...animationData.params,
-                ...savedAnimations[selectedAnimation].params
-            };
-        }
-        
-
-        // ✅ Now build keyframes with the restored params
-        let keyframes = animationData.generateKeyframes
-            ? animationData.generateKeyframes(animationData.params)
-            : animationData.keyframes;
-
-        let keyframesString = '';
-        for (let percentage in keyframes) {
-            let properties = keyframes[percentage];
-            let propsString = Object.keys(properties).map(prop => {
-                return `${prop}: ${properties[prop]};`;
-            }).join(' ');
-            keyframesString += `${percentage} { ${propsString} } `;
-        }
-
-        const embeddedStyle = `
-            <style id="${animationName}" data-anikit="">
-                @keyframes ${animationName} {
-                    ${keyframesString}
-                }
-            </style>
-        `;
-        svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
-
-        CleanAnimationStyle(wrapper, animationName);
-
-        const existingAnimation = wrapper.style.animation;
-        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
-        const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
-
-        wrapper.style.animation = combinedAnimation;
-
-        setCorrectTransformOrigin(wrapper);
-        CleanAnimationStyle(wrapper, "temp-generic");
-
-        wrapper.classList.add(`application-animation-class`);
-        wrapper.classList.add(`${selectedAnimation}-animation-class`);
-
-        if (save === true) {
-            const elementId2 = element.getAttribute('id') || element.tagName;
-            const propertiesToSave = {
-                speed: `${speed}`,
-                animationName: animationName
-            };
-            if (animationData.generateKeyframes && animationData.params) {
-                propertiesToSave.params = { ...animationData.params };
-            }
-            saveAnimation(elementId2, selectedAnimation, propertiesToSave);
-
-            resetControls();
-            updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
-            showNotification(`Animation "${selectedAnimation}" applied successfully!`, 'success');
-        }
-    } catch (error) {
-        console.error('Error applying animation:', error);
-        updateStatusBar('Error applying animation! ❌');
-        showNotification(`Failed to apply animation: ${error.message}`, 'error');
-    }
-}
 
 function wrapForAnimation(element) {
     // If it's already an anim-wrapper, we wrap THAT wrapper
