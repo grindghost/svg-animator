@@ -164,7 +164,28 @@ function createTreeViewItem(parent, element, depth = 0) {
         selectedElement = targetElement;
 
         CleanAnimationStyle(selectedElement, "temp-generic");
-        createHandlesForElement(selectedElement);
+        
+        // Try to select element in Fabric.js canvas if available
+        if (typeof selectElementById === 'function' && element.id) {
+            const fabricSuccess = selectElementById(element.id);
+            if (fabricSuccess) {
+                // Fabric.js handled the selection, no need for custom handles
+                console.log('Element selected via Fabric.js:', element.id);
+                
+                // Enable animation controls for Fabric.js selected element
+                document.getElementById('animation-type').disabled = false;
+                document.getElementById('speed-slider').disabled = false;
+                document.getElementById('apply-animation').disabled = false;
+            } else {
+                // Fallback to custom handles if Fabric.js selection fails
+                createHandlesForElement(selectedElement);
+                drawBoundingBox(selectedElement);
+            }
+        } else {
+            // Fallback to custom handles if Fabric.js is not available
+            createHandlesForElement(selectedElement);
+            drawBoundingBox(selectedElement);
+        }
 
         // Check if any element in the DOM already has the 'selected-element' class
         const existingElementWithClass = document.querySelector('.selected-element');
@@ -174,9 +195,6 @@ function createTreeViewItem(parent, element, depth = 0) {
             existingElementWithClass.classList.remove('selected-element');
             selectedElement.classList.add('selected-element');
         }
-
-        // Draw the bounding box around the selected element in SVG
-        drawBoundingBox(selectedElement);
 
         // Reset the animation controls
         resetControls();

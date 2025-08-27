@@ -42,6 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup all event listeners
     setupEventListeners();
     
+    // Initialize Fabric.js canvas
+    if (typeof initializeFabricCanvas === 'function') {
+        initializeFabricCanvas();
+    }
+    
     // Initialize the application
     populateAnimationDropdown();
     updateStatusBar('Ready to animate your SVG files! 🚀');

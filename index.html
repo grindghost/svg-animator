@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <title>SVG Animator Pro</title>
+    <!-- Fabric.js CDN for better SVG manipulation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -78,7 +80,8 @@
                 </div>
                 <div class="panel-content">
                     <div id="svg-viewer" class="svg-viewer">
-                        <div class="placeholder-text">
+                        <canvas id="fabric-canvas" width="800" height="600"></canvas>
+                        <div class="placeholder-text" id="placeholder-content">
                             <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 16px;">
                                 <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414l-3.853 3.853A1 1 0 0 1 1 15.5V2zm5 4a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm4 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm3 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/>
                             </svg>
@@ -131,15 +134,18 @@
             </div>
         </div>
 
+        <!-- Status Bar -->
         <div class="status-bar">
-            <p class="status-text">Ready to animate your SVG files! 🚀</p>
+            <span id="status-text">Ready to animate your SVG files! 🚀</span>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="js/animations.js"></script>
     <script src="js/core.js"></script>
     <script src="js/storage-manager.js"></script>
     <script src="js/svg-handlers.js"></script>
+    <script src="js/fabric-manager.js"></script>
     <script src="js/animation-manager.js"></script>
     <script src="js/ui-manager.js"></script>
     <script src="js/file-handler.js"></script>

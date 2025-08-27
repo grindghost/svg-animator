@@ -15,6 +15,21 @@ function setupEventListeners() {
 
     // Speed slider
     document.getElementById('speed-slider').addEventListener('input', function() {
+        // First try to get the currently selected Fabric.js object
+        if (typeof getCurrentSelectedObject === 'function') {
+            const fabricObj = getCurrentSelectedObject();
+            if (fabricObj && fabricObj.elementId) {
+                const speed = this.value;
+                const domElement = document.getElementById(fabricObj.elementId);
+                if (domElement) {
+                    applyTempAnimation(domElement, speed, undefined, false);
+                }
+                document.getElementById('speedDisplay').textContent = `${speed}s`;
+                return;
+            }
+        }
+        
+        // Fallback to DOM-based selection
         if (selectedElement) {
             const speed = this.value;
             applyTempAnimation(selectedElement, speed, undefined, false);
@@ -24,6 +39,23 @@ function setupEventListeners() {
 
     // Apply animation button
     document.getElementById('apply-animation').addEventListener('click', function() {
+        // First try to get the currently selected Fabric.js object
+        if (typeof getCurrentSelectedObject === 'function') {
+            const fabricObj = getCurrentSelectedObject();
+            if (fabricObj && fabricObj.elementId) {
+                const animationType = document.getElementById('animation-type').value;
+                if (animationType != 'none') {
+                    let speedValue = document.getElementById('speed-slider').value;
+                    const success = applyAnimationToFabricObject(fabricObj.elementId, animationType, speedValue);
+                    if (success) {
+                        updateStatusBar(`Animation applied to ${fabricObj.elementId} 🎉`);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // Fallback to DOM-based selection
         if (selectedElement) {
             const animationType = document.getElementById('animation-type').value;
             if (animationType != 'none') {
@@ -37,15 +69,29 @@ function setupEventListeners() {
 
     // Animation type dropdown
     document.getElementById('animation-type').addEventListener('change', function() {
-        const element = selectedElement;
-        const speed = document.getElementById('speed-slider').value;
-        const animationName = document.getElementById('animation-type').value;
+        const animationName = this.value;
+        let targetElement = selectedElement;
+
+        // First try to get the currently selected Fabric.js object
+        if (typeof getCurrentSelectedObject === 'function') {
+            const fabricObj = getCurrentSelectedObject();
+            if (fabricObj && fabricObj.elementId) {
+                const domElement = document.getElementById(fabricObj.elementId);
+                if (domElement) {
+                    targetElement = domElement;
+                }
+            }
+        }
 
         if (this.value !== "none") {
             // Render parameter controls for parametric animations
             renderParamControls(animationName);
             
-            applyTempAnimation(selectedElement, speed, animationName, false);
+            if (targetElement) {
+                const speed = document.getElementById('speed-slider').value;
+                applyTempAnimation(targetElement, speed, animationName, false);
+            }
+            
             document.getElementById('speed-slider').removeAttribute('disabled');
             document.getElementById('speed-slider').value = "1.5";
             document.getElementById('speedDisplay').textContent = "1.5s";

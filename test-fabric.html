@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric.js Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        canvas { border: 1px solid #ccc; margin: 20px 0; }
+        .info { background: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Fabric.js Selection Test</h1>
+    
+    <div class="info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click on different colored rectangles to select them</li>
+            <li>Use the buttons below to test programmatic selection</li>
+            <li>Check the console for debugging information</li>
+        </ol>
+    </div>
+    
+    <canvas id="fabric-canvas" width="600" height="400"></canvas>
+    
+    <div>
+        <button onclick="selectObject('rect1')">Select Red Rectangle</button>
+        <button onclick="selectObject('rect2')">Select Blue Rectangle</button>
+        <button onclick="selectObject('rect3')">Select Green Rectangle</button>
+        <button onclick="clearSelection()">Clear Selection</button>
+    </div>
+    
+    <div class="info">
+        <h3>Current Selection:</h3>
+        <div id="selection-info">No selection</div>
+    </div>
+    
+    <script>
+        let fabricCanvas;
+        let svgObjects = new Map();
+        
+        // Initialize Fabric.js canvas
+        function initializeFabricCanvas() {
+            const canvasElement = document.getElementById('fabric-canvas');
+            
+            // Create Fabric.js canvas
+            fabricCanvas = new fabric.Canvas('fabric-canvas', {
+                selection: true,
+                preserveObjectStacking: true,
+                backgroundColor: '#ffffff'
+            });
+            
+            // Configure canvas behavior
+            fabricCanvas.selection = true;
+            fabricCanvas.defaultCursor = 'default';
+            fabricCanvas.selectionColor = 'rgba(99, 102, 241, 0.3)';
+            fabricCanvas.selectionBorderColor = '#6366f1';
+            fabricCanvas.selectionLineWidth = 2;
+            
+            // Add test objects
+            addTestObjects();
+            
+            // Add event listeners
+            setupEventListeners();
+            
+            console.log('Fabric.js canvas initialized');
+        }
+        
+        function addTestObjects() {
+            // Create test rectangles
+            const rect1 = new fabric.Rect({
+                left: 100,
+                top: 100,
+                width: 80,
+                height: 60,
+                fill: 'red',
+                elementId: 'rect1'
+            });
+            
+            const rect2 = new fabric.Rect({
+                left: 250,
+                top: 100,
+                width: 80,
+                height: 60,
+                fill: 'blue',
+                elementId: 'rect2'
+            });
+            
+            const rect3 = new fabric.Rect({
+                left: 400,
+                top: 100,
+                width: 80,
+                height: 60,
+                fill: 'green',
+                elementId: 'rect3'
+            });
+            
+            // Add to canvas
+            fabricCanvas.add(rect1);
+            fabricCanvas.add(rect2);
+            fabricCanvas.add(rect3);
+            
+            // Store references
+            svgObjects.set('rect1', rect1);
+            svgObjects.set('rect2', rect2);
+            svgObjects.set('rect3', rect3);
+            
+            // Make objects selectable
+            [rect1, rect2, rect3].forEach(obj => {
+                obj.selectable = true;
+                obj.evented = true;
+                
+                obj.on('mouseover', function() {
+                    fabricCanvas.defaultCursor = 'pointer';
+                });
+                
+                obj.on('mouseout', function() {
+                    fabricCanvas.defaultCursor = 'default';
+                });
+            });
+            
+            fabricCanvas.renderAll();
+        }
+        
+        function setupEventListeners() {
+            // Selection events
+            fabricCanvas.on('selection:created', function(e) {
+                const selectedObjects = e.selected;
+                if (selectedObjects.length === 1) {
+                    const fabricObj = selectedObjects[0];
+                    const elementId = fabricObj.elementId;
+                    if (elementId) {
+                        console.log('Selection created:', elementId);
+                        updateSelectionInfo(elementId);
+                    }
+                }
+            });
+            
+            fabricCanvas.on('selection:cleared', function() {
+                console.log('Selection cleared');
+                updateSelectionInfo('No selection');
+            });
+            
+            // Click events
+            fabricCanvas.on('mouse:down', function(e) {
+                if (e.target && e.target !== fabricCanvas.getActiveGroup()) {
+                    console.log('Clicked on object:', e.target.elementId);
+                }
+            });
+        }
+        
+        function selectObject(elementId) {
+            console.log('Attempting to select:', elementId);
+            const fabricObj = svgObjects.get(elementId);
+            if (fabricObj) {
+                fabricCanvas.discardActiveObject();
+                fabricCanvas.setActiveObject(fabricObj);
+                fabricCanvas.requestRenderAll();
+                updateSelectionInfo(elementId);
+                console.log('Object selected successfully:', elementId);
+            } else {
+                console.log('Object not found:', elementId);
+            }
+        }
+        
+        function clearSelection() {
+            fabricCanvas.discardActiveObject();
+            fabricCanvas.requestRenderAll();
+            updateSelectionInfo('No selection');
+            console.log('Selection cleared');
+        }
+        
+        function updateSelectionInfo(selection) {
+            document.getElementById('selection-info').textContent = selection;
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFabricCanvas();
+        });
+    </script>
+</body>
+</html>

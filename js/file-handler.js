@@ -17,25 +17,35 @@ function handleSVGUpload(event) {
     updateStatusBar('Loading SVG file... 📁');
     
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         try {
             const svgData = e.target.result;
             SVG_BACKUP = svgData;
             
-            const svgViewer = document.getElementById('svg-viewer');
-            svgViewer.innerHTML = svgData;
-            svgViewer.classList.add('has-content');
+            // Load SVG into Fabric.js canvas
+            await loadSVGToFabric(svgData);
             
-            svgRoot = document.querySelector('#svg-viewer svg');
+            // Get SVG element for tree view (we'll use the original SVG data)
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(svgData, 'image/svg+xml');
+            const svgElement = svgDoc.documentElement;
             
-            if (!svgRoot) {
+            if (!svgElement || svgElement.tagName !== 'svg') {
                 throw new Error('Invalid SVG content');
             }
 
-            prepopulateLocalStorage(svgRoot);
-            populateTreeView(svgRoot);
+            // Create a temporary container to populate tree view
+            const tempContainer = document.createElement('div');
+            tempContainer.innerHTML = svgData;
+            const tempSvgRoot = tempContainer.querySelector('svg');
+            
+            prepopulateLocalStorage(tempSvgRoot);
+            populateTreeView(tempSvgRoot);
             saveCurrentStateAsClean();
-            initializeHoverAndSelect();
+            
+            // Mark viewer as having content
+            const svgViewer = document.getElementById('svg-viewer');
+            svgViewer.classList.add('has-content');
             
             updateStatusBar(`SVG loaded: ${file.name} ✨`);
             
@@ -52,15 +62,8 @@ function handleSVGUpload(event) {
             showNotification('Failed to load SVG file. Please check the file format.', 'error');
             
             // Reset viewer
+            clearCanvas();
             const svgViewer = document.getElementById('svg-viewer');
-            svgViewer.innerHTML = `
-                <div class="placeholder-text">
-                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 16px;">
-                        <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414l-3.853 3.853A1 1 0 0 1 1 15.5V2zm5 4a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm4 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm3 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/>
-                    </svg>
-                    <p>Upload an SVG file to see it here</p>
-                </div>
-            `;
             svgViewer.classList.remove('has-content');
         }
     };
@@ -77,6 +80,20 @@ function handleSVGUpload(event) {
 function downloadAnimatedSVG() {
     updateStatusBar('Preparing SVG for download... 💾');
     
+    // Use Fabric.js export if available, otherwise fall back to original method
+    if (typeof exportSVGFromFabric === 'function' && isCanvasInitialized()) {
+        try {
+            const svgString = exportSVGFromFabric();
+            if (svgString) {
+                downloadSVGString(svgString, 'animated-svg.svg');
+                return;
+            }
+        } catch (error) {
+            console.warn('Fabric.js export failed, falling back to original method:', error);
+        }
+    }
+    
+    // Fallback to original method if Fabric.js is not available
     const svgBackup = svgRoot.cloneNode(true);
 
     if (document.getElementById('selection-box')) {
@@ -112,6 +129,19 @@ function downloadAnimatedSVG() {
     link.download = 'animated.svg';
     link.click();
 
+    updateStatusBar('SVG downloaded successfully! 🎉');
+}
+
+// Helper function to download SVG string
+function downloadSVGString(svgString, filename) {
+    const blob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+    
     updateStatusBar('SVG downloaded successfully! 🎉');
 }
 

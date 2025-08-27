@@ -174,14 +174,50 @@ body {
     max-height: 100%;
 }
 
+/* Fabric.js Canvas Styles */
+#fabric-canvas {
+    border: none;
+    border-radius: 6px;
+    cursor: default;
+}
+
+/* Tree selection highlighting */
+.selected-in-tree {
+    background-color: rgba(99, 102, 241, 0.1) !important;
+    border-left: 3px solid #6366f1 !important;
+    padding-left: 8px !important;
+}
+
+/* Canvas placeholder */
+#placeholder-content {
+    /* position: absolute; */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 1;
+    width: 100%;
+    max-width: 300px;
+    padding: 20px;
+    pointer-events: none;
+    box-sizing: border-box;
+    background: transparent;
+}
+
 .placeholder-text {
     color: var(--text-muted);
     font-size: 1.1rem;
     text-align: center;
+    margin: 0;
+    padding: 0;
 }
 
 .placeholder-text svg {
     opacity: 0.5;
+    display: block;
+    margin: 0 auto 16px auto;
+    max-width: 100%;
+    height: auto;
 }
 
 .controls-section {
@@ -646,6 +682,13 @@ select:disabled {
     background: var(--primary);
     color: white;
     transform: translateX(4px);
+}
+
+.element-tree .selected-in-tree {
+    background: var(--accent);
+    color: white;
+    transform: translateX(4px);
+    box-shadow: 0 0 0 2px var(--accent);
 }
 
 .element-tree details {
