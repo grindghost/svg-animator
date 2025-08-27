@@ -197,6 +197,7 @@ function attachResizeListeners() {
     });
 }
 
+
 function startResizing(event) {
     event.preventDefault();
 
@@ -208,26 +209,57 @@ function startResizing(event) {
     let startX = event.clientX;
     let startY = event.clientY;
 
+    // Dimensions for incremental scaling
     let prevWidth = bbox.width;
     let prevHeight = bbox.height;
+
+    // Default pivot = top-left
+    let pivotX = bbox.x;
+    let pivotY = bbox.y;
+
+    if (selectedHandle.classList.contains("top-left-handle")) {
+        pivotX = bbox.x + bbox.width;
+        pivotY = bbox.y + bbox.height;
+    } else if (selectedHandle.classList.contains("top-right-handle")) {
+        pivotX = bbox.x;
+        pivotY = bbox.y + bbox.height;
+    } else if (selectedHandle.classList.contains("bottom-left-handle")) {
+        pivotX = bbox.x + bbox.width;
+        pivotY = bbox.y;
+    } else if (selectedHandle.classList.contains("bottom-right-handle")) {
+        pivotX = bbox.x;
+        pivotY = bbox.y;
+    }
 
     const onMouseMove = (moveEvent) => {
         let dx = moveEvent.clientX - startX;
         let dy = moveEvent.clientY - startY;
 
-        // Small incremental scaling factor
+        // Compute scale relative to dragged corner vs pivot
         let scaleX = 1 + dx / prevWidth;
         let scaleY = 1 + dy / prevHeight;
 
-        // Build incremental scaling matrix around bbox top-left (pivot)
+        // For top handles, invert Y scaling (dragging up = shrink)
+        if (selectedHandle.classList.contains("top-left-handle") ||
+            selectedHandle.classList.contains("top-right-handle")) {
+            scaleY = 1 - dy / prevHeight;
+        }
+
+        // For left handles, invert X scaling (dragging left = shrink)
+        if (selectedHandle.classList.contains("top-left-handle") ||
+            selectedHandle.classList.contains("bottom-left-handle")) {
+            scaleX = 1 - dx / prevWidth;
+        }
+
+        // Build scale matrix around the chosen pivot
         const scaling = svgRoot.createSVGMatrix()
-            .translate(bbox.x, bbox.y)
+            .translate(pivotX, pivotY)
             .scaleNonUniform(scaleX, scaleY)
-            .translate(-bbox.x, -bbox.y);
+            .translate(-pivotX, -pivotY);
 
         applyTransform(svgElement, scaling);
 
-        // Reset reference points for incremental scaling
+        // Reset for incremental scaling
         startX = moveEvent.clientX;
         startY = moveEvent.clientY;
         prevWidth *= scaleX;

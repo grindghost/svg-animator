@@ -49,8 +49,52 @@ function CleanAnimationStyle(element, animation_name) {
     });
 }
 
+function stopAnimation(element, animName = undefined) {
+    if (!element) return;
+
+    // Step 1: Find the nearest anim-wrapper (element might be a shape or a wrapper itself)
+    let wrapper = element;
+    if (!(wrapper.classList && wrapper.classList.contains("anim-wrapper"))) {
+        if (wrapper.parentNode && wrapper.parentNode.classList.contains("anim-wrapper")) {
+            wrapper = wrapper.parentNode;
+        } else {
+            return; // nothing to stop
+        }
+    }
+
+    if (animName) {
+        // Step 2a: Remove just this animation wrapper if its animation matches animName
+        if (
+            wrapper.style.animation.includes(animName) ||
+            wrapper.classList.contains(`${animName}-animation-class`)
+        ) {
+            unwrapWrapper(wrapper);
+        }
+    } else {
+        // Step 2b: Remove ALL animation wrappers (unroll until no anim-wrapper)
+        while (wrapper && wrapper.classList.contains("anim-wrapper")) {
+            const parent = unwrapWrapper(wrapper);
+            wrapper = parent.closest(".anim-wrapper"); // check if there's another one up the chain
+        }
+    }
+
+    // Clean up any leftover selection box
+    try {
+        document.getElementById("selection-box").remove();
+    } catch (e) {}
+}
+
+function unwrapWrapper(wrapper) {
+    const parent = wrapper.parentNode;
+    while (wrapper.firstChild) {
+        parent.insertBefore(wrapper.firstChild, wrapper);
+    }
+    parent.removeChild(wrapper);
+    return parent;
+}
+
 // Stop animation on element
-function stopAnimation(element, animName=undefined) {
+function _stopAnimation(element, animName=undefined) {
     if (!element) return;
 
     // If a specific animation is provided, remove just that one
@@ -97,7 +141,8 @@ function applyTempAnimation(element, speed, animName = undefined, save = true) {
     removeStyleTag();
     CleanAnimationStyle(element, "temp-generic");
 
-    const wrapper = ensureWrapper(element); // ✅ wrap the element
+    const wrapper = wrapForAnimation(element); // ✅ always add a NEW wrapper for compounding
+ // ✅ wrap the element
     const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
     const animationName = "temp-generic";
 
@@ -295,7 +340,8 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
     try {
         removeStyleTag();
 
-        const wrapper = ensureWrapper(element); // ✅ wrap the element
+        const wrapper = wrapForAnimation(element); // ✅ always add a NEW wrapper for compounding
+ // ✅ wrap the element
         const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
 
         const selectedAnimation = animName || document.getElementById('animation-type').value;
@@ -368,6 +414,29 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
         showNotification(`Failed to apply animation: ${error.message}`, 'error');
     }
 }
+
+function wrapForAnimation(element) {
+    // If it's already an anim-wrapper, we wrap THAT wrapper
+    let target = element;
+    if (
+        element.parentNode &&
+        element.parentNode.tagName.toLowerCase() === 'g' &&
+        element.parentNode.classList.contains('anim-wrapper')
+    ) {
+        target = element.parentNode;
+    }
+
+    // Create a new wrapper
+    const gWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    gWrapper.classList.add('anim-wrapper');
+
+    // Insert wrapper before the target
+    target.parentNode.insertBefore(gWrapper, target);
+    gWrapper.appendChild(target);
+
+    return gWrapper;
+}
+
 
 function ensureWrapper(element) {
     // If already wrapped in <g.anim-wrapper>, return that wrapper
