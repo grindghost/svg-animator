@@ -13,6 +13,70 @@ function createHandlesForElement(svgElement) {
     // Clean previous handles
     removeHandles();
 
+    const bbox = svgElement.getBBox();          // untransformed bbox
+    const ctm = svgElement.getCTM();            // includes current transform
+    const svgPoint = svgRoot.createSVGPoint();
+
+    // helper: apply CTM to (x,y)
+    function applyCTM(x, y) {
+        svgPoint.x = x;
+        svgPoint.y = y;
+        return svgPoint.matrixTransform(ctm);
+    }
+
+    // Corners in transformed coords
+    const topLeft     = applyCTM(bbox.x, bbox.y);
+    const topRight    = applyCTM(bbox.x + bbox.width, bbox.y);
+    const bottomLeft  = applyCTM(bbox.x, bbox.y + bbox.height);
+    const bottomRight = applyCTM(bbox.x + bbox.width, bbox.y + bbox.height);
+    const center      = applyCTM(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
+
+    const positions = [
+        { x: topLeft.x, y: topLeft.y, name: "corner" },
+        { x: topRight.x, y: topRight.y, name: "corner" },
+        { x: bottomLeft.x, y: bottomLeft.y, name: "corner" },
+        { x: bottomRight.x, y: bottomRight.y, name: "corner" },
+        { x: center.x, y: center.y, name: "middle" }
+    ];
+
+    // Handles group
+    const handlesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    handlesGroup.setAttribute("class", "handles");
+
+    positions.forEach(pos => {
+        const handle = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        handle.setAttribute("x", pos.x - 4);
+        handle.setAttribute("y", pos.y - 4);
+        handle.setAttribute("width", 8);
+        handle.setAttribute("height", 8);
+        handle.setAttribute("fill", "rgba(99, 102, 241, 0.8)");
+        handle.style.stroke = "white";
+        handle.style.strokeWidth = "2";
+        handle.classList.add(pos.name + '-handle');
+
+        if (pos.name === "middle") {
+            handle.setAttribute("x", pos.x - 7);
+            handle.setAttribute("y", pos.y - 7);
+            handle.setAttribute("width", 14);
+            handle.setAttribute("height", 14);
+            handle.setAttribute("fill", "white");
+            handle.style.strokeWidth = "2";
+            handle.style.stroke = "rgb(99, 102, 241)";
+            handle.classList.add("middle-handle");
+        }
+
+        handlesGroup.appendChild(handle);
+    });
+
+    svgRoot.appendChild(handlesGroup);
+    attachResizeListeners();
+}
+
+
+function _createHandlesForElement(svgElement) {
+    // Clean previous handles
+    removeHandles();
+
     // Get the bounding box in the screen coordinate space
     const bbox = svgElement.getBoundingClientRect();
 
@@ -138,6 +202,57 @@ function startResizing(event) {
 
     const selectedHandle = event.target;
     const svgElement = document.querySelector(".selected-element");
+    if (!svgElement) return;
+
+    const bbox = svgElement.getBBox();
+    let startX = event.clientX;
+    let startY = event.clientY;
+
+    let prevWidth = bbox.width;
+    let prevHeight = bbox.height;
+
+    const onMouseMove = (moveEvent) => {
+        let dx = moveEvent.clientX - startX;
+        let dy = moveEvent.clientY - startY;
+
+        // Small incremental scaling factor
+        let scaleX = 1 + dx / prevWidth;
+        let scaleY = 1 + dy / prevHeight;
+
+        // Build incremental scaling matrix around bbox top-left (pivot)
+        const scaling = svgRoot.createSVGMatrix()
+            .translate(bbox.x, bbox.y)
+            .scaleNonUniform(scaleX, scaleY)
+            .translate(-bbox.x, -bbox.y);
+
+        applyTransform(svgElement, scaling);
+
+        // Reset reference points for incremental scaling
+        startX = moveEvent.clientX;
+        startY = moveEvent.clientY;
+        prevWidth *= scaleX;
+        prevHeight *= scaleY;
+
+        UpdateSelectionBoxesAndHandle(svgElement);
+    };
+
+    const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
+
+
+
+function _startResizing(event) {
+    event.preventDefault();
+
+    const selectedHandle = event.target;
+    const svgElement = document.querySelector(".selected-element");
     const originalBBox = svgElement.getBBox();
 
     const resizeElement = (moveEvent) => {
@@ -175,39 +290,88 @@ function UpdateSelectionBoxesAndHandle(element) {
 }
 
 function startMoving(event) {
-    // Check if the middle handle is the one being clicked
-    if (!event.target.classList.contains('middle-handle')) {
-        return; // Exit the function if it's not the middle handle
-    }
-
+    if (!event.target.classList.contains('middle-handle')) return;
     event.preventDefault();
 
     const svgElement = document.querySelector(".selected-element");
+    if (!svgElement) return;
+
     let startX = event.clientX;
     let startY = event.clientY;
 
-    // Store the initial transform so that we can apply only the delta
-    const initialTransform = svgElement.style.transform;
-
-    const moveElement = (moveEvent) => {
+    const onMouseMove = (moveEvent) => {
         let dx = moveEvent.clientX - startX;
         let dy = moveEvent.clientY - startY;
 
-        // Apply only the delta movement as a translation
-        svgElement.style.transform = `${initialTransform} translate(${dx}px, ${dy}px)`;
+        const translation = svgRoot.createSVGMatrix().translate(dx, dy);
+        applyTransform(svgElement, translation);
 
-        // Update the selection elements
-        UpdateSelectionBoxesAndHandle(svgElement)
+        startX = moveEvent.clientX; // reset for incremental move
+        startY = moveEvent.clientY;
+
+        UpdateSelectionBoxesAndHandle(svgElement);
     };
 
-    // Add event listeners for mousemove and mouseup
-    document.addEventListener("mousemove", moveElement);
-    document.addEventListener("mouseup", () => {
-        document.removeEventListener("mousemove", moveElement);
-    }, { once: true });
+    const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
 }
 
+function applyTransform(element, newMatrix) {
+    // Get existing transform or create identity
+    const baseTransform = element.transform.baseVal.consolidate();
+    let currentMatrix = baseTransform ? baseTransform.matrix : svgRoot.createSVGMatrix();
+
+    // Multiply: current ∘ new
+    const combined = currentMatrix.multiply(newMatrix);
+
+    // Apply back
+    const transformList = element.transform.baseVal;
+    const transform = svgRoot.createSVGTransformFromMatrix(combined);
+    transformList.initialize(transform);
+}
+
+
 function drawBoundingBox(element) {
+    const bbox = element.getBBox();
+    const ctm = element.getCTM();
+    const svgPoint = svgRoot.createSVGPoint();
+
+    function applyCTM(x, y) {
+        svgPoint.x = x;
+        svgPoint.y = y;
+        return svgPoint.matrixTransform(ctm);
+    }
+
+    const topLeft     = applyCTM(bbox.x, bbox.y);
+    const topRight    = applyCTM(bbox.x + bbox.width, bbox.y);
+    const bottomLeft  = applyCTM(bbox.x, bbox.y + bbox.height);
+    const bottomRight = applyCTM(bbox.x + bbox.width, bbox.y + bbox.height);
+
+    const minX = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const maxX = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const minY = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+    const maxY = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', minX);
+    rect.setAttribute('y', minY);
+    rect.setAttribute('width', maxX - minX);
+    rect.setAttribute('height', maxY - minY);
+    rect.setAttribute('stroke', '#6366f1');
+    rect.setAttribute('fill', 'none');
+    rect.setAttribute('stroke-width', '2px');
+    rect.setAttribute('stroke-dasharray', '5');
+    rect.setAttribute('id', 'selection-box');
+    svgRoot.appendChild(rect);
+}
+
+
+function _drawBoundingBox(element) {
     // Get the bounding box in the screen coordinate space
     const bbox = element.getBoundingClientRect();
     

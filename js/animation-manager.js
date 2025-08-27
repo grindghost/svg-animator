@@ -89,8 +89,77 @@ function stopAnimation(element, animName=undefined) {
     }
 }
 
+function applyTempAnimation(element, speed, animName = undefined, save = true) {
+    if (document.getElementById('selection-box')) {
+        document.getElementById('selection-box').remove();
+    }
+
+    removeStyleTag();
+    CleanAnimationStyle(element, "temp-generic");
+
+    const wrapper = ensureWrapper(element); // ✅ wrap the element
+    const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
+    const animationName = "temp-generic";
+
+    const current_selected_anim_in_dropdown = document.getElementById('animation-type').value;
+    const animationData = animationsData[current_selected_anim_in_dropdown];
+    if (!animationData) {
+        console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
+        return;
+    }
+
+    // Build keyframes
+    let keyframes = animationData.generateKeyframes
+        ? animationData.generateKeyframes(animationData.params)
+        : animationData.keyframes;
+
+    let keyframesString = '';
+    for (let percentage in keyframes) {
+        let properties = keyframes[percentage];
+        let propsString = Object.keys(properties).map(prop => {
+            return `${prop}: ${properties[prop]};`;
+        }).join(' ');
+        keyframesString += `${percentage} { ${propsString} } `;
+    }
+
+    const embeddedStyle = `
+        <style id="${animationName}" data-anikit="">
+            @keyframes ${animationName} {
+                ${keyframesString}
+            }
+        </style>
+    `;
+    svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
+
+    CleanAnimationStyle(wrapper, animationName);
+
+    const existingAnimation = wrapper.style.animation;
+    const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+    const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
+
+    wrapper.style.animation = combinedAnimation;
+
+    setCorrectTransformOrigin(wrapper);
+    wrapper.classList.add(`application-animation-class`);
+
+    if (save === true) {
+        const elementId2 = element.getAttribute('id') || element.tagName;
+        saveAnimation(elementId2, "temp", { speed: `${speed}`, animationName: animationName });
+
+        // Reset controls
+        document.getElementById('animation-type').value = "none";
+        const event = new Event('change');
+        document.getElementById('animation-type').dispatchEvent(event);
+        document.getElementById('speed-slider').value = '1.5';
+        document.getElementById('speedDisplay').textContent = '1.5s';
+    }
+}
+
+
+
+
 // Apply temporary animation for preview
-function applyTempAnimation(element, speed, animName=undefined, save=true) {
+function _applyTempAnimation(element, speed, animName=undefined, save=true) {
     // Remove the selection bounding box (better preview)
     if (document.getElementById('selection-box')) {
         document.getElementById('selection-box').remove();
@@ -222,8 +291,107 @@ function applyAnimationToImage(element, speed, animName) {
     applyTempAnimation(gWrapper, speed, animName, false);
 }
 
+function applyAnimation(element, speed, animName = undefined, save = true) {
+    try {
+        removeStyleTag();
+
+        const wrapper = ensureWrapper(element); // ✅ wrap the element
+        const elementId = wrapper.getAttribute('id') || element.getAttribute('id') || element.tagName;
+
+        const selectedAnimation = animName || document.getElementById('animation-type').value;
+        const savedAnimations = getSavedAnimations().animations[elementId] || {};
+        const existingAnimationName = savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].animationName;
+        const animationName = uniqueID(existingAnimationName);
+
+        const animationData = animationsData[selectedAnimation];
+        if (!animationData) {
+            throw new Error(`Animation "${selectedAnimation}" not found.`);
+        }
+
+        removeStyleTag(animationName);
+
+        // Build keyframes
+        let keyframes = animationData.generateKeyframes
+            ? animationData.generateKeyframes(animationData.params)
+            : animationData.keyframes;
+
+        let keyframesString = '';
+        for (let percentage in keyframes) {
+            let properties = keyframes[percentage];
+            let propsString = Object.keys(properties).map(prop => {
+                return `${prop}: ${properties[prop]};`;
+            }).join(' ');
+            keyframesString += `${percentage} { ${propsString} } `;
+        }
+
+        const embeddedStyle = `
+            <style id="${animationName}" data-anikit="">
+                @keyframes ${animationName} {
+                    ${keyframesString}
+                }
+            </style>
+        `;
+        svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
+
+        CleanAnimationStyle(wrapper, animationName);
+
+        const existingAnimation = wrapper.style.animation;
+        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+        const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
+
+        wrapper.style.animation = combinedAnimation;
+
+        setCorrectTransformOrigin(wrapper);
+        CleanAnimationStyle(wrapper, "temp-generic");
+
+        wrapper.classList.add(`application-animation-class`);
+        wrapper.classList.add(`${selectedAnimation}-animation-class`);
+
+        if (save === true) {
+            const elementId2 = element.getAttribute('id') || element.tagName;
+            const propertiesToSave = {
+                speed: `${speed}`,
+                animationName: animationName
+            };
+            if (animationData.generateKeyframes && animationData.params) {
+                propertiesToSave.params = { ...animationData.params };
+            }
+            saveAnimation(elementId2, selectedAnimation, propertiesToSave);
+
+            resetControls();
+            updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
+            showNotification(`Animation "${selectedAnimation}" applied successfully!`, 'success');
+        }
+    } catch (error) {
+        console.error('Error applying animation:', error);
+        updateStatusBar('Error applying animation! ❌');
+        showNotification(`Failed to apply animation: ${error.message}`, 'error');
+    }
+}
+
+function ensureWrapper(element) {
+    // If already wrapped in <g.anim-wrapper>, return that wrapper
+    if (
+        element.parentNode &&
+        element.parentNode.tagName.toLowerCase() === 'g' &&
+        element.parentNode.classList.contains('anim-wrapper')
+    ) {
+        return element.parentNode;
+    }
+
+    // Otherwise, create a new wrapper group
+    const gWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    gWrapper.classList.add('anim-wrapper');
+
+    element.parentNode.insertBefore(gWrapper, element);
+    gWrapper.appendChild(element);
+
+    return gWrapper;
+}
+
+
 // Main animation application function
-function applyAnimation(element, speed, animName=undefined, save=true) {
+function _applyAnimation(element, speed, animName=undefined, save=true) {
     try {
         removeStyleTag();
 
