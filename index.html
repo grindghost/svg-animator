@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>SVG Animator Pro</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SVG Animator Pro</h1>
+            <p>Professional SVG animation tool for designers and developers</p>
+        </div>
+
+        <div class="main-grid">
+            <!-- Left Panel - Controls -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>🎬 Animation Controls</span>
+                </div>
+                <div class="panel-content">
+                    <div class="upload-section">
+                        <div class="file-upload">
+                            <input type="file" id="svg-upload" accept=".svg">
+                            <label for="svg-upload" class="upload-button">
+                                <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Upload SVG File
+                            </label>
+                        </div>
+                        <p class="placeholder-text">Select an SVG file to get started</p>
+                    </div>
+
+                    <div class="controls-section">
+                        <div class="control-group">
+                            <label class="control-label">Animation Type</label>
+                            <div class="select-wrapper">
+                                <select id="animation-type" disabled>
+                                    <option value="none">Select animation...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Animation Speed</label>
+                            <div class="speed-control">
+                                <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1.5" disabled class="speed-slider">
+                                <span id="speedDisplay" class="speed-display">1.5s</span>
+                            </div>
+                        </div>
+
+                        <!-- Animation Parameter Controls Panel -->
+                        <div id="animation-param-panel" class="param-panel" style="display: none;">
+                            <div class="param-panel-header">
+                                <span>🎛️ Animation Parameters</span>
+                            </div>
+                            <div class="param-controls">
+                                <!-- Dynamic parameter controls will be inserted here -->
+                            </div>
+                        </div>
+
+                        <button id="apply-animation" class="btn btn-primary" disabled>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V3.5A.5.5 0 0 1 8 3zM3.732 4.732a.5.5 0 0 1 .707 0l2 2a.5.5 0 0 1 0 .707l-2 2a.5.5 0 1 1-.707-.707L5.293 8 3.732 6.939a.5.5 0 0 1 0-.707zM8 13a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-.5.5z"/>
+                            </svg>
+                            Apply Animation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Panel - SVG Viewer -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>🎨 SVG Preview</span>
+                </div>
+                <div class="panel-content">
+                    <div id="svg-viewer" class="svg-viewer">
+                        <div class="placeholder-text">
+                            <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom: 16px;">
+                                <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414l-3.853 3.853A1 1 0 0 1 1 15.5V2zm5 4a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm4 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0zm3 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/>
+                            </svg>
+                            <p>Upload an SVG file to see it here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Element Tree & Animations -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span>🌳 Element Tree</span>
+                </div>
+                <div class="panel-content">
+                    <div id="element-tree" class="element-tree">
+                        <div class="placeholder-text">No SVG loaded</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>🎭 Applied Animations</span>
+            </div>
+            <div class="panel-content">
+                <div id="animation-list-div" class="animation-list">
+                    <div class="placeholder-text">No animations applied yet</div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="clear-cache" class="btn btn-danger" disabled>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Clear All Animations
+                    </button>
+                    
+                    <button id="download-svg" class="btn btn-success" disabled>
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download Animated SVG
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <p class="status-text">Ready to animate your SVG files! 🚀</p>
+        </div>
+    </div>
+
+    <script src="js/animations.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/storage-manager.js"></script>
+    <script src="js/svg-handlers.js"></script>
+    <script src="js/animation-manager.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/file-handler.js"></script>
+    <script src="js/utilities.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

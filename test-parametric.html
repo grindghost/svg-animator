@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric Animation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-box {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #6366f1, #10b981);
+            margin: 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .control-group {
+            margin: 15px 0;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .control-group:last-child {
+            border-bottom: none;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: 600;
+            color: #1e293b;
+            flex-shrink: 0;
+        }
+        input[type="range"] {
+            flex: 1;
+            min-width: 120px;
+            margin: 0 10px;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            border: 2px solid white;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+        .value-display {
+            display: inline-block;
+            min-width: 50px;
+            max-width: 80px;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+            flex-shrink: 0;
+        }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #4f46e5;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .control-group {
+                gap: 10px;
+                padding: 10px 0;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            label {
+                width: auto;
+                margin-bottom: 4px;
+            }
+            
+            input[type="range"] {
+                min-width: 100px;
+                margin: 4px 0;
+            }
+            
+            .value-display {
+                min-width: 45px;
+                max-width: 60px;
+                align-self: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .control-group {
+                gap: 8px;
+                padding: 8px 0;
+            }
+            
+            input[type="range"] {
+                min-width: 80px;
+            }
+            
+            .value-display {
+                min-width: 40px;
+                max-width: 50px;
+                padding: 4px 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎭 Parametric Animation Test</h1>
+        <p>This page tests the parametric animation system with different animation types.</p>
+        
+        <div class="controls">
+            <h3>Animation Controls</h3>
+            
+            <div class="control-group">
+                <label>Animation Type:</label>
+                <select id="animation-type">
+                    <option value="none">Select animation...</option>
+                    <option value="beating">Beating</option>
+                    <option value="tremble">Tremble</option>
+                    <option value="blur">Blur</option>
+                    <option value="skew">Skew</option>
+                    <option value="fade">Fade (Static)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Speed:</label>
+                <input type="range" id="speed-slider" min="0.1" max="5" step="0.1" value="1.5">
+                <span id="speed-display">1.5s</span>
+            </div>
+            
+                    <div id="param-panel" style="display: none;">
+            <h4 style="margin: 0 0 15px 0; color: #1e293b; font-size: 1.1rem;">🎛️ Animation Parameters</h4>
+            <div id="param-controls" style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;"></div>
+        </div>
+            
+            <button id="apply-btn">Apply Animation</button>
+            <button id="clear-btn">Clear Animation</button>
+        </div>
+        
+        <div class="test-box" id="test-element"></div>
+        
+        <div class="test-box" id="test-element-2"></div>
+        
+        <div class="test-box" id="test-element-3"></div>
+    </div>
+
+    <script src="animations.js"></script>
+    <script>
+        // Test implementation of parametric animations
+        let currentAnimation = null;
+        let currentStyleTag = null;
+        
+        // Speed slider
+        const speedSlider = document.getElementById('speed-slider');
+        const speedDisplay = document.getElementById('speed-display');
+        
+        speedSlider.addEventListener('input', function() {
+            speedDisplay.textContent = this.value + 's';
+        });
+        
+        // Animation type selector
+        const animationType = document.getElementById('animation-type');
+        const paramPanel = document.getElementById('param-panel');
+        const paramControls = document.getElementById('param-controls');
+        
+        animationType.addEventListener('change', function() {
+            const selectedAnim = this.value;
+            renderParamControls(selectedAnim);
+            
+            if (selectedAnim !== 'none') {
+                applyTempAnimation(selectedAnim);
+            } else {
+                clearAnimation();
+            }
+        });
+        
+        // Apply button
+        document.getElementById('apply-btn').addEventListener('click', function() {
+            const selectedAnim = animationType.value;
+            if (selectedAnim !== 'none') {
+                applyAnimation(selectedAnim);
+            }
+        });
+        
+        // Clear button
+        document.getElementById('clear-btn').addEventListener('click', clearAnimation);
+        
+        function renderParamControls(animationName) {
+            const anim = animationsData[animationName];
+            paramControls.innerHTML = '';
+            
+            if (!anim || !anim.params) {
+                paramPanel.style.display = 'none';
+                return;
+            }
+            
+            paramPanel.style.display = 'block';
+            
+            for (const [param, value] of Object.entries(anim.params)) {
+                const controlWrapper = document.createElement('div');
+                controlWrapper.className = 'control-group';
+                
+                const label = document.createElement('label');
+                label.textContent = param + ': ';
+                
+                const input = document.createElement('input');
+                input.type = 'range';
+                
+                // Set appropriate ranges
+                if (param.includes('amplitude') || param.includes('intensity')) {
+                    input.min = '0.1';
+                    input.max = '3.0';
+                    input.step = '0.1';
+                } else if (param.includes('blur')) {
+                    input.min = '0';
+                    input.max = '20';
+                    input.step = '1';
+                } else if (param.includes('skew')) {
+                    input.min = '5';
+                    input.max = '45';
+                    input.step = '1';
+                } else {
+                    input.min = '0';
+                    input.max = '5';
+                    input.step = '0.1';
+                }
+                
+                input.value = value;
+                
+                const valueDisplay = document.createElement('span');
+                valueDisplay.className = 'value-display';
+                valueDisplay.textContent = value;
+                
+                input.addEventListener('input', function() {
+                    const newValue = parseFloat(this.value);
+                    anim.params[param] = newValue;
+                    valueDisplay.textContent = newValue;
+                    
+                    // Reapply animation with new parameters
+                    if (currentAnimation) {
+                        applyTempAnimation(currentAnimation);
+                    }
+                });
+                
+                controlWrapper.appendChild(label);
+                controlWrapper.appendChild(input);
+                controlWrapper.appendChild(valueDisplay);
+                paramControls.appendChild(controlWrapper);
+            }
+        }
+        
+        function applyTempAnimation(animationName) {
+            clearAnimation();
+            
+            const anim = animationsData[animationName];
+            if (!anim) return;
+            
+            currentAnimation = animationName;
+            
+            // Generate keyframes
+            let keyframes;
+            if (anim.generateKeyframes) {
+                keyframes = anim.generateKeyframes(anim.params);
+            } else {
+                keyframes = anim.keyframes;
+            }
+            
+            // Create CSS keyframes
+            let keyframesCSS = '';
+            for (const [percentage, properties] of Object.entries(keyframes)) {
+                let propsCSS = '';
+                for (const [prop, value] of Object.entries(properties)) {
+                    propsCSS += `${prop}: ${value}; `;
+                }
+                keyframesCSS += `${percentage} { ${propsCSS} } `;
+            }
+            
+            // Create and insert style tag
+            const style = document.createElement('style');
+            style.id = 'temp-animation';
+            style.textContent = `
+                @keyframes temp-animation {
+                    ${keyframesCSS}
+                }
+            `;
+            document.head.appendChild(style);
+            currentStyleTag = style;
+            
+            // Apply animation to test elements
+            const testElements = document.querySelectorAll('.test-box');
+            const speed = speedSlider.value;
+            
+            testElements.forEach(element => {
+                element.style.animation = `${speed}s linear 0s infinite normal forwards running temp-animation`;
+            });
+        }
+        
+        function applyAnimation(animationName) {
+            // For this test, just apply the temp animation permanently
+            currentAnimation = animationName;
+            updateStatusBar(`Animation "${animationName}" applied! ✨`);
+        }
+        
+        function clearAnimation() {
+            if (currentStyleTag) {
+                currentStyleTag.remove();
+                currentStyleTag = null;
+            }
+            
+            const testElements = document.querySelectorAll('.test-box');
+            testElements.forEach(element => {
+                element.style.animation = '';
+            });
+            
+            currentAnimation = null;
+            updateStatusBar('Animation cleared! 🚫');
+        }
+        
+        function updateStatusBar(message) {
+            console.log(message);
+        }
+        
+        // Initialize
+        console.log('Parametric Animation Test loaded!');
+        console.log('Available animations:', Object.keys(animationsData));
+    </script>
+</body>
+</html>
