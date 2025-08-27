@@ -84,6 +84,60 @@ body {
     font-weight: 600;
     color: var(--text-primary);
     font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bounds-toggle {
+    background: var(--secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.bounds-toggle:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: scale(1.05);
+    box-shadow: var(--shadow);
+}
+
+.bounds-toggle.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: boundsPulse 2s ease-in-out infinite;
+}
+
+@keyframes boundsPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+}
+
+.bounds-toggle svg {
+    width: 14px;
+    height: 14px;
+}
+
+.bounds-toggle:hover svg {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
 }
 
 .panel-content {
@@ -146,11 +200,34 @@ body {
     justify-content: center;
     margin-bottom: 20px;
     transition: all 0.2s ease;
+    position: relative;
+    cursor: default;
 }
 
 .svg-viewer.has-content {
     border: 2px solid var(--border);
     background: var(--secondary);
+    cursor: crosshair;
+    position: relative;
+}
+
+.svg-viewer.has-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.svg-viewer.has-content:hover {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 1px var(--primary-light);
 }
 
 .svg-viewer.loading {
@@ -172,6 +249,20 @@ body {
 .svg-viewer svg {
     max-width: 100%;
     max-height: 100%;
+    position: relative;
+}
+
+/* SVG Bounds Visualization Styles */
+#svg-bounds {
+    pointer-events: none;
+    z-index: 1;
+    filter: drop-shadow(0 0 2px rgba(148, 163, 184, 0.3));
+}
+
+#svg-bounds-group text {
+    pointer-events: none;
+    z-index: 1;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.8));
 }
 
 .placeholder-text {

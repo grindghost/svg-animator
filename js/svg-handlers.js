@@ -319,6 +319,9 @@ function UpdateSelectionBoxesAndHandle(element) {
         document.getElementById('selection-box').remove();
     }
     drawBoundingBox(element);
+    
+    // Update SVG bounds visualization to reflect any transformations
+    visualizeSVGBounds();
 }
 
 function startMoving(event) {
@@ -535,6 +538,155 @@ function selectElement(elementId, element) {
     }
 }
 
+// Function to visualize the bounds of the uploaded SVG
+function visualizeSVGBounds(forceShow = null) {
+    if (!svgRoot) return;
+    
+    // Remove existing bounds visualization
+    const existingBounds = document.getElementById('svg-bounds');
+    if (existingBounds) {
+        existingBounds.remove();
+    }
+    
+    // Check if bounds should be shown
+    const toggleButton = document.getElementById('toggle-bounds');
+    const shouldShow = forceShow !== null ? forceShow : (toggleButton && toggleButton.classList.contains('active'));
+    
+    if (!shouldShow) return;
+    
+    // Get the SVG's viewBox or calculate bounds from content
+    let svgBounds;
+    const viewBox = svgRoot.getAttribute('viewBox');
+    
+    if (viewBox) {
+        const [x, y, width, height] = viewBox.split(' ').map(Number);
+        svgBounds = { x, y, width, height };
+    } else {
+        // Calculate bounds from all SVG elements
+        const allElements = svgRoot.querySelectorAll('*');
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        allElements.forEach(element => {
+            if (element.getBBox && element.id !== 'svg-bounds' && element.id !== 'svg-bounds-group') {
+                try {
+                    const bbox = element.getBBox();
+                    if (bbox.width > 0 && bbox.height > 0) {
+                        minX = Math.min(minX, bbox.x);
+                        minY = Math.min(minY, bbox.y);
+                        maxX = Math.max(maxX, bbox.x + bbox.width);
+                        maxY = Math.max(maxY, bbox.y + bbox.height);
+                    }
+                } catch (e) {
+                    // Skip elements that don't support getBBox
+                }
+            }
+        });
+        
+        if (minX !== Infinity && maxX > minX && maxY > minY) {
+            svgBounds = {
+                x: minX,
+                y: minY,
+                width: maxX - minX,
+                height: maxY - minY
+            };
+        }
+    }
+    
+    if (svgBounds && svgBounds.width > 0 && svgBounds.height > 0) {
+        // Create bounds visualization rectangle
+        const boundsRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        boundsRect.setAttribute('id', 'svg-bounds');
+        boundsRect.setAttribute('x', svgBounds.x);
+        boundsRect.setAttribute('y', svgBounds.y);
+        boundsRect.setAttribute('width', svgBounds.width);
+        boundsRect.setAttribute('height', svgBounds.height);
+        boundsRect.setAttribute('fill', 'none');
+        boundsRect.setAttribute('stroke', '#94a3b8');
+        boundsRect.setAttribute('stroke-width', '1');
+        boundsRect.setAttribute('stroke-dasharray', '3,3');
+        boundsRect.setAttribute('opacity', '0.6');
+        boundsRect.style.pointerEvents = 'none';
+        
+        // Add bounds info text
+        const boundsText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        boundsText.setAttribute('x', svgBounds.x + 5);
+        boundsText.setAttribute('y', svgBounds.y - 5);
+        boundsText.setAttribute('fill', '#94a3b8');
+        boundsText.setAttribute('font-size', '12');
+        boundsText.setAttribute('font-family', 'Arial, sans-serif');
+        boundsText.setAttribute('opacity', '0.8');
+        boundsText.style.pointerEvents = 'none';
+        boundsText.textContent = `Bounds: ${Math.round(svgBounds.width)}×${Math.round(svgBounds.height)}`;
+        
+        // Create a group for bounds visualization
+        const boundsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        boundsGroup.setAttribute('id', 'svg-bounds-group');
+        boundsGroup.appendChild(boundsRect);
+        boundsGroup.appendChild(boundsText);
+        
+        // Insert at the beginning so it appears behind other elements
+        svgRoot.insertBefore(boundsGroup, svgRoot.firstChild);
+    }
+}
+
+// Function to toggle SVG bounds visualization
+function toggleSVGBounds() {
+    const toggleButton = document.getElementById('toggle-bounds');
+    if (!toggleButton) return;
+    
+    const isActive = toggleButton.classList.contains('active');
+    
+    if (isActive) {
+        // Hide bounds
+        toggleButton.classList.remove('active');
+        const existingBounds = document.getElementById('svg-bounds');
+        if (existingBounds) {
+            existingBounds.remove();
+        }
+        updateStatusBar('SVG bounds hidden');
+    } else {
+        // Show bounds
+        toggleButton.classList.add('active');
+        visualizeSVGBounds(true);
+        updateStatusBar('SVG bounds visible');
+    }
+}
+
+// Function to clear selection when clicking outside SVG elements
+function clearSelectionOnOutsideClick(event) {
+    // Check if the click is on the SVG viewer but not on an SVG element
+    const svgViewer = document.getElementById('svg-viewer');
+    const clickedElement = event.target;
+    
+    // If clicking on the SVG viewer background or placeholder, clear selection
+    if (svgViewer === clickedElement || 
+        clickedElement.classList.contains('placeholder-text') ||
+        clickedElement.classList.contains('svg-viewer') ||
+        (clickedElement.tagName === 'svg' && clickedElement === svgRoot)) {
+        
+        // Clear selection
+        const selectionBox = document.getElementById("selection-box");
+        if (selectionBox) selectionBox.remove();
+
+        // Remove handles
+        removeHandles();
+
+        // Clear selected-element class
+        const selected = document.querySelector(".selected-element");
+        if (selected) selected.classList.remove("selected-element");
+
+        // Reset global ref
+        selectedElement = null;
+
+        // Reset animation UI
+        resetControls();
+        updateAnimationListUI(null);
+        
+        // Update status
+        updateStatusBar('Selection cleared! 🚫');
+    }
+}
+
 // Function to initialize hover and click events for SVG elements
 function initializeHoverAndSelect() {
     // Use event delegation to handle clicks on nested SVG elements
@@ -544,6 +696,27 @@ function initializeHoverAndSelect() {
         console.log(targetElement)
         if (targetElement) {
             selectElement(targetElement.id, targetElement);
+        }
+    });
+
+    // Add click listener to SVG viewer for clearing selection
+    const svgViewer = document.getElementById('svg-viewer');
+    svgViewer.addEventListener('click', clearSelectionOnOutsideClick);
+
+    // Add event listener for bounds toggle button
+    const toggleButton = document.getElementById('toggle-bounds');
+    if (toggleButton) {
+        toggleButton.addEventListener('click', toggleSVGBounds);
+    }
+
+    // Add window resize handler to update bounds visualization
+    window.addEventListener('resize', function() {
+        if (toggleButton && toggleButton.classList.contains('active')) {
+            // Debounce the resize event
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                visualizeSVGBounds(true);
+            }, 250);
         }
     });
 
@@ -593,3 +766,6 @@ window.addHoverEffect = addHoverEffect;
 window.selectElement = selectElement;
 window.initializeHoverAndSelect = initializeHoverAndSelect;
 window.createTooltip = createTooltip;
+window.visualizeSVGBounds = visualizeSVGBounds;
+window.clearSelectionOnOutsideClick = clearSelectionOnOutsideClick;
+window.toggleSVGBounds = toggleSVGBounds;

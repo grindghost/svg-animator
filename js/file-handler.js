@@ -79,8 +79,20 @@ function downloadAnimatedSVG() {
     
     const svgBackup = svgRoot.cloneNode(true);
 
+    // Check if bounds were visible before removing them
+    const boundsWereVisible = document.getElementById('svg-bounds') !== null;
+    const toggleButton = document.getElementById('toggle-bounds');
+
     if (document.getElementById('selection-box')) {
         document.getElementById('selection-box').remove();
+    }
+
+    // Remove bounds visualization
+    if (document.getElementById('svg-bounds')) {
+        document.getElementById('svg-bounds').remove();
+    }
+    if (document.getElementById('svg-bounds-group')) {
+        document.getElementById('svg-bounds-group').remove();
     }
 
     removeHandles();
@@ -111,6 +123,12 @@ function downloadAnimatedSVG() {
     link.href = url;
     link.download = 'animated.svg';
     link.click();
+
+    // Restore bounds visualization if it was visible
+    if (boundsWereVisible && toggleButton) {
+        toggleButton.classList.add('active');
+        visualizeSVGBounds(true);
+    }
 
     updateStatusBar('SVG downloaded successfully! 🎉');
 }
