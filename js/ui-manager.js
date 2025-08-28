@@ -1,4 +1,4 @@
-// UI updates, tree view, controls, and animation list management
+w// UI updates, tree view, controls, and animation list management
 // SVG Animator Pro - UI Manager Module
 
 // Populate animation dropdown

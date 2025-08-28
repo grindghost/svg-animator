@@ -9,63 +9,90 @@ function removeHandles() {
     }
 }
 
-function createHandlesForElement(svgElement) {
-    // Clean previous handles
-    removeHandles();
+function getElementScreenScale(element) {
+    const ctm = element.getScreenCTM();
+    if (!ctm) return 1;
+    // Extract average scale factor from matrix (accounts for zoom/rotation)
+    return Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b);
+}
 
-    const bbox = svgElement.getBBox();          // untransformed bbox
-    const ctm = svgElement.getCTM();            // includes current transform
+// Use only root CTM for consistent UI size
+function getRootScreenScale() {
+    const ctm = svgRoot.getScreenCTM();
+    return ctm ? Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b) : 1;
+}
+
+function getTransformedBBox(element) {
+    const bbox = element.getBoundingClientRect();
+    const svgCTM = svgRoot.getScreenCTM().inverse();
     const svgPoint = svgRoot.createSVGPoint();
 
-    // helper: apply CTM to (x,y)
-    function applyCTM(x, y) {
+    function toSVG(x, y) {
         svgPoint.x = x;
         svgPoint.y = y;
-        return svgPoint.matrixTransform(ctm);
+        return svgPoint.matrixTransform(svgCTM);
     }
 
-    // Corners in transformed coords
-    const topLeft     = applyCTM(bbox.x, bbox.y);
-    const topRight    = applyCTM(bbox.x + bbox.width, bbox.y);
-    const bottomLeft  = applyCTM(bbox.x, bbox.y + bbox.height);
-    const bottomRight = applyCTM(bbox.x + bbox.width, bbox.y + bbox.height);
-    const center      = applyCTM(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
+    const topLeft     = toSVG(bbox.left, bbox.top);
+    const topRight    = toSVG(bbox.right, bbox.top);
+    const bottomLeft  = toSVG(bbox.left, bbox.bottom);
+    const bottomRight = toSVG(bbox.right, bbox.bottom);
 
-    // Give each corner a unique name
+    const minX = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const maxX = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
+    const minY = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+    const maxY = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
+
+function createHandlesForElement(svgElement) {
+    removeHandles();
+
+    const bbox = getTransformedBBox(svgElement);
+    const scale = getRootScreenScale(); // ✅ root, not element
+
+    // Screen-consistent handle sizes
+    const handleSize = 8 / scale;
+    const middleSize = 14 / scale;
+
     const positions = [
-        { x: topLeft.x,     y: topLeft.y,     name: "top-left" },
-        { x: topRight.x,    y: topRight.y,    name: "top-right" },
-        { x: bottomLeft.x,  y: bottomLeft.y,  name: "bottom-left" },
-        { x: bottomRight.x, y: bottomRight.y, name: "bottom-right" },
-        { x: center.x,      y: center.y,      name: "middle" }
+        { x: bbox.x,               y: bbox.y,                name: "top-left" },
+        { x: bbox.x + bbox.width,  y: bbox.y,                name: "top-right" },
+        { x: bbox.x,               y: bbox.y + bbox.height,  name: "bottom-left" },
+        { x: bbox.x + bbox.width,  y: bbox.y + bbox.height,  name: "bottom-right" },
+        { x: bbox.x + bbox.width/2,y: bbox.y + bbox.height/2,name: "middle" }
     ];
 
-    // Handles group
     const handlesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
     handlesGroup.setAttribute("class", "handles");
 
     positions.forEach(pos => {
         const handle = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        handle.setAttribute("x", pos.x - 4);
-        handle.setAttribute("y", pos.y - 4);
-        handle.setAttribute("width", 8);
-        handle.setAttribute("height", 8);
-        handle.setAttribute("fill", "rgba(99, 102, 241, 0.8)");
-        handle.style.stroke = "white";
-        handle.style.strokeWidth = "2";
-        // handle.classList.add(pos.name + '-handle');
 
-        // 👇 Add unique classes for each
+        if (pos.name === "middle") {
+            handle.setAttribute("x", pos.x - middleSize / 2);
+            handle.setAttribute("y", pos.y - middleSize / 2);
+            handle.setAttribute("width", middleSize);
+            handle.setAttribute("height", middleSize);
+            handle.setAttribute("fill", "white");
+            handle.style.stroke = "rgb(99, 102, 241)";
+        } else {
+            handle.setAttribute("x", pos.x - handleSize / 2);
+            handle.setAttribute("y", pos.y - handleSize / 2);
+            handle.setAttribute("width", handleSize);
+            handle.setAttribute("height", handleSize);
+            handle.setAttribute("fill", "rgba(99, 102, 241, 0.8)");
+            handle.style.stroke = "white";
+        }
+
+        handle.style.strokeWidth = "2px";
+        handle.setAttribute("vector-effect", "non-scaling-stroke");
+        handle.setAttribute("vector-effect", "non-scaling-size");
         handle.classList.add(`${pos.name}-handle`);
 
         if (pos.name === "middle") {
-            handle.setAttribute("x", pos.x - 7);
-            handle.setAttribute("y", pos.y - 7);
-            handle.setAttribute("width", 14);
-            handle.setAttribute("height", 14);
-            handle.setAttribute("fill", "white");
-            handle.style.strokeWidth = "2";
-            handle.style.stroke = "rgb(99, 102, 241)";
             handle.classList.add("middle-handle");
         }
 
@@ -75,6 +102,7 @@ function createHandlesForElement(svgElement) {
     svgRoot.appendChild(handlesGroup);
     attachResizeListeners();
 }
+
 
 
 function _createHandlesForElement(svgElement) {
@@ -346,40 +374,27 @@ function applyTransform(element, newMatrix) {
     transformList.initialize(transform);
 }
 
-
 function drawBoundingBox(element) {
-    const bbox = element.getBBox();
-    const ctm = element.getCTM();
-    const svgPoint = svgRoot.createSVGPoint();
-
-    function applyCTM(x, y) {
-        svgPoint.x = x;
-        svgPoint.y = y;
-        return svgPoint.matrixTransform(ctm);
-    }
-
-    const topLeft     = applyCTM(bbox.x, bbox.y);
-    const topRight    = applyCTM(bbox.x + bbox.width, bbox.y);
-    const bottomLeft  = applyCTM(bbox.x, bbox.y + bbox.height);
-    const bottomRight = applyCTM(bbox.x + bbox.width, bbox.y + bbox.height);
-
-    const minX = Math.min(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-    const maxX = Math.max(topLeft.x, topRight.x, bottomLeft.x, bottomRight.x);
-    const minY = Math.min(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
-    const maxY = Math.max(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y);
+    const bbox = getTransformedBBox(element);
+    const scale = getElementScreenScale(element);
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', minX);
-    rect.setAttribute('y', minY);
-    rect.setAttribute('width', maxX - minX);
-    rect.setAttribute('height', maxY - minY);
+    rect.setAttribute('x', bbox.x);
+    rect.setAttribute('y', bbox.y);
+    rect.setAttribute('width', bbox.width);
+    rect.setAttribute('height', bbox.height);
     rect.setAttribute('stroke', '#6366f1');
     rect.setAttribute('fill', 'none');
-    rect.setAttribute('stroke-width', '2px');
+    
+    rect.setAttribute('stroke-width', '2px'); 
     rect.setAttribute('stroke-dasharray', '5');
     rect.setAttribute('id', 'selection-box');
+    rect.setAttribute('vector-effect', 'non-scaling-stroke');
+
+    // Add a class to the rect to indicate it's a selection box
     svgRoot.appendChild(rect);
 }
+
 
 
 function _drawBoundingBox(element) {
