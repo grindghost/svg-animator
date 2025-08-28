@@ -63,6 +63,17 @@ function setupEventListeners() {
 
     // Download SVG button
     document.getElementById('download-svg').addEventListener('click', downloadAnimatedSVG);
+    
+    // Export project button
+    document.getElementById('export-project').addEventListener('click', exportProject);
+    
+    // Import project button
+    document.getElementById('import-project').addEventListener('click', function() {
+        document.getElementById('project-import').click();
+    });
+    
+    // Project import file input
+    document.getElementById('project-import').addEventListener('change', handleProjectImport);
 }
 
 // Export functions for use in other modules

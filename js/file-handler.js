@@ -42,6 +42,7 @@ function handleSVGUpload(event) {
             // Enable controls
             document.getElementById('download-svg').disabled = false;
             document.getElementById('clear-cache').disabled = false;
+            document.getElementById('export-project').disabled = false;
             
             // Show success message
             showNotification('SVG loaded successfully!', 'success');

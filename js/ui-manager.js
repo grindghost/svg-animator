@@ -143,16 +143,12 @@ function createTreeViewItem(parent, element, depth = 0) {
     if (element.classList.contains('anim-wrapper') || 
         element.classList.contains('wrapping-group')) {
         
-        console.log(`🔍 Filtering out wrapper group: ${element.tagName} with classes:`, element.classList.toString());
-        
         // Recursively process children to find actual elements
         for (let child of element.children) {
             createTreeViewItem(parent, child, depth);
         }
         return; // Don't create a tree item for the wrapper itself
     }
-
-    console.log(`✅ Adding element to tree: ${element.tagName}${element.id ? '#' + element.id : ''} at depth ${depth}`);
 
     // Check if the element has child elements (is not a leaf)
     const hasChildren = element.children.length > 0;
