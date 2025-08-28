@@ -535,6 +535,7 @@ select:disabled {
     overflow: hidden;
     background: var(--card-bg);
     box-shadow: var(--shadow);
+    min-width: 0; /* Allow the panel to shrink below its content size */
 }
 
 .styling-panel-header {
@@ -552,6 +553,7 @@ select:disabled {
 .styling-controls {
     padding: 20px;
     background: var(--card-bg);
+    min-width: 0; /* Allow the controls to shrink below their content size */
 }
 
 .color-controls {
@@ -561,6 +563,7 @@ select:disabled {
     margin-bottom: 16px;
     padding: 12px 0;
     border-bottom: 1px solid var(--border-light);
+    min-width: 0; /* Allow flex items to shrink below their content size */
 }
 
 .color-controls:last-child {
@@ -569,7 +572,7 @@ select:disabled {
 }
 
 .color-picker {
-    width: 40px;
+    width: 36px; /* Slightly reduced from 40px to save space */
     height: 32px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -589,7 +592,7 @@ select:disabled {
 
 .opacity-slider {
     flex: 1;
-    min-width: 120px;
+    min-width: 80px; /* Reduced from 120px to give more space for display values */
     height: 6px;
     border-radius: 3px;
     background: linear-gradient(to right, var(--border) 0%, var(--border) 100%);
@@ -637,12 +640,15 @@ select:disabled {
 }
 
 .opacity-display {
-    min-width: 60px;
+    min-width: 70px; /* Increased from 60px to accommodate longer values like "100%" */
     text-align: center;
     font-size: 0.9rem;
     color: var(--text-secondary);
     font-family: 'JetBrains Mono', monospace;
     flex-shrink: 0;
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Show ellipsis if text is too long */
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 .stroke-width-control {
@@ -652,6 +658,7 @@ select:disabled {
     margin-bottom: 16px;
     padding: 12px 0;
     border-bottom: 1px solid var(--border-light);
+    min-width: 0; /* Allow flex items to shrink below their content size */
 }
 
 .stroke-width-control:last-child {
@@ -661,7 +668,7 @@ select:disabled {
 
 .stroke-width-slider {
     flex: 1;
-    min-width: 120px;
+    min-width: 80px; /* Reduced from 120px to give more space for display values */
     height: 6px;
     border-radius: 3px;
     background: linear-gradient(to right, var(--border) 0%, var(--border) 100%);
@@ -709,12 +716,15 @@ select:disabled {
 }
 
 .stroke-width-display {
-    min-width: 60px;
+    min-width: 70px; /* Increased from 60px to accommodate longer values like "2px" */
     text-align: center;
     font-size: 0.9rem;
     color: var(--text-secondary);
     font-family: 'JetBrains Mono', monospace;
     flex-shrink: 0;
+    overflow: hidden; /* Prevent text overflow */
+    text-overflow: ellipsis; /* Show ellipsis if text is too long */
+    white-space: nowrap; /* Prevent text wrapping */
 }
 
 /* Demo-specific styles */
@@ -1643,6 +1653,25 @@ blockquote {
     .theme-toggle svg {
         width: 20px;
         height: 20px;
+    }
+    
+    /* Adjust styling panel for small screens */
+    .styling-controls {
+        padding: 16px;
+    }
+    
+    .color-controls {
+        gap: 8px; /* Reduce gap between elements */
+    }
+    
+    .opacity-slider,
+    .stroke-width-slider {
+        min-width: 60px; /* Further reduce minimum width on small screens */
+    }
+    
+    .opacity-display,
+    .stroke-width-display {
+        min-width: 60px; /* Reduce display width on small screens */
     }
 }
 
