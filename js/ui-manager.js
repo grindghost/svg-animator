@@ -130,11 +130,29 @@ function populateTreeView(rootElement) {
     createTreeViewItem(treeDiv, rootElement);
 }
 
+// ✅ ENHANCED: Create tree view item with wrapper group filtering
+// This function now automatically filters out anim-wrapper and wrapping-group elements
+// while still showing the actual SVG elements that users care about
 function createTreeViewItem(parent, element, depth = 0) {
     // Skip over <style> and <defs> tags
     if (element.tagName === 'style' || element.tagName === 'defs') {
         return;
     }
+
+    // ✅ NEW: Skip wrapper groups but process their children
+    if (element.classList.contains('anim-wrapper') || 
+        element.classList.contains('wrapping-group')) {
+        
+        console.log(`🔍 Filtering out wrapper group: ${element.tagName} with classes:`, element.classList.toString());
+        
+        // Recursively process children to find actual elements
+        for (let child of element.children) {
+            createTreeViewItem(parent, child, depth);
+        }
+        return; // Don't create a tree item for the wrapper itself
+    }
+
+    console.log(`✅ Adding element to tree: ${element.tagName}${element.id ? '#' + element.id : ''} at depth ${depth}`);
 
     // Check if the element has child elements (is not a leaf)
     const hasChildren = element.children.length > 0;
@@ -261,8 +279,18 @@ function createTreeViewItem(parent, element, depth = 0) {
         e.stopPropagation();
     });
 
+    // ✅ MODIFIED: Process children but filter out wrapper groups
     for (let child of element.children) {
-        createTreeViewItem(hasChildren ? container : summary, child, depth + 1);
+        // Skip wrapper groups when processing children
+        if (!child.classList.contains('anim-wrapper') && 
+            !child.classList.contains('wrapping-group')) {
+            createTreeViewItem(hasChildren ? container : summary, child, depth + 1);
+        } else {
+            // If it's a wrapper group, process its children directly
+            for (let grandChild of child.children) {
+                createTreeViewItem(hasChildren ? container : summary, grandChild, depth + 1);
+            }
+        }
     }
 }
 
