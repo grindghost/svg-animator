@@ -4,6 +4,17 @@ A professional SVG animation tool for designers and developers.
 
 ## New Features
 
+### 🌙 Dark Mode Support
+
+The app now includes a beautiful dark mode with automatic system theme detection:
+
+- **Theme Toggle**: Click the sun/moon icon in the top-right corner to switch themes
+- **System Detection**: Automatically detects and follows your system's dark/light mode preference
+- **Persistent Storage**: Remembers your theme choice across browser sessions
+- **Smooth Transitions**: Beautiful animations when switching between themes
+- **Mobile Optimized**: Responsive design that works great on all devices
+- **Accessibility**: High contrast support and reduced motion preferences
+
 ### SVG Bounds Visualization
 
 The SVG preview now includes a bounds visualization feature that shows the boundaries of your uploaded SVG:
@@ -34,6 +45,8 @@ You can now clear the current element selection by clicking outside the SVG elem
 
 ## Technical Details
 
+- **Dark Mode**: CSS custom properties with JavaScript theme management
+- **Theme Persistence**: LocalStorage-based theme storage with system preference fallback
 - **Bounds Calculation**: Uses SVG viewBox attribute or calculates from element getBBox()
 - **Event Handling**: Implements proper event delegation for SVG element selection
 - **Performance**: Debounced window resize handling for smooth bounds updates
@@ -49,6 +62,7 @@ You can now clear the current element selection by clicking outside the SVG elem
 ## Development
 
 The project uses vanilla JavaScript with modular architecture:
+- `theme-manager.js` - Dark/light mode switching and theme management
 - `svg-handlers.js` - SVG manipulation and selection
 - `file-handler.js` - File upload/download functionality  
 - `core.js` - Core application logic

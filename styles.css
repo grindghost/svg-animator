@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
+    /* Light theme variables */
     --primary: #6366f1;
     --primary-dark: #4f46e5;
     --primary-light: #a5b4fc;
@@ -13,11 +14,120 @@
     --text-secondary: #64748b;
     --text-muted: #94a3b8;
     --border: #e2e8f0;
+    --slider-line: #e2e8f0;
     --border-light: #f1f5f9;
     --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --radius: 8px;
     --radius-lg: 12px;
+    
+    /* Background colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-gradient-start: #f8fafc;
+    --bg-gradient-end: #e2e8f0;
+    
+    /* Card and panel backgrounds */
+    --card-bg: #ffffff;
+    --panel-bg: #ffffff;
+    --header-bg: #f8fafc;
+    --secondary-header-bg: var(--header-bg);
+    
+    /* Input and form elements */
+    --input-bg: #ffffff;
+    --input-border: #e2e8f0;
+    --input-focus: #6366f1;
+    
+    /* Scrollbar */
+    --scrollbar-track: #f1f5f9;
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+}
+
+/* Dark theme variables */
+[data-theme="dark"] {
+    --primary: #818cf8;
+    --primary-dark: #6366f1;
+    --primary-light: #c7d2fe;
+    --secondary: #1e293b;
+    --accent: #34d399;
+    --accent-dark: #10b981;
+    --danger: #f87171;
+    --danger-dark: #ef4444;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border: #334155;
+    --slider-line: #546173;
+    --border-light: #475569;
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+    
+    /* Background colors */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --bg-gradient-start: #0f172a;
+    --bg-gradient-end: #1e293b;
+    
+    /* Card and panel backgrounds */
+    --card-bg: #1e293b;
+    --panel-bg: #1e293b;
+    --header-bg: #334155;
+    --secondary-header-bg: #141d30;
+    
+    /* Input and form elements */
+    --input-bg: #334155;
+    --input-border: #475569;
+    --input-focus: #818cf8;
+    
+    /* Scrollbar */
+    --scrollbar-track: #1e293b;
+    --scrollbar-thumb: #475569;
+    --scrollbar-thumb-hover: #64748b;
+}
+
+/* Theme toggle button styles */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.theme-toggle svg {
+    width: 24px;
+    height: 24px;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+    color: var(--primary);
+}
+
+/* Smooth transitions for theme switching */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 * {
@@ -28,7 +138,7 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
@@ -75,7 +185,7 @@ svg {
 }
 
 .panel {
-    background: white;
+    background: var(--panel-bg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     border: 1px solid var(--border);
@@ -83,7 +193,7 @@ svg {
 }
 
 .panel-header {
-    background: var(--secondary);
+    background: var(--header-bg);
     padding: 20px;
     border-bottom: 1px solid var(--border);
     font-weight: 600;
@@ -95,7 +205,7 @@ svg {
 }
 
 .bounds-toggle {
-    background: var(--secondary);
+    background: var(--header-bg);
     color: var(--text-secondary);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -200,7 +310,7 @@ svg {
 }
 
 .svg-viewer {
-    background: white;
+    background: var(--card-bg);
     border: 2px dashed var(--border);
     border-radius: var(--radius);
     /* min-height: 400px; */
@@ -229,8 +339,8 @@ svg {
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%),
-        linear-gradient(0deg, transparent 0%, rgba(99, 102, 241, 0.02) 50%, transparent 100%);
+        linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.05) 50%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(99, 102, 241, 0.05) 50%, transparent 100%);
     pointer-events: none;
     z-index: 0;
 }
@@ -275,6 +385,15 @@ svg {
     filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.8));
 }
 
+/* Dark mode improvements for SVG bounds */
+[data-theme="dark"] #svg-bounds {
+    filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.5));
+}
+
+[data-theme="dark"] #svg-bounds-group text {
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+}
+
 .placeholder-text {
     color: var(--text-muted);
     font-size: 1.1rem;
@@ -286,10 +405,11 @@ svg {
 }
 
 .controls-section {
-    background: var(--secondary);
+    background: var(--bg-tertiary);
     padding: 20px;
     border-radius: var(--radius);
     margin-bottom: 20px;
+    border: 1px solid var(--border);
 }
 
 .control-group {
@@ -320,9 +440,10 @@ svg {
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-muted);
+    color: var(--text-secondary);
     pointer-events: none;
     font-size: 0.8rem;
+    font-weight: bold;
 }
 
 select {
@@ -330,7 +451,7 @@ select {
     padding: 12px 16px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    background: white;
+    background: var(--input-bg);
     font-size: 1rem;
     color: var(--text-primary);
     cursor: pointer;
@@ -338,9 +459,22 @@ select {
     transition: all 0.2s ease;
 }
 
+/* Dark mode improvements for select dropdowns */
+select option {
+    background: var(--input-bg);
+    color: var(--text-primary);
+    padding: 8px 12px;
+}
+
+select:focus option:hover,
+select:focus option:focus {
+    background: var(--primary);
+    color: white;
+}
+
 select:focus {
     outline: none;
-    border-color: var(--primary);
+    border-color: var(--input-focus);
     box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
 }
 
@@ -360,7 +494,7 @@ select:disabled {
     flex: 1;
     height: 6px;
     border-radius: 3px;
-    background: var(--border);
+    background: var(--slider-line) !important;
     outline: none;
     appearance: none;
 }
@@ -399,12 +533,12 @@ select:disabled {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    background: white;
+    background: var(--card-bg);
     box-shadow: var(--shadow);
 }
 
 .styling-panel-header {
-    background: linear-gradient(135deg, var(--secondary) 0%, #f1f5f9 100%);
+    background: var(--secondary-header-bg);
     padding: 14px 18px;
     border-bottom: 1px solid var(--border);
     font-weight: 600;
@@ -417,7 +551,7 @@ select:disabled {
 
 .styling-controls {
     padding: 20px;
-    background: white;
+    background: var(--card-bg);
 }
 
 .color-controls {
@@ -478,7 +612,7 @@ select:disabled {
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     transition: all 0.2s ease;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
 }
 
 .opacity-slider::-webkit-slider-thumb:hover {
@@ -498,7 +632,7 @@ select:disabled {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
@@ -550,7 +684,7 @@ select:disabled {
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     transition: all 0.2s ease;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
 }
 
 .stroke-width-slider::-webkit-slider-thumb:hover {
@@ -570,7 +704,7 @@ select:disabled {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
@@ -587,9 +721,80 @@ select:disabled {
 .demo-instructions {
     margin-top: 24px;
     padding: 20px;
-    background: var(--border-light);
+    background: var(--bg-tertiary);
     border-radius: var(--radius);
     border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+/* Dark mode improvements for file upload */
+.file-upload {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.upload-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--card-bg);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.upload-button:hover {
+    border-color: var(--primary);
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.upload-button svg {
+    width: 20px;
+    height: 20px;
+    color: var(--primary);
+}
+
+/* Dark mode improvements for status messages */
+.status-message {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    margin: 16px 0;
+    font-size: 0.9rem;
+}
+
+.status-message.success {
+    border-color: var(--accent);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.status-message.error {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.status-message.info {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
 }
 
 .demo-instructions h3 {
@@ -640,12 +845,12 @@ select:disabled {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     overflow: hidden;
-    background: white;
+    background: var(--card-bg);
     box-shadow: var(--shadow);
 }
 
 .param-panel-header {
-    background: linear-gradient(135deg, var(--secondary) 0%, #f1f5f9 100%);
+    background: var(--secondary-header-bg);
     padding: 14px 18px;
     border-bottom: 1px solid var(--border);
     font-weight: 600;
@@ -658,7 +863,7 @@ select:disabled {
 
 .param-controls {
     padding: 20px;
-    background: white;
+    background: var(--card-bg);
 }
 
 .param-control {
@@ -712,7 +917,7 @@ select:disabled {
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     transition: all 0.2s ease;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
 }
 
 .param-slider::-webkit-slider-thumb:hover {
@@ -733,7 +938,7 @@ select:disabled {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
     transition: all 0.2s ease;
 }
@@ -758,7 +963,7 @@ select:disabled {
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid white;
+    border: 2px solid var(--card-bg);
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
@@ -1186,25 +1391,221 @@ svg {
 
 /* Scrollbar styling */
 .element-tree::-webkit-scrollbar,
-.animation-list::-webkit-scrollbar {
+.animation-list::-webkit-scrollbar,
+::-webkit-scrollbar {
     width: 8px;
 }
 
 .element-tree::-webkit-scrollbar-track,
-.animation-list::-webkit-scrollbar-track {
-    background: var(--border-light);
+.animation-list::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
     border-radius: 4px;
 }
 
 .element-tree::-webkit-scrollbar-thumb,
-.animation-list::-webkit-scrollbar-thumb {
-    background: var(--border);
+.animation-list::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
 }
 
 .element-tree::-webkit-scrollbar-thumb:hover,
-.animation-list::-webkit-scrollbar-thumb:hover {
-    background: var(--text-muted);
+.animation-list::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Dark mode improvements for form elements */
+input[type="color"] {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+input[type="color"]:hover {
+    border-color: var(--input-focus);
+    transform: scale(1.05);
+}
+
+input[type="range"] {
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    background: var(--primary);
+    border: 2px solid var(--card-bg);
+    box-shadow: var(--shadow);
+}
+
+input[type="range"]::-moz-range-thumb {
+    background: var(--primary);
+    border: 2px solid var(--card-bg);
+    box-shadow: var(--shadow);
+}
+
+/* Dark mode improvements for notifications */
+.notification {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Dark mode improvements for tooltips */
+.tooltip {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Dark mode improvements for modals */
+.modal {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+}
+
+/* Dark mode improvements for status bar */
+.status-bar {
+    background: var(--header-bg);
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+/* Dark mode improvements for animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Dark mode improvements for focus states */
+*:focus {
+    outline: 2px solid var(--input-focus);
+    outline-offset: 2px;
+}
+
+/* Dark mode improvements for selection */
+::selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* Dark mode improvements for placeholder text */
+::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+}
+
+/* Dark mode improvements for disabled states */
+*:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Dark mode improvements for loading states */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: loading 1.5s infinite;
+}
+
+/* Dark mode improvements for code blocks and monospace text */
+code, pre, .monospace {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2px 6px;
+    color: var(--text-primary);
+}
+
+/* Dark mode improvements for links */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* Dark mode improvements for tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+}
+
+th, td {
+    border: 1px solid var(--border);
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background: var(--header-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+td {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+/* Dark mode improvements for blockquotes */
+blockquote {
+    border-left: 4px solid var(--primary);
+    margin: 16px 0;
+    padding: 12px 20px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-style: italic;
 }
 
 @media (max-width: 1024px) {
@@ -1230,5 +1631,41 @@ svg {
     .upload-button {
         padding: 14px 24px;
         font-size: 0.9rem;
+    }
+    
+    .theme-toggle {
+        top: 16px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .theme-toggle svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Dark mode improvements for high contrast mode */
+@media (prefers-contrast: high) {
+    :root {
+        --border: #000000;
+        --text-primary: #000000;
+        --text-secondary: #333333;
+    }
+    
+    [data-theme="dark"] {
+        --border: #ffffff;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+    }
+}
+
+/* Dark mode improvements for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
