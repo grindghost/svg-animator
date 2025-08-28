@@ -31,12 +31,13 @@ function createHandlesForElement(svgElement) {
     const bottomRight = applyCTM(bbox.x + bbox.width, bbox.y + bbox.height);
     const center      = applyCTM(bbox.x + bbox.width / 2, bbox.y + bbox.height / 2);
 
+    // Give each corner a unique name
     const positions = [
-        { x: topLeft.x, y: topLeft.y, name: "corner" },
-        { x: topRight.x, y: topRight.y, name: "corner" },
-        { x: bottomLeft.x, y: bottomLeft.y, name: "corner" },
-        { x: bottomRight.x, y: bottomRight.y, name: "corner" },
-        { x: center.x, y: center.y, name: "middle" }
+        { x: topLeft.x,     y: topLeft.y,     name: "top-left" },
+        { x: topRight.x,    y: topRight.y,    name: "top-right" },
+        { x: bottomLeft.x,  y: bottomLeft.y,  name: "bottom-left" },
+        { x: bottomRight.x, y: bottomRight.y, name: "bottom-right" },
+        { x: center.x,      y: center.y,      name: "middle" }
     ];
 
     // Handles group
@@ -52,7 +53,10 @@ function createHandlesForElement(svgElement) {
         handle.setAttribute("fill", "rgba(99, 102, 241, 0.8)");
         handle.style.stroke = "white";
         handle.style.strokeWidth = "2";
-        handle.classList.add(pos.name + '-handle');
+        // handle.classList.add(pos.name + '-handle');
+
+        // 👇 Add unique classes for each
+        handle.classList.add(`${pos.name}-handle`);
 
         if (pos.name === "middle") {
             handle.setAttribute("x", pos.x - 7);
@@ -198,6 +202,7 @@ function attachResizeListeners() {
 }
 
 
+
 function startResizing(event) {
     event.preventDefault();
 
@@ -278,35 +283,6 @@ function startResizing(event) {
 }
 
 
-
-
-function _startResizing(event) {
-    event.preventDefault();
-
-    const selectedHandle = event.target;
-    const svgElement = document.querySelector(".selected-element");
-    const originalBBox = svgElement.getBBox();
-
-    const resizeElement = (moveEvent) => {
-        // Calculate the scale factors based on mouse movement and original dimensions
-        let scaleX, scaleY;
-        if (selectedHandle === event.target) { // Assuming this is a specific handle, e.g., top-left
-            scaleX = (moveEvent.clientX - originalBBox.x) / originalBBox.width;
-            scaleY = (moveEvent.clientY - originalBBox.y) / originalBBox.height;
-        }
-        // Apply the scaling to the element
-        svgElement.style.transform = `scale(${scaleX}, ${scaleY})`;
-        svgElement.style.transformOrigin = 'top left'; // Adjust as needed based on the handle
-
-        // Update the selection elements
-        UpdateSelectionBoxesAndHandle(svgElement)
-    };
-
-    document.addEventListener("mousemove", resizeElement);
-    document.addEventListener("mouseup", () => {
-        document.removeEventListener("mousemove", resizeElement);
-    }, { once: true });
-}
 
 function UpdateSelectionBoxesAndHandle(element) {
     // Update the bounding box based on the transformed element
