@@ -578,9 +578,9 @@ function visualizeSVGBounds(forceShow = null) {
         boundsRect.setAttribute('height', svgBounds.height);
         boundsRect.setAttribute('fill', 'none');
         boundsRect.setAttribute('stroke', '#94a3b8');
-        boundsRect.setAttribute('stroke-width', '1');
+        boundsRect.setAttribute('stroke-width', '2');
         boundsRect.setAttribute('stroke-dasharray', '3,3');
-        boundsRect.setAttribute('opacity', '0.6');
+        boundsRect.setAttribute('opacity', '1');
         boundsRect.style.pointerEvents = 'none';
         
         // Add bounds info text
