@@ -187,6 +187,10 @@ function createTreeViewItem(parent, element, depth = 0) {
         // Enable the dropdown for animation types
         document.getElementById('animation-type').disabled = false;
         
+        // Show and update shape styling controls
+        showShapeStylingControls();
+        updateStylingControlsFromElement(selectedElement);
+        
         updateStatusBar(`Selected: ${label} 🎯`);
         
         e.stopPropagation();

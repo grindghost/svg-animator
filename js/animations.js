@@ -420,4 +420,32 @@ let animationsData =
     }
   },
 
+  "stroke-dash": {
+    "params": { 
+      "dashLength": 10,
+      "gapLength": 5
+    },
+    "defaultSpeed": "2.0",
+    "generateKeyframes": function(p) {
+      const totalLength = p.dashLength + p.gapLength;
+      return {
+        "0%": {
+          "animation-timing-function": "linear",
+          "stroke-dasharray": `${p.dashLength} ${p.gapLength}`,
+          "stroke-dashoffset": "0"
+        },
+        "50%": {
+          "animation-timing-function": "linear",
+          "stroke-dasharray": `${p.dashLength} ${p.gapLength}`,
+          "stroke-dashoffset": `-${totalLength}`
+        },
+        "100%": {
+          "animation-timing-function": "linear",
+          "stroke-dasharray": `${p.dashLength} ${p.gapLength}`,
+          "stroke-dashoffset": `-${totalLength * 2}`
+        }
+      };
+    }
+  }
+
 }

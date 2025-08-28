@@ -51,6 +51,40 @@
                             </div>
                         </div>
 
+                        <!-- Shape Styling Controls Panel -->
+                        <div id="shape-styling-panel" class="styling-panel" style="display: none;">
+                            <div class="styling-panel-header">
+                                <span>🎨 Shape Styling</span>
+                            </div>
+                            <div class="styling-controls">
+                                <div class="control-group">
+                                    <label class="control-label">Fill Color</label>
+                                    <div class="color-controls">
+                                        <input type="color" id="fill-color" class="color-picker" value="#000000" title="Select fill color">
+                                        <input type="range" id="fill-opacity" min="0" max="100" value="100" class="opacity-slider" title="Fill opacity">
+                                        <span id="fill-opacity-display" class="opacity-display">100%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <label class="control-label">Stroke Color</label>
+                                    <div class="color-controls">
+                                        <input type="color" id="stroke-color" class="color-picker" value="#000000" title="Select stroke color">
+                                        <input type="range" id="stroke-opacity" min="0" max="100" value="100" class="opacity-slider" title="Stroke opacity">
+                                        <span id="stroke-opacity-display" class="opacity-display">100%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <label class="control-label">Stroke Width</label>
+                                    <div class="stroke-width-control">
+                                        <input type="range" id="stroke-width" min="0" max="20" step="0.5" value="1" class="stroke-width-slider" title="Stroke width">
+                                        <span id="stroke-width-display" class="stroke-width-display">1px</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Animation Parameter Controls Panel -->
                         <div id="animation-param-panel" class="param-panel" style="display: none;">
                             <div class="param-panel-header">
@@ -149,6 +183,7 @@
     <script src="js/ui-manager.js"></script>
     <script src="js/file-handler.js"></script>
     <script src="js/utilities.js"></script>
+    <script src="js/shape-styling.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

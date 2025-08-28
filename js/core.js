@@ -36,6 +36,11 @@ function resetControls() {
     
     // Hide the parameter panel when resetting controls
     document.getElementById('animation-param-panel').style.display = 'none';
+    
+    // Hide the shape styling panel when resetting controls
+    if (typeof hideShapeStylingControls === 'function') {
+        hideShapeStylingControls();
+    }
 
     const event = new Event('change');
     document.getElementById('animation-type').dispatchEvent(event);

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stroke Inset Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            display: flex;
+            gap: 40px;
+            margin: 20px 0;
+        }
+        .test-group {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-group h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        svg {
+            border: 1px solid #ccc;
+            background: white;
+        }
+        .controls {
+            margin-top: 15px;
+        }
+        .controls label {
+            display: block;
+            margin: 5px 0;
+        }
+        .controls input {
+            margin-left: 10px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stroke Alignment Test - Inside vs Outside</h1>
+    
+    <div class="info">
+        <h3>🎯 The Problem</h3>
+        <p>When you add a stroke to an SVG shape, it's drawn <strong>on top of</strong> the shape's bounding box. 
+        This can cause the stroke to get clipped at the edges, especially with thick strokes.</p>
+        
+        <h3>💡 The Solution</h3>
+        <p>Use <code>stroke-alignment: inset</code> to draw the stroke <strong>inside</strong> the shape instead of outside. 
+        This prevents clipping and keeps the stroke fully visible.</p>
+    </div>
+
+    <div class="test-container">
+        <div class="test-group">
+            <h3>Default Stroke (Outside)</h3>
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                <rect id="rect-outside" x="50" y="50" width="100" height="100" fill="#4CAF50" stroke="#FF5722" stroke-width="20"/>
+            </svg>
+            <div class="controls">
+                <label>Stroke Width: <input type="range" id="outside-width" min="0" max="40" value="20" oninput="updateStroke('outside', this.value)"></label>
+                <span id="outside-display">20px</span>
+            </div>
+        </div>
+
+        <div class="test-group">
+            <h3>Inset Stroke (Inside)</h3>
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                <rect id="rect-inside" x="50" y="50" width="100" height="100" fill="#4CAF50" stroke="#FF5722" stroke-width="20" style="stroke-alignment: inset"/>
+            </svg>
+            <div class="controls">
+                <label>Stroke Width: <input type="range" id="inside-width" min="0" max="40" value="20" oninput="updateStroke('inside', this.value)"></label>
+                <span id="inside-display">20px</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <div class="test-group">
+            <h3>Circle - Default Stroke</h3>
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                <circle id="circle-outside" cx="100" cy="100" r="60" fill="#2196F3" stroke="#FF9800" stroke-width="15"/>
+            </svg>
+            <div class="controls">
+                <label>Stroke Width: <input type="range" id="circle-outside-width" min="0" max="30" value="15" oninput="updateCircleStroke('outside', this.value)"></label>
+                <span id="circle-outside-display">15px</span>
+            </div>
+        </div>
+
+        <div class="test-group">
+            <h3>Circle - Inset Stroke</h3>
+            <svg width="200" height="200" viewBox="0 0 200 200">
+                <circle id="circle-inside" cx="100" cy="100" r="60" fill="#2196F3" stroke="#FF9800" stroke-width="15" style="stroke-alignment: inset"/>
+            </svg>
+            <div class="controls">
+                <label>Stroke Width: <input type="range" id="circle-inside-width" min="0" max="30" value="15" oninput="updateCircleStroke('inside', this.value)"></label>
+                <span id="circle-inside-display">15px</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="info">
+        <h3>🔧 How to Implement in Your Code</h3>
+        <p>Simply add <code>stroke-alignment: inset</code> when setting the stroke width:</p>
+        <pre><code>// Instead of just:
+actualShape.style.strokeWidth = `${width}px`;
+
+// Add this:
+actualShape.style.strokeWidth = `${width}px`;
+actualShape.style.strokeAlignment = 'inset';  // For modern browsers
+// Or use the CSS property:
+actualShape.style.setProperty('stroke-alignment', 'inset');</code></pre>
+        
+        <h3>⚠️ Browser Compatibility</h3>
+        <p><code>stroke-alignment</code> is a newer CSS property. For better compatibility, you might want to:</p>
+        <ul>
+            <li>Check if the property is supported before using it</li>
+            <li>Provide a fallback for older browsers</li>
+            <li>Use the SVG attribute <code>stroke-alignment="inset"</code> as an alternative</li>
+        </ul>
+    </div>
+
+    <script>
+        function updateStroke(type, width) {
+            const rect = document.getElementById(`rect-${type}`);
+            rect.style.strokeWidth = `${width}px`;
+            
+            const display = document.getElementById(`${type}-display`);
+            display.textContent = `${width}px`;
+        }
+
+        function updateCircleStroke(type, width) {
+            const circle = document.getElementById(`circle-${type}`);
+            circle.style.strokeWidth = `${width}px`;
+            
+            const display = document.getElementById(`circle-${type}-display`);
+            display.textContent = `${width}px`;
+        }
+
+        // Initialize displays
+        document.getElementById('outside-display').textContent = '20px';
+        document.getElementById('inside-display').textContent = '20px';
+        document.getElementById('circle-outside-display').textContent = '15px';
+        document.getElementById('circle-inside-display').textContent = '15px';
+    </script>
+</body>
+</html>

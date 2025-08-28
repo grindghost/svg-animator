@@ -449,6 +449,11 @@ function renderParamControls(animationName) {
     // Show the panel and create controls for each parameter
     panel.style.display = "block";
     
+    // Auto-detect and update parameters based on selected element
+    if (selectedElement && anim.params) {
+        updateAnimationParamsFromElement(animationName, selectedElement);
+    }
+    
     for (const [param, value] of Object.entries(anim.params)) {
         const controlWrapper = document.createElement("div");
         controlWrapper.className = "param-control";
@@ -473,6 +478,14 @@ function renderParamControls(animationName) {
         } else if (param.includes("skew")) {
             input.min = "5";
             input.max = "45";
+            input.step = "1";
+        } else if (param.includes("dash")) {
+            input.min = "1";
+            input.max = "50";
+            input.step = "1";
+        } else if (param.includes("gap")) {
+            input.min = "1";
+            input.max = "30";
             input.step = "1";
         } else {
             // Default range
@@ -506,6 +519,110 @@ function renderParamControls(animationName) {
     }
 }
 
+// Function to detect stroke properties from selected element and update animation parameters
+function updateAnimationParamsFromElement(animationName, element) {
+    const anim = animationsData[animationName];
+    if (!anim || !anim.params) return;
+    
+    // Get the actual SVG element (not the wrapper)
+    const svgElement = element.classList.contains('anim-wrapper') ? element.querySelector('*') : element;
+    if (!svgElement) return;
+    
+    let paramsUpdated = false;
+    
+    // Helper function to get style value from both inline and computed styles
+    function getStyleValue(element, property) {
+        // First try inline style
+        let value = element.style.getPropertyValue(property);
+        if (value && value !== '') return value;
+        
+        // Fall back to computed style
+        const computedStyle = window.getComputedStyle(element);
+        return computedStyle.getPropertyValue(property);
+    }
+    
+    // Check for stroke-dash animation specifically
+    if (animationName === 'stroke-dash') {
+        const strokeDasharray = getStyleValue(svgElement, 'stroke-dasharray');
+        
+        if (strokeDasharray && strokeDasharray !== 'none') {
+            // Parse existing stroke-dasharray values
+            const dashValues = strokeDasharray.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+            
+            if (dashValues.length > 0) {
+                // Use the first value as dashLength if it's reasonable
+                if (dashValues[0] > 0 && dashValues[0] <= 50) {
+                    anim.params.dashLength = Math.round(dashValues[0]);
+                    paramsUpdated = true;
+                }
+                
+                // Use the second value as gapLength if it exists and is reasonable
+                if (dashValues.length > 1 && dashValues[1] > 0 && dashValues[1] <= 30) {
+                    anim.params.gapLength = Math.round(dashValues[1]);
+                    paramsUpdated = true;
+                }
+            }
+        }
+        
+        // Also check for stroke-width to adjust dash size if needed
+        const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width'));
+        if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
+            // Adjust dashLength based on stroke width for better visual balance
+            if (strokeWidth > 5) {
+                anim.params.dashLength = Math.max(anim.params.dashLength, Math.round(strokeWidth * 2));
+                paramsUpdated = true;
+            }
+        }
+        
+        // If no existing stroke-dasharray, create a reasonable default based on stroke-width
+        if (!strokeDasharray || strokeDasharray === 'none') {
+            const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width')) || 1;
+            anim.params.dashLength = Math.max(8, Math.round(strokeWidth * 3));
+            anim.params.gapLength = Math.max(4, Math.round(strokeWidth * 1.5));
+            paramsUpdated = true;
+        }
+        
+        // Ensure minimum reasonable values
+        if (anim.params.dashLength < 3) {
+            anim.params.dashLength = 3;
+            paramsUpdated = true;
+        }
+        if (anim.params.gapLength < 2) {
+            anim.params.gapLength = 2;
+            paramsUpdated = true;
+        }
+    }
+    
+    // Check for other stroke-related animations
+    if (animationName === 'blur') {
+        const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width'));
+        
+        if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
+            // Adjust blur amount based on stroke width
+            anim.params.blurAmount = Math.max(anim.params.blurAmount, Math.round(strokeWidth * 2));
+            paramsUpdated = true;
+        }
+    }
+    
+    // Check for transform-based animations
+    if (animationName === 'skew') {
+        const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width'));
+        
+        if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
+            // Adjust skew amount based on stroke width for better visual effect
+            if (strokeWidth > 3) {
+                anim.params.skewAmount = Math.max(anim.params.skewAmount, Math.round(strokeWidth * 3));
+                paramsUpdated = true;
+            }
+        }
+    }
+    
+    // Show notification if parameters were updated
+    if (paramsUpdated) {
+        showNotification(`Parameters auto-detected from selected element! ✨`, 'info');
+    }
+}
+
 // Export functions for use in other modules
 window.removeStyleTag = removeStyleTag;
 window._CleanAnimationStyle = _CleanAnimationStyle;
@@ -515,3 +632,4 @@ window.applyTempAnimation = applyTempAnimation;
 window.applyAnimationToImage = applyAnimationToImage;
 window.applyAnimation = applyAnimation;
 window.renderParamControls = renderParamControls;
+window.updateAnimationParamsFromElement = updateAnimationParamsFromElement;

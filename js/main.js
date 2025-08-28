@@ -49,6 +49,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeKeyboardShortcuts();
     addHelpTooltips();
     
+    // Initialize shape styling controls
+    if (typeof initializeShapeStyling === 'function') {
+        initializeShapeStyling();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');

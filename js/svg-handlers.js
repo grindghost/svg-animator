@@ -674,6 +674,9 @@ function clearSelectionOnOutsideClick(event) {
         resetControls();
         updateAnimationListUI(null);
         
+        // Hide shape styling controls
+        hideShapeStylingControls();
+        
         // Update status
         updateStatusBar('Selection cleared! 🚫');
     }
