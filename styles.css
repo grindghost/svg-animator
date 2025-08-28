@@ -393,6 +393,7 @@ svg {
 }
 
 .panel-content {
+    height: 100%;
     padding: 20px;
 }
 
@@ -1314,8 +1315,7 @@ select:disabled {
 }
 
 .element-tree {
-    max-height: 300px;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
 }
@@ -1328,6 +1328,8 @@ select:disabled {
     transition: all 0.2s ease;
     margin: 2px 0;
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .element-tree summary:hover,
@@ -1342,12 +1344,189 @@ select:disabled {
     transform: translateX(4px);
 }
 
+.element-tree .selected .tree-item-icon {
+    filter: brightness(0) invert(1);
+}
+
 .element-tree details {
-    margin-left: 16px;
+    margin-left: 0;
 }
 
 .element-tree details[open] summary {
     background: var(--border-light);
+}
+
+/* Tree item structure */
+.tree-item-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.tree-item-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+/* Make rectangle icon bigger */
+.rect-element .tree-item-icon {
+    font-size: 1.2rem;
+}
+
+/* Alternative approach for rectangle icon size */
+.element-tree summary[data-element-id-full] .tree-item-icon,
+.element-tree div[data-element-id-full] .tree-item-icon {
+    font-size: 1.1rem;
+}
+
+.tree-item-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+    letter-spacing: 0.02em;
+}
+
+.element-tree summary:hover .tree-item-icon,
+.element-tree div:hover .tree-item-icon {
+    opacity: 1;
+}
+
+.element-tree .selected .tree-item-icon {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+}
+
+/* Fix text visibility in light mode when selected */
+.element-tree .selected .tree-item-text {
+    color: white !important;
+    font-weight: 500;
+}
+
+/* Custom tooltip for element information */
+.element-tree summary[data-element-id-full],
+.element-tree div[data-element-id-full] {
+    position: relative;
+}
+
+.element-tree summary[data-element-id-full]::after,
+.element-tree div[data-element-id-full]::after {
+    content: attr(data-element-id-full);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--text-primary);
+    color: var(--card-bg);
+    padding: 4px 8px;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+    z-index: 1000;
+    box-shadow: var(--shadow);
+}
+
+.element-tree summary[data-element-id-full]:hover::after,
+.element-tree div[data-element-id-full]:hover::after {
+    opacity: 1;
+}
+
+/* Indentation using CSS instead of inline styles */
+.element-tree summary[data-depth="1"],
+.element-tree div[data-depth="1"] {
+    margin-left: 28px;
+    padding-left: 12px;
+    position: relative;
+}
+
+.element-tree summary[data-depth="2"],
+.element-tree div[data-depth="2"] {
+    margin-left: 44px;
+    padding-left: 12px;
+    position: relative;
+}
+
+.element-tree summary[data-depth="3"],
+.element-tree div[data-depth="3"] {
+    margin-left: 60px;
+    padding-left: 12px;
+    position: relative;
+}
+
+.element-tree summary[data-depth="4"],
+.element-tree div[data-depth="4"] {
+    margin-left: 76px;
+    padding-left: 12px;
+    position: relative;
+}
+
+.element-tree summary[data-depth="5"],
+.element-tree div[data-depth="5"] {
+    margin-left: 92px;
+    padding-left: 12px;
+    position: relative;
+}
+
+/* Improve border positioning for better visual flow */
+.element-tree summary[data-depth="1"]::before,
+.element-tree div[data-depth="1"]::before,
+.element-tree summary[data-depth="2"]::before,
+.element-tree div[data-depth="2"]::before,
+.element-tree summary[data-depth="3"]::before,
+.element-tree div[data-depth="3"]::before,
+.element-tree summary[data-depth="4"]::before,
+.element-tree div[data-depth="4"]::before,
+.element-tree summary[data-depth="5"]::before,
+.element-tree div[data-depth="5"]::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border-light);
+    opacity: 0.6;
+}
+
+/* Nested details indentation */
+.element-tree details details {
+    margin-left: 0;
+}
+
+.element-tree details details summary,
+.element-tree details details div {
+    padding-left: 16px;
+}
+
+/* Better visual hierarchy for groups vs shapes */
+.element-tree summary[data-depth="0"] {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.element-tree summary[data-depth="1"],
+.element-tree div[data-depth="1"] {
+    font-weight: 500;
+}
+
+.element-tree summary[data-depth="2"],
+.element-tree div[data-depth="2"],
+.element-tree summary[data-depth="3"],
+.element-tree div[data-depth="3"],
+.element-tree summary[data-depth="4"],
+.element-tree div[data-depth="4"],
+.element-tree summary[data-depth="5"],
+.element-tree div[data-depth="5"] {
+    font-weight: 400;
+    color: var(--text-secondary);
 }
 
 .animation-list {

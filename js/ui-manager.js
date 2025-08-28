@@ -85,6 +85,44 @@ function updateAnimationListUI(selectedElementId) {
     }
 }
 
+// Function to get appropriate icon for SVG element types
+function getElementIcon(tagName, hasChildren) {
+    const tag = tagName.toLowerCase();
+    
+    if (hasChildren) {
+        return '📁'; // Folder icon for groups
+    }
+    
+    switch (tag) {
+        case 'rect':
+            return '▢'; // Outline square for rectangles
+        case 'circle':
+            return '⭕'; // Circle for circles
+        case 'ellipse':
+            return '⭕'; // Circle for ellipses
+        case 'line':
+            return '➖'; // Line for lines
+        case 'polyline':
+            return '📈'; // Chart for polylines
+        case 'polygon':
+            return '🔷'; // Diamond for polygons
+        case 'path':
+            return '〰️'; // Wave for paths
+        case 'text':
+            return '📝'; // Text for text elements
+        case 'image':
+            return '🖼️'; // Image for images
+        case 'use':
+            return '🔗'; // Link for use elements
+        case 'g':
+            return '📁'; // Folder for groups
+        case 'svg':
+            return '🎨'; // Art for SVG root
+        default:
+            return '🔹'; // Default diamond for unknown elements
+    }
+}
+
 // Populate tree view
 function populateTreeView(rootElement) {
     const treeDiv = document.getElementById('element-tree');
@@ -106,14 +144,41 @@ function createTreeViewItem(parent, element, depth = 0) {
 
     // Set the data-element-id attribute to match the SVG element's ID
     summary.setAttribute('data-element-id', element.id);
+    summary.setAttribute('data-depth', depth);
 
-    // Create a more descriptive label
+    // Create icon based on element type
+    const icon = getElementIcon(element.tagName, hasChildren);
+    
+    // Add specific class for rectangle elements
+    if (element.tagName.toLowerCase() === 'rect') {
+        summary.classList.add('rect-element');
+    }
+    
+    // Create a more descriptive label with icon
     let label = element.tagName;
     if (element.id && element.id !== '') {
-        label += ` (${element.id})`;
+        summary.setAttribute('data-element-id-full', element.id);
+        summary.setAttribute('title', `${element.tagName} (${element.id})`);
     }
-    summary.textContent = label;
-    summary.style.paddingLeft = `${depth * 15}px`;
+    
+    // Create the label container with icon and text
+    const labelContainer = document.createElement('span');
+    labelContainer.className = 'tree-item-label';
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'tree-item-icon';
+    iconSpan.innerHTML = icon;
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'tree-item-text';
+    textSpan.textContent = label;
+    
+    labelContainer.appendChild(iconSpan);
+    labelContainer.appendChild(textSpan);
+    
+    // Clear any existing content and append the new structure
+    summary.innerHTML = '';
+    summary.appendChild(labelContainer);
 
     if (hasChildren) {
         container.appendChild(summary);
