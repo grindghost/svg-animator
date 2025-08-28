@@ -117,6 +117,9 @@ function resetSvgFromBackup() {
     populateTreeView(svgRoot);
     saveCurrentStateAsClean();
     
+    // Reinitialize hover and select functionality to restore shape selection
+    initializeHoverAndSelect();
+    
     updateStatusBar('SVG reset to original state 🔄');
 }
 
