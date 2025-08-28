@@ -91,7 +91,7 @@
 /* Theme toggle button styles */
 .theme-toggle {
     position: fixed;
-    top: 20px;
+    top: 100px;
     right: 20px;
     z-index: 1000;
     background: var(--card-bg);
@@ -125,6 +125,142 @@
     color: var(--primary);
 }
 
+/* Fixed Header Styles */
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    color: var(--primary);
+    transition: all 0.3s ease;
+}
+
+.logo-icon:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px var(--primary));
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* Footer Styles */
+.app-footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+    box-shadow: 0 -1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.footer-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.footer-section h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.footer-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.footer-section p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section li {
+    margin-bottom: 8px;
+}
+
+.footer-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.footer-link.buy-me-coffee {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.footer-link.buy-me-coffee:hover {
+    color: var(--accent-dark);
+    transform: translateX(4px) scale(1.05);
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border);
+    padding: 20px;
+    text-align: center;
+}
+
+.footer-bottom p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
 /* Smooth transitions for theme switching */
 * {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
@@ -142,6 +278,7 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
+    padding-top: 80px; /* Account for fixed header */
 }
 
 svg {
@@ -1644,7 +1781,7 @@ blockquote {
     }
     
     .theme-toggle {
-        top: 16px;
+        top: 100px;
         right: 16px;
         width: 44px;
         height: 44px;
@@ -1653,6 +1790,37 @@ blockquote {
     .theme-toggle svg {
         width: 20px;
         height: 20px;
+    }
+    
+    /* Header responsive adjustments */
+    .header-content {
+        padding: 12px 16px;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .header-title {
+        font-size: 1.3rem;
+    }
+    
+    .header-subtitle {
+        font-size: 0.8rem;
+    }
+    
+    body {
+        padding-top: 120px; /* Adjust for taller mobile header */
+    }
+    
+    /* Footer responsive adjustments */
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 30px 16px 20px;
+    }
+    
+    .footer-section {
+        text-align: center;
     }
     
     /* Adjust styling panel for small screens */
@@ -1672,6 +1840,34 @@ blockquote {
     .opacity-display,
     .stroke-width-display {
         min-width: 60px; /* Reduce display width on small screens */
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .header-content {
+        padding: 10px 12px;
+    }
+    
+    .header-title {
+        font-size: 1.1rem;
+    }
+    
+    .header-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .footer-content {
+        padding: 20px 12px 16px;
+        gap: 20px;
+    }
+    
+    .footer-section h3 {
+        font-size: 1.1rem;
+    }
+    
+    .footer-section h4 {
+        font-size: 0.9rem;
     }
 }
 
