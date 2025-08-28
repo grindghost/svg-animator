@@ -313,20 +313,21 @@ function startResizing(event) {
 
 
 function UpdateSelectionBoxesAndHandle(element) {
-    // Update the bounding box based on the transformed element
-
-    // Remove the existing handles
+    // Remove the existing handles + selection box
     removeHandles();
+    const existingBox = document.getElementById('selection-box');
+    if (existingBox) existingBox.remove();
 
-    // Remove the selection bounding box and redraw it
-    if (document.getElementById('selection-box')) {
-        document.getElementById('selection-box').remove();
-    }
+    // Redraw selection box
     drawBoundingBox(element);
-    
-    // Update SVG bounds visualization to reflect any transformations
+
+    // ✅ Also recreate handles right away
+    createHandlesForElement(element);
+
+    // Update SVG bounds visualization (optional)
     visualizeSVGBounds();
 }
+
 
 function startMoving(event) {
     if (!event.target.classList.contains('middle-handle')) return;
