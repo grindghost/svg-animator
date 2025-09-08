@@ -163,11 +163,15 @@ function addHelpTooltips() {
 
 // Keyboard shortcuts initialization
 function initializeKeyboardShortcuts() {
+    // Use capture phase to intercept before browser handles it
     document.addEventListener('keydown', function(e) {
         // Ctrl/Cmd + O to open file
         if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
             e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             document.getElementById('svg-upload').click();
+            return false;
         }
         
         // Ctrl/Cmd + S to save
@@ -204,7 +208,7 @@ function initializeKeyboardShortcuts() {
                 updateStatusBar('Selection cleared! 🚫');
             }
         }
-    });
+    }, true); // Use capture phase to intercept before browser handles it
 }
 
 // Export functions for use in other modules

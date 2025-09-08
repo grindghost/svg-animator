@@ -536,10 +536,25 @@ svg {
     color: var(--text-muted);
     font-size: 1.1rem;
     text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.placeholder-text:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-hover);
+    transform: translateY(-2px);
 }
 
 .placeholder-text svg {
     opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.placeholder-text:hover svg {
+    opacity: 0.8;
 }
 
 .controls-section {

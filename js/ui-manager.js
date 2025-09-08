@@ -348,6 +348,21 @@ function initializeDragAndDrop() {
     });
 }
 
+// Initialize placeholder text click handler
+function initializePlaceholderClick() {
+    const svgViewer = document.getElementById('svg-viewer');
+    
+    // Add click handler to the SVG viewer
+    svgViewer.addEventListener('click', function(e) {
+        // Check if the click is on the placeholder text (when no SVG is loaded)
+        const placeholderText = svgViewer.querySelector('.placeholder-text');
+        if (placeholderText && (e.target === placeholderText || placeholderText.contains(e.target))) {
+            // Trigger the file upload dialog
+            document.getElementById('svg-upload').click();
+        }
+    });
+}
+
 // Show controls section when an element is selected
 function showControlsSection() {
     const controlsSection = document.querySelector('.controls-section');
@@ -381,5 +396,6 @@ window.populateTreeView = populateTreeView;
 window.createTreeViewItem = createTreeViewItem;
 window.prepopulateLocalStorage = prepopulateLocalStorage;
 window.initializeDragAndDrop = initializeDragAndDrop;
+window.initializePlaceholderClick = initializePlaceholderClick;
 window.showControlsSection = showControlsSection;
 window.hideControlsSection = hideControlsSection;

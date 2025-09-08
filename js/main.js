@@ -29,6 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    if (typeof initializePlaceholderClick === 'undefined') {
+        console.error('UI Manager module not loaded');
+        return;
+    }
+    
     if (typeof initializeKeyboardShortcuts === 'undefined') {
         console.error('Core module not loaded');
         return;
@@ -46,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     populateAnimationDropdown();
     updateStatusBar('Ready to animate your SVG files! 🚀');
     initializeDragAndDrop();
+    initializePlaceholderClick();
     initializeKeyboardShortcuts();
     addHelpTooltips();
     
