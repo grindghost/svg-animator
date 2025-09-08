@@ -10,6 +10,7 @@ function setupEventListeners() {
         }
     });
 
+
     // SVG upload
     document.getElementById('svg-upload').addEventListener('change', handleSVGUpload);
 

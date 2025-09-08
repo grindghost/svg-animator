@@ -367,10 +367,34 @@ function initializePlaceholderClick() {
         // Check if the click is on the placeholder text (when no SVG is loaded)
         const placeholderText = svgViewer.querySelector('.placeholder-text');
         if (placeholderText && (e.target === placeholderText || placeholderText.contains(e.target))) {
+            e.preventDefault();
+            e.stopPropagation();
             // Trigger the file upload dialog
             document.getElementById('svg-upload').click();
         }
     });
+    
+    // Also add direct click handler to placeholder text for better reliability
+    const placeholderText = svgViewer.querySelector('.placeholder-text');
+    if (placeholderText) {
+        placeholderText.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Placeholder text clicked - opening file dialog');
+            const fileInput = document.getElementById('svg-upload');
+            if (fileInput) {
+                fileInput.click();
+            } else {
+                console.error('svg-upload element not found');
+            }
+        });
+        
+        // Make it visually clear that it's clickable
+        placeholderText.style.cursor = 'pointer';
+        placeholderText.title = 'Click to upload an SVG file';
+    } else {
+        console.log('Placeholder text not found during initialization');
+    }
 }
 
 // Show controls section when an element is selected
@@ -491,6 +515,34 @@ function updateAnimationCountMessage(elementId) {
     }
 }
 
+// Function to hide the upload section after SVG import
+function hideUploadSection() {
+    const uploadSection = document.querySelector('.upload-section');
+    if (uploadSection) {
+        uploadSection.style.display = 'none';
+    }
+}
+
+// Function to show the upload section (for reset functionality)
+function showUploadSection() {
+    const uploadSection = document.querySelector('.upload-section');
+    if (uploadSection) {
+        uploadSection.style.display = 'block';
+    }
+}
+
+// Initialize upload button functionality
+function initializeUploadButton() {
+    const uploadBtn = document.getElementById('upload-svg-btn');
+    const fileInput = document.getElementById('svg-upload');
+    
+    if (uploadBtn && fileInput) {
+        uploadBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+    }
+}
+
 // Export functions for use in other modules
 window.populateAnimationDropdown = populateAnimationDropdown;
 window.updateAnimationListUI = updateAnimationListUI;
@@ -504,3 +556,6 @@ window.hideControlsSection = hideControlsSection;
 window.updateAnimationSpeed = updateAnimationSpeed;
 window.getAnimationCount = getAnimationCount;
 window.updateAnimationCountMessage = updateAnimationCountMessage;
+window.hideUploadSection = hideUploadSection;
+window.showUploadSection = showUploadSection;
+window.initializeUploadButton = initializeUploadButton;

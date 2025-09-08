@@ -170,7 +170,13 @@ function initializeKeyboardShortcuts() {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            document.getElementById('svg-upload').click();
+            console.log('Cmd+O triggered - opening file dialog');
+            const fileInput = document.getElementById('svg-upload');
+            if (fileInput) {
+                fileInput.click();
+            } else {
+                console.error('svg-upload element not found');
+            }
             return false;
         }
         

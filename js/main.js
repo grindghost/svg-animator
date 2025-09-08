@@ -34,6 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    if (typeof initializeUploadButton === 'undefined') {
+        console.error('UI Manager module not loaded');
+        return;
+    }
+    
     if (typeof initializeKeyboardShortcuts === 'undefined') {
         console.error('Core module not loaded');
         return;
@@ -52,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateStatusBar('Ready to animate your SVG files! 🚀');
     initializeDragAndDrop();
     initializePlaceholderClick();
+    initializeUploadButton();
     initializeKeyboardShortcuts();
     addHelpTooltips();
     
