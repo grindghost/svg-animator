@@ -277,6 +277,47 @@
         </div>
     </div>
 
+    <!-- SVG Tools Gallery -->
+    <section class="tools-gallery">
+        <div class="container">
+            <div class="gallery-header">
+                <h2>🛠️ SVG Tools & Resources</h2>
+                <p>Discover powerful tools to enhance your SVG workflow</p>
+            </div>
+            
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search tools by name, description, or tags..." class="search-input">
+                        <button id="clear-search" class="clear-search" title="Clear search">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tag-filters">
+                    <div class="tag-filters-header">
+                        <span class="tag-filters-label">Filter by category:</span>
+                        <button id="clear-tags" class="clear-tags-btn">Clear all</button>
+                    </div>
+                    <div class="tag-buttons" id="tag-buttons">
+                        <!-- Tag filter buttons will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tools-grid" id="tools-grid">
+                <!-- Tools will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="app-footer">
         <div class="footer-content">
@@ -329,6 +370,7 @@
     <script src="js/shape-styling.js"></script>
     <script src="js/project-manager.js"></script>
     <script type="module" src="js/lottie-exporter.js"></script>
+    <script src="js/tools-gallery.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

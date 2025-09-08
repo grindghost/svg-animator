@@ -1,0 +1,60 @@
+{
+  "tools": [
+    {
+      "name": "SVG-Edit",
+      "description": "A powerful browser-based SVG editor with advanced drawing tools and shape manipulation capabilities.",
+      "image": "https://via.placeholder.com/300x200/6366f1/ffffff?text=SVG-Edit",
+      "url": "https://svg-edit.github.io/svgedit/",
+      "tags": ["editing", "authoring", "browser-based"]
+    },
+    {
+      "name": "Figma",
+      "description": "Professional design tool with excellent SVG support for creating and editing vector graphics.",
+      "image": "https://via.placeholder.com/300x200/10b981/ffffff?text=Figma",
+      "url": "https://www.figma.com/",
+      "tags": ["editing", "authoring", "collaboration", "design"]
+    },
+    {
+      "name": "Inkscape",
+      "description": "Free and open-source vector graphics editor with comprehensive SVG editing features.",
+      "image": "https://via.placeholder.com/300x200/ef4444/ffffff?text=Inkscape",
+      "url": "https://inkscape.org/",
+      "tags": ["editing", "authoring", "open-source", "desktop"]
+    },
+    {
+      "name": "Adobe Illustrator",
+      "description": "Industry-standard vector graphics software with robust SVG export and editing capabilities.",
+      "image": "https://via.placeholder.com/300x200/8b5cf6/ffffff?text=Illustrator",
+      "url": "https://www.adobe.com/products/illustrator.html",
+      "tags": ["editing", "authoring", "professional", "desktop"]
+    },
+    {
+      "name": "SVGOMG",
+      "description": "SVG Optimizer that helps reduce file size while maintaining visual quality.",
+      "image": "https://via.placeholder.com/300x200/f59e0b/ffffff?text=SVGOMG",
+      "url": "https://jakearchibald.github.io/svgomg/",
+      "tags": ["optimization", "converting", "browser-based"]
+    },
+    {
+      "name": "SVG Path Editor",
+      "description": "Online tool for editing SVG path data with a visual interface and real-time preview.",
+      "image": "https://via.placeholder.com/300x200/06b6d4/ffffff?text=Path+Editor",
+      "url": "https://yqnn.github.io/svg-path-editor/",
+      "tags": ["editing", "path-editing", "browser-based"]
+    },
+    {
+      "name": "LottieFiles",
+      "description": "Convert SVG animations to Lottie format for web and mobile applications.",
+      "image": "https://via.placeholder.com/300x200/ec4899/ffffff?text=LottieFiles",
+      "url": "https://lottiefiles.com/",
+      "tags": ["converting", "animating", "lottie", "mobile"]
+    },
+    {
+      "name": "SVGator",
+      "description": "Online SVG animation tool for creating interactive and animated SVG graphics.",
+      "image": "https://via.placeholder.com/300x200/3b82f6/ffffff?text=SVGator",
+      "url": "https://www.svgator.com/",
+      "tags": ["animating", "authoring", "browser-based"]
+    }
+  ]
+}
