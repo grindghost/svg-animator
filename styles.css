@@ -2109,3 +2109,76 @@ blockquote {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Preview Badge Styles */
+.preview-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 1000;
+    background: var(--warning-bg, #fef3c7);
+    border: 1px solid var(--warning-border, #f59e0b);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    animation: slideInFromRight 0.3s ease-out;
+}
+
+.preview-badge.hidden {
+    display: none;
+}
+
+.preview-badge-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.preview-warning {
+    color: var(--warning-text, #92400e);
+    white-space: nowrap;
+}
+
+.preview-badge .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.preview-badge .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode styles for preview badge */
+[data-theme="dark"] .preview-badge {
+    background: var(--warning-bg-dark, #451a03);
+    border-color: var(--warning-border-dark, #d97706);
+}
+
+[data-theme="dark"] .preview-warning {
+    color: var(--warning-text-dark, #fbbf24);
+}
+
+/* Animation for badge appearance */
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Ensure panel-content has relative positioning for absolute badge */
+.panel-content {
+    position: relative;
+}

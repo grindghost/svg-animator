@@ -29,6 +29,7 @@ function setupEventListeners() {
             if (animationType != 'none') {
                 let speedValue = document.getElementById('speed-slider').value;
                 applyAnimation(selectedElement, speedValue);
+                hidePreviewBadge();
             } else {
                 selectedElement.classList.remove('animated');
             }
@@ -51,6 +52,7 @@ function setupEventListeners() {
             document.getElementById('speedDisplay').textContent = "1.5s";
             document.getElementById('apply-animation').removeAttribute('disabled');
             updateStatusBar(`Previewing "${animationName}" animation 🎬`);
+            showPreviewBadge();
         } else {
             // Hide parameter panel when no animation is selected
             document.getElementById('animation-param-panel').style.display = 'none';
@@ -58,6 +60,7 @@ function setupEventListeners() {
             document.getElementById('speed-slider').setAttribute('disabled', true);
             document.getElementById('apply-animation').setAttribute('disabled', true);
             updateStatusBar('Animation preview cleared 🚫');
+            hidePreviewBadge();
         }
     });
 
@@ -74,7 +77,36 @@ function setupEventListeners() {
     
     // Project import file input
     document.getElementById('project-import').addEventListener('change', handleProjectImport);
+    
+    // Preview apply button
+    document.getElementById('preview-apply-btn').addEventListener('click', function() {
+        if (selectedElement) {
+            const animationType = document.getElementById('animation-type').value;
+            if (animationType != 'none') {
+                let speedValue = document.getElementById('speed-slider').value;
+                applyAnimation(selectedElement, speedValue);
+                hidePreviewBadge();
+            }
+        }
+    });
+}
+
+// Preview badge management functions
+function showPreviewBadge() {
+    const badge = document.getElementById('preview-badge');
+    if (badge) {
+        badge.classList.remove('hidden');
+    }
+}
+
+function hidePreviewBadge() {
+    const badge = document.getElementById('preview-badge');
+    if (badge) {
+        badge.classList.add('hidden');
+    }
 }
 
 // Export functions for use in other modules
 window.setupEventListeners = setupEventListeners;
+window.showPreviewBadge = showPreviewBadge;
+window.hidePreviewBadge = hidePreviewBadge;
