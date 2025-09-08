@@ -1829,6 +1829,51 @@ input[type="range"]::-moz-range-thumb {
     box-shadow: var(--shadow-lg);
 }
 
+/* Animation count message styling */
+.animation-count-message {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    animation: slideInDown 0.3s ease-out;
+}
+
+.animation-count-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.count-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.count-text {
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Dark theme adjustments for animation count message */
+[data-theme="dark"] .animation-count-message {
+    background: rgba(129, 140, 248, 0.08);
+    border-color: rgba(129, 140, 248, 0.2);
+}
+
+/* Animation for slide in effect */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Dark mode improvements for tooltips */
 .tooltip {
     background: var(--card-bg);

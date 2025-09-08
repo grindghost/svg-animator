@@ -62,6 +62,9 @@ function removeAnimation(elementId, type) {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     updateAnimationListUI(elementId);
 
+    // Update the animation count message
+    updateAnimationCountMessage(elementId);
+
     // Remove the temporary preview animation style tag
     removeStyleTag()
 
@@ -102,6 +105,9 @@ function clearAllAnimations() {
 
     // Update the UI list
     updateAnimationListUI(null);
+    
+    // Hide the animation count message when all animations are cleared
+    updateAnimationCountMessage(null);
 }
 
 // Reset SVG from backup

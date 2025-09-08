@@ -252,6 +252,9 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
             resetControls();
             updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
             showNotification(`Animation "${selectedAnimation}" applied successfully!`, "success");
+            
+            // Update the animation count message
+            updateAnimationCountMessage(elementId);
         }
     } catch (error) {
         console.error("Error applying animation:", error);

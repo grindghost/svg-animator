@@ -270,6 +270,9 @@ function createTreeViewItem(parent, element, depth = 0) {
         // Update the animation details UI for the selected element
         updateAnimationListUI(selectedElement.id);
 
+        // Update the animation count message
+        updateAnimationCountMessage(selectedElement.id);
+
         // Enable the dropdown for animation types
         document.getElementById('animation-type').disabled = false;
         
@@ -394,6 +397,9 @@ function hideControlsSection() {
     if (controlsPlaceholder) {
         controlsPlaceholder.classList.remove('hidden');
     }
+    
+    // Hide the animation count message when no element is selected
+    updateAnimationCountMessage(null);
 }
 
 // Function to update existing anim-wrapper animation speed
@@ -453,6 +459,38 @@ function updateAnimationSpeed(elementId, animationType, newSpeed) {
     }
 }
 
+// Function to count existing animations for an element
+function getAnimationCount(elementId) {
+    if (!elementId) return 0;
+    
+    const data = getSavedAnimations();
+    const elementAnimations = data.animations[elementId];
+    
+    if (!elementAnimations) return 0;
+    
+    return Object.keys(elementAnimations).length;
+}
+
+// Function to update the animation count message
+function updateAnimationCountMessage(elementId) {
+    const messageDiv = document.getElementById('animation-count-message');
+    if (!messageDiv) return;
+    
+    const count = getAnimationCount(elementId);
+    
+    if (count > 0) {
+        messageDiv.style.display = 'block';
+        messageDiv.innerHTML = `
+            <div class="animation-count-info">
+                <span class="count-icon">🎭</span>
+                <span class="count-text">This element already has ${count} animation${count > 1 ? 's' : ''} applied. You can add more!</span>
+            </div>
+        `;
+    } else {
+        messageDiv.style.display = 'none';
+    }
+}
+
 // Export functions for use in other modules
 window.populateAnimationDropdown = populateAnimationDropdown;
 window.updateAnimationListUI = updateAnimationListUI;
@@ -464,3 +502,5 @@ window.initializePlaceholderClick = initializePlaceholderClick;
 window.showControlsSection = showControlsSection;
 window.hideControlsSection = hideControlsSection;
 window.updateAnimationSpeed = updateAnimationSpeed;
+window.getAnimationCount = getAnimationCount;
+window.updateAnimationCountMessage = updateAnimationCountMessage;
