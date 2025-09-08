@@ -1,4 +1,4 @@
-w// UI updates, tree view, controls, and animation list management
+// UI updates, tree view, controls, and animation list management
 // SVG Animator Pro - UI Manager Module
 
 // Populate animation dropdown
@@ -58,9 +58,16 @@ function updateAnimationListUI(selectedElementId) {
 
             speedSlider.addEventListener('input', function() {
                 const speed = this.value;
-                const elementToUpdate = document.querySelector(`#${this.dataset.elementId}`);
-                if (elementToUpdate) {
-                    applyAnimation(elementToUpdate, speed, this.dataset.animationType, true);
+                const elementId = this.dataset.elementId;
+                const animationType = this.dataset.animationType;
+                
+                // Update the existing anim-wrapper instead of creating a new one
+                updateAnimationSpeed(elementId, animationType, speed);
+                
+                // Update the speed display in the UI
+                const speedDisplay = this.parentElement.querySelector('.animation-speed');
+                if (speedDisplay) {
+                    speedDisplay.textContent = `Speed: ${speed}s`;
                 }
             });
 
@@ -389,6 +396,63 @@ function hideControlsSection() {
     }
 }
 
+// Function to update existing anim-wrapper animation speed
+function updateAnimationSpeed(elementId, animationType, newSpeed) {
+    try {
+        // Find the element by ID
+        const element = document.querySelector(`#${elementId}`);
+        if (!element) {
+            console.error(`Element with ID ${elementId} not found`);
+            return;
+        }
+
+        // Find the anim-wrapper group that contains this element and has the specific animation
+        const animWrapper = element.closest('.anim-wrapper');
+        if (!animWrapper) {
+            console.error(`No anim-wrapper found for element ${elementId}`);
+            return;
+        }
+
+        // Get the saved animation data to find the animation name
+        const savedAnimations = getSavedAnimations();
+        const elementAnimations = savedAnimations.animations[elementId];
+        if (!elementAnimations || !elementAnimations[animationType]) {
+            console.error(`No saved animation data found for ${elementId} with type ${animationType}`);
+            return;
+        }
+
+        const animationName = elementAnimations[animationType].animationName;
+        if (!animationName) {
+            console.error(`No animation name found for ${elementId} with type ${animationType}`);
+            return;
+        }
+
+        // Check if this anim-wrapper has the correct animation class and animation name in style
+        const hasCorrectAnimation = animWrapper.classList.contains(`${animationType}-animation-class`) &&
+                                   animWrapper.style.animation && 
+                                   animWrapper.style.animation.includes(animationName);
+
+        if (!hasCorrectAnimation) {
+            console.error(`Anim-wrapper does not contain the expected animation ${animationName}`);
+            return;
+        }
+
+        // Update the animation speed in the style attribute
+        const currentAnimation = animWrapper.style.animation;
+        const newAnimation = currentAnimation.replace(/(\d+(?:\.\d+)?)s/, `${newSpeed}s`);
+        animWrapper.style.animation = newAnimation;
+
+        // Update the saved data
+        elementAnimations[animationType].speed = newSpeed.toString();
+        saveAnimation(elementId, animationType, elementAnimations[animationType]);
+
+        console.log(`Updated animation speed for ${animationType} to ${newSpeed}s`);
+        
+    } catch (error) {
+        console.error('Error updating animation speed:', error);
+    }
+}
+
 // Export functions for use in other modules
 window.populateAnimationDropdown = populateAnimationDropdown;
 window.updateAnimationListUI = updateAnimationListUI;
@@ -399,3 +463,4 @@ window.initializeDragAndDrop = initializeDragAndDrop;
 window.initializePlaceholderClick = initializePlaceholderClick;
 window.showControlsSection = showControlsSection;
 window.hideControlsSection = hideControlsSection;
+window.updateAnimationSpeed = updateAnimationSpeed;
