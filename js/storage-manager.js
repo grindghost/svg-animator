@@ -35,6 +35,11 @@ function saveAnimation(elementId, type, properties) {
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     updateAnimationListUI(elementId);
+    
+    // Update dropdown states
+    if (typeof updateDropdownStates === 'function') {
+        updateDropdownStates();
+    }
 }
 
 // Remove animation from localStorage
@@ -64,6 +69,11 @@ function removeAnimation(elementId, type) {
 
     // Update the animation count message
     updateAnimationCountMessage(elementId);
+    
+    // Update dropdown states
+    if (typeof updateDropdownStates === 'function') {
+        updateDropdownStates();
+    }
 
     // Remove the temporary preview animation style tag
     removeStyleTag()
@@ -108,6 +118,11 @@ function clearAllAnimations() {
     
     // Hide the animation count message when all animations are cleared
     updateAnimationCountMessage(null);
+    
+    // Update dropdown states
+    if (typeof updateDropdownStates === 'function') {
+        updateDropdownStates();
+    }
 }
 
 // Reset SVG from backup

@@ -116,7 +116,10 @@ async function importProject(file) {
         // Enable controls
         document.getElementById('download-svg').disabled = false;
         document.getElementById('clear-cache').disabled = false;
-        document.getElementById('export-project').disabled = false;
+        // Update dropdown states
+        if (typeof updateDropdownStates === 'function') {
+            updateDropdownStates();
+        }
         
         updateStatusBar(`Project imported: ${file.name} ✨`);
         showNotification('Project imported successfully!', 'success');

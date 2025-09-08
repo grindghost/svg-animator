@@ -68,13 +68,8 @@ function setupEventListeners() {
     // Download SVG button
     document.getElementById('download-svg').addEventListener('click', downloadAnimatedSVG);
     
-    // Export project button
-    document.getElementById('export-project').addEventListener('click', exportProject);
-    
-    // Import project button
-    document.getElementById('import-project').addEventListener('click', function() {
-        document.getElementById('project-import').click();
-    });
+    // Initialize dropdown functionality
+    initializeDropdowns();
     
     // Project import file input
     document.getElementById('project-import').addEventListener('change', handleProjectImport);
@@ -107,7 +102,213 @@ function hidePreviewBadge() {
     }
 }
 
+// Export to Lottie function
+async function exportToLottie() {
+    try {
+        updateStatusBar('Preparing Lottie export... 🎬');
+        
+        // Check if we have animations to export
+        const savedAnimations = getSavedAnimations();
+        if (!savedAnimations.animations || Object.keys(savedAnimations.animations).length === 0) {
+            alert('No animations found to export. Please apply some animations first.');
+            updateStatusBar('No animations to export ❌');
+            return;
+        }
+
+        // Import the lottie exporter module
+        const { exportToLottie: lottieExport } = await import('./lottie-exporter.js');
+        
+        // Get animations data from the global scope
+        const animationsData = window.animationsData;
+        if (!animationsData) {
+            alert('Animation templates not found. Please refresh the page and try again.');
+            updateStatusBar('Export failed - missing animation data ❌');
+            return;
+        }
+
+        // Generate Lottie JSON
+        const lottieJson = lottieExport(savedAnimations, animationsData);
+        
+        // Debug logging
+        console.log('Generated Lottie JSON:', lottieJson);
+        console.log('Number of layers:', lottieJson.layers.length);
+        console.log('Animation duration:', lottieJson.op, 'frames');
+        
+        // Create and download the file
+        const jsonString = JSON.stringify(lottieJson, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'svg-animations.lottie.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        updateStatusBar('Lottie file exported successfully! 🎉');
+        
+    } catch (error) {
+        console.error('Error exporting to Lottie:', error);
+        alert('Failed to export to Lottie. Please check the console for details.');
+        updateStatusBar('Lottie export failed ❌');
+    }
+}
+
 // Export functions for use in other modules
+// Initialize dropdown functionality
+function initializeDropdowns() {
+    // Open dropdown
+    const openDropdown = document.getElementById('open-dropdown');
+    const openToggle = document.getElementById('open-dropdown-toggle');
+    const openMenu = document.getElementById('open-dropdown-menu');
+    
+    // Save dropdown
+    const saveDropdown = document.getElementById('save-dropdown');
+    const saveToggle = document.getElementById('save-dropdown-toggle');
+    const saveMenu = document.getElementById('save-dropdown-menu');
+    
+    // Dropdown items
+    const uploadSvgItem = document.getElementById('upload-svg-item');
+    const importProjectItem = document.getElementById('import-project-item');
+    const exportProjectItem = document.getElementById('export-project-item');
+    const exportLottieItem = document.getElementById('export-lottie-item');
+    
+    // Toggle dropdown function
+    function toggleDropdown(dropdown, menu, toggle) {
+        const isOpen = menu.classList.contains('open');
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.dropdown-menu.open').forEach(openMenu => {
+            openMenu.classList.remove('open');
+            openMenu.parentElement.classList.remove('open');
+        });
+        
+        // Toggle current dropdown
+        if (!isOpen) {
+            menu.classList.add('open');
+            dropdown.classList.add('open');
+            toggle.classList.add('open');
+        }
+    }
+    
+    // Open dropdown toggle
+    if (openToggle && openMenu) {
+        openToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleDropdown(openDropdown, openMenu, openToggle);
+        });
+    }
+    
+    // Save dropdown toggle
+    if (saveToggle && saveMenu) {
+        saveToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Don't open if disabled
+            if (!saveDropdown.classList.contains('disabled')) {
+                toggleDropdown(saveDropdown, saveMenu, saveToggle);
+            }
+        });
+    }
+    
+    // Upload SVG item
+    if (uploadSvgItem) {
+        uploadSvgItem.addEventListener('click', function() {
+            document.getElementById('svg-upload').click();
+            closeAllDropdowns();
+        });
+    }
+    
+    // Import Project item
+    if (importProjectItem) {
+        importProjectItem.addEventListener('click', function() {
+            document.getElementById('project-import').click();
+            closeAllDropdowns();
+        });
+    }
+    
+    // Export Project item
+    if (exportProjectItem) {
+        exportProjectItem.addEventListener('click', function() {
+            if (!exportProjectItem.hasAttribute('disabled')) {
+                exportProject();
+                closeAllDropdowns();
+            }
+        });
+    }
+    
+    // Export Lottie item
+    if (exportLottieItem) {
+        exportLottieItem.addEventListener('click', function() {
+            if (!exportLottieItem.hasAttribute('disabled')) {
+                exportToLottie();
+                closeAllDropdowns();
+            }
+        });
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            closeAllDropdowns();
+        }
+    });
+    
+    // Close all dropdowns function
+    function closeAllDropdowns() {
+        document.querySelectorAll('.dropdown-menu.open').forEach(menu => {
+            menu.classList.remove('open');
+            menu.parentElement.classList.remove('open');
+        });
+        document.querySelectorAll('.dropdown-toggle.open').forEach(toggle => {
+            toggle.classList.remove('open');
+        });
+    }
+    
+    // Update dropdown item states based on project state
+    function updateDropdownStates() {
+        const hasAnimations = document.querySelectorAll('.animation-item').length > 0;
+        const hasSvg = document.querySelector('.svg-viewer.has-content') !== null;
+        
+        // Update save dropdown state - disable if no SVG is loaded
+        if (saveDropdown) {
+            if (hasSvg) {
+                saveDropdown.classList.remove('disabled');
+                saveToggle.disabled = false;
+            } else {
+                saveDropdown.classList.add('disabled');
+                saveToggle.disabled = true;
+            }
+        }
+        
+        // Update export items
+        if (exportProjectItem) {
+            if (hasAnimations && hasSvg) {
+                exportProjectItem.removeAttribute('disabled');
+            } else {
+                exportProjectItem.setAttribute('disabled', 'true');
+            }
+        }
+        
+        if (exportLottieItem) {
+            if (hasAnimations && hasSvg) {
+                exportLottieItem.removeAttribute('disabled');
+            } else {
+                exportLottieItem.setAttribute('disabled', 'true');
+            }
+        }
+    }
+    
+    // Expose update function globally
+    window.updateDropdownStates = updateDropdownStates;
+    
+    // Initial state update
+    updateDropdownStates();
+}
+
 window.setupEventListeners = setupEventListeners;
 window.showPreviewBadge = showPreviewBadge;
 window.hidePreviewBadge = hidePreviewBadge;
+window.exportToLottie = exportToLottie;
+window.initializeDropdowns = initializeDropdowns;

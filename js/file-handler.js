@@ -42,7 +42,10 @@ function handleSVGUpload(event) {
             // Enable controls
             document.getElementById('download-svg').disabled = false;
             document.getElementById('clear-cache').disabled = false;
-            document.getElementById('export-project').disabled = false;
+            // Update dropdown states
+            if (typeof updateDropdownStates === 'function') {
+                updateDropdownStates();
+            }
             
             // Hide upload section after successful import
             hideUploadSection();
@@ -168,7 +171,10 @@ function clearSVGViewer() {
     // Disable controls
     document.getElementById('download-svg').disabled = true;
     document.getElementById('clear-cache').disabled = true;
-    document.getElementById('export-project').disabled = true;
+    // Update dropdown states
+    if (typeof updateDropdownStates === 'function') {
+        updateDropdownStates();
+    }
     
     // Hide controls section
     hideControlsSection();

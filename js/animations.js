@@ -449,3 +449,6 @@ let animationsData =
   }
 
 }
+
+// Make animationsData available globally
+window.animationsData = animationsData;
