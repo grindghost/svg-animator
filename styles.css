@@ -550,6 +550,26 @@ svg {
     border: 1px solid var(--border);
 }
 
+.controls-section.hidden {
+    display: none;
+}
+
+.controls-placeholder {
+    background: var(--bg-tertiary);
+    padding: 40px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1rem;
+    font-style: italic;
+}
+
+.controls-placeholder.hidden {
+    display: none;
+}
+
 .control-group {
     margin-bottom: 20px;
 }

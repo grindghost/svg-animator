@@ -54,6 +54,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeShapeStyling();
     }
     
+    // Initialize controls section state (hidden by default)
+    if (typeof hideControlsSection === 'function') {
+        hideControlsSection();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');

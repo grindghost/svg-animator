@@ -270,6 +270,9 @@ function createTreeViewItem(parent, element, depth = 0) {
         showShapeStylingControls();
         updateStylingControlsFromElement(selectedElement);
         
+        // Show controls section
+        showControlsSection();
+        
         updateStatusBar(`Selected: ${label} 🎯`);
         
         e.stopPropagation();
@@ -345,6 +348,32 @@ function initializeDragAndDrop() {
     });
 }
 
+// Show controls section when an element is selected
+function showControlsSection() {
+    const controlsSection = document.querySelector('.controls-section');
+    const controlsPlaceholder = document.querySelector('.controls-placeholder');
+    
+    if (controlsSection) {
+        controlsSection.classList.remove('hidden');
+    }
+    if (controlsPlaceholder) {
+        controlsPlaceholder.classList.add('hidden');
+    }
+}
+
+// Hide controls section when no element is selected
+function hideControlsSection() {
+    const controlsSection = document.querySelector('.controls-section');
+    const controlsPlaceholder = document.querySelector('.controls-placeholder');
+    
+    if (controlsSection) {
+        controlsSection.classList.add('hidden');
+    }
+    if (controlsPlaceholder) {
+        controlsPlaceholder.classList.remove('hidden');
+    }
+}
+
 // Export functions for use in other modules
 window.populateAnimationDropdown = populateAnimationDropdown;
 window.updateAnimationListUI = updateAnimationListUI;
@@ -352,3 +381,5 @@ window.populateTreeView = populateTreeView;
 window.createTreeViewItem = createTreeViewItem;
 window.prepopulateLocalStorage = prepopulateLocalStorage;
 window.initializeDragAndDrop = initializeDragAndDrop;
+window.showControlsSection = showControlsSection;
+window.hideControlsSection = hideControlsSection;

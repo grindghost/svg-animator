@@ -200,6 +200,7 @@ function initializeKeyboardShortcuts() {
                 selectedElement = null;
                 resetControls();
                 updateAnimationListUI(null);
+                hideControlsSection();
                 updateStatusBar('Selection cleared! 🚫');
             }
         }

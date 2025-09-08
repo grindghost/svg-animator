@@ -694,6 +694,9 @@ function clearSelectionOnOutsideClick(event) {
         // Hide shape styling controls
         hideShapeStylingControls();
         
+        // Hide controls section
+        hideControlsSection();
+        
         // Update status
         updateStatusBar('Selection cleared! 🚫');
     }
