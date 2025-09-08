@@ -1315,7 +1315,8 @@ select:disabled {
 }
 
 .element-tree {
-    /* overflow-y: auto; */
+    overflow-y: auto;
+    max-height: 100%;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
 }

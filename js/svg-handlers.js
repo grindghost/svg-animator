@@ -520,8 +520,25 @@ function selectElement(elementId, element) {
             parentDetail = parentDetail.parentElement;
         }
 
-        // Simulate a click on the "summary" element if additional actions are required
-        summaryElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Optional: scroll the item into view
+        // Scroll the element into view within the tree container
+        const elementTree = document.getElementById('element-tree');
+        if (elementTree) {
+            // Calculate the position of the summary element relative to the tree container
+            const treeRect = elementTree.getBoundingClientRect();
+            const summaryRect = summaryElement.getBoundingClientRect();
+            
+            // Calculate the scroll position needed to center the element
+            const scrollTop = elementTree.scrollTop + (summaryRect.top - treeRect.top) - (treeRect.height / 2) + (summaryRect.height / 2);
+            
+            // Smooth scroll within the tree container
+            elementTree.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            });
+        } else {
+            // Fallback to the original behavior if tree container is not found
+            summaryElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         summaryElement.dispatchEvent(new MouseEvent('click', {
             bubbles: true,
             cancelable: true,
