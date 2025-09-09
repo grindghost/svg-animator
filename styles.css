@@ -152,6 +152,23 @@
     display: flex;
     align-items: center;
     gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+}
+
+.header-logo:hover {
+    background-color: var(--hover-bg);
+    transform: translateY(-1px);
+}
+
+.header-logo:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
 }
 
 .logo-icon {
@@ -159,10 +176,15 @@
     transition: all 0.3s ease;
 }
 
-.logo-icon:hover {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 8px var(--primary));
+.header-logo:hover .logo-icon {
+    color: var(--primary-hover);
+    transform: scale(1.05);
 }
+
+.header-logo:hover .header-title {
+    color: var(--primary-hover);
+}
+
 
 .header-title {
     font-size: 1.5rem;
@@ -500,6 +522,39 @@ html {
     margin-top: 40px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
+}
+
+.collaboration-cta {
+    background: var(--card-bg);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.collaboration-cta ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.collaboration-cta li {
+    padding: 0.5rem 0;
+    font-size: 1.1rem;
+}
+
+.collaboration-cta a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.collaboration-cta a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
 }
 
 /* Documentation specific styles */
