@@ -263,12 +263,134 @@
 
 /* Legal Pages Styles */
 .legal-page {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 40px 20px;
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 40px;
+    position: relative;
+}
+
+/* Table of Contents */
+.table-of-contents {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.table-of-contents h3 {
+    color: var(--primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--primary);
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-list li {
+    margin-bottom: 8px;
+}
+
+.toc-list a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: block;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    outline: none;
+}
+
+.toc-list a:focus {
+    outline: none;
+}
+
+.toc-list a:hover {
+    color: var(--primary);
+    background: var(--card-bg);
+    border-left-color: var(--primary);
+    transform: translateX(4px);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.toc-list a.active {
+    color: var(--primary);
+    background: var(--card-bg);
+    border-left-color: var(--primary);
+    font-weight: 700;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.toc-list .toc-sub {
+    margin-left: 16px;
+    margin-top: 4px;
+}
+
+.toc-list .toc-sub a {
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    color: var(--text-muted);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    outline: none;
+}
+
+.toc-list .toc-sub a:focus {
+    outline: none;
+}
+
+.toc-list .toc-sub a:hover {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Documentation content area */
+.documentation-content {
+    min-width: 0; /* Prevents grid overflow */
+}
+
+/* Documentation content lists */
+.documentation-content ul {
+    margin: 16px 0;
+    padding-left: 44px; /* 24px base + 20px extra for documentation content */
+}
+
+.documentation-content ol {
+    margin: 16px 0;
+    padding-left: 44px; /* Same as documentation content ULs */
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Section anchors for smooth scrolling */
+.section-anchor {
+    scroll-margin-top: 120px; /* Account for fixed header */
 }
 
 .legal-page h1 {
@@ -279,11 +401,11 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 8px;
-    text-align: center;
+    text-align: left;
 }
 
 .last-updated {
-    text-align: center;
+    text-align: left;
     color: var(--text-muted);
     font-size: 0.9rem;
     margin-bottom: 40px;
@@ -298,6 +420,7 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 16px;
+    margin-top: 40px;
     border-bottom: 2px solid var(--primary);
     padding-bottom: 8px;
 }
@@ -307,7 +430,7 @@
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 12px;
-    margin-top: 20px;
+    margin-top: 40px;
 }
 
 .legal-page p {
@@ -318,7 +441,6 @@
 
 .legal-page ul {
     margin: 16px 0;
-    padding-left: 24px;
 }
 
 .legal-page ol {
@@ -483,6 +605,45 @@
 
 .comparison-table td:not(:first-child) {
     text-align: center;
+}
+
+/* Responsive design for documentation */
+@media (max-width: 768px) {
+    .legal-page {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px 10px;
+    }
+    
+    .table-of-contents {
+        position: static;
+        order: -1;
+        margin-bottom: 20px;
+    }
+    
+    .table-of-contents h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+    
+    .toc-list a {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+    
+    .toc-list .toc-sub a {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+    }
+    
+    .comparison-table {
+        font-size: 0.8rem;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        padding: 8px 6px;
+    }
 }
 
 /* Smooth transitions for theme switching */
