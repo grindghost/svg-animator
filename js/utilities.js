@@ -10,6 +10,51 @@ function setupEventListeners() {
         }
     });
 
+    // Add beforeunload event listener to warn about unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        // Check if there's an SVG loaded and if there are unsaved changes
+        const hasSvg = document.querySelector('.svg-viewer.has-content') !== null;
+        const hasChanges = checkForUnsavedChanges();
+        
+        if (hasSvg && hasChanges) {
+            const message = 'You have unsaved changes in your project. Are you sure you want to leave?';
+            e.preventDefault();
+            e.returnValue = message; // For older browsers
+            return message; // For modern browsers
+        }
+    });
+
+    // Add click event listeners to footer links to check for unsaved changes
+    const footerLinks = document.querySelectorAll('.footer-link');
+    footerLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const hasSvg = document.querySelector('.svg-viewer.has-content') !== null;
+            const hasChanges = checkForUnsavedChanges();
+            
+            if (hasSvg && hasChanges) {
+                const confirmed = confirm('You have unsaved changes in your project. Are you sure you want to leave?');
+                if (!confirmed) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+    });
+
+    // Add event listener for page visibility change (handles tab switching, minimizing, etc.)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Page is being hidden, check for unsaved changes
+            const hasSvg = document.querySelector('.svg-viewer.has-content') !== null;
+            const hasChanges = checkForUnsavedChanges();
+            
+            if (hasSvg && hasChanges) {
+                // Show a notification to remind user about unsaved changes
+                showNotification('You have unsaved changes in your project. Don\'t forget to save!', 'info');
+            }
+        }
+    });
+
 
     // SVG upload
     document.getElementById('svg-upload').addEventListener('change', handleSVGUpload);

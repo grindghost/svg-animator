@@ -5,10 +5,28 @@
 const LOCAL_STORAGE_KEY = 'svg-animations';
 var LOCAL_STORAGE_CLEAN_STATE = "";
 var SVG_BACKUP = "";
+var hasUnsavedChanges = false;
 
 // Save current state as clean state
 function saveCurrentStateAsClean() {
     LOCAL_STORAGE_CLEAN_STATE = localStorage.getItem(LOCAL_STORAGE_KEY);
+    hasUnsavedChanges = false;
+}
+
+// Mark that there are unsaved changes
+function markAsUnsaved() {
+    hasUnsavedChanges = true;
+}
+
+// Check if there are unsaved changes
+function getHasUnsavedChanges() {
+    return hasUnsavedChanges;
+}
+
+// Check if there are unsaved changes by comparing current state with clean state
+function checkForUnsavedChanges() {
+    const currentState = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return currentState !== LOCAL_STORAGE_CLEAN_STATE;
 }
 
 // Reset to clean state
@@ -34,6 +52,7 @@ function saveAnimation(elementId, type, properties) {
     data.animations[elementId][type] = properties;
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+    markAsUnsaved(); // Mark as unsaved when saving animation
     updateAnimationListUI(elementId);
     
     // Update dropdown states
@@ -65,6 +84,7 @@ function removeAnimation(elementId, type) {
         */
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+    markAsUnsaved(); // Mark as unsaved when removing animation
     updateAnimationListUI(elementId);
 
     // Update the animation count message
@@ -101,6 +121,7 @@ function resetAllAnimations() {
 function clearAllAnimations() {
     // Clear animations from localStorage, and reset to a clean state
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ animations: {} }));
+    markAsUnsaved(); // Mark as unsaved when clearing animations
     // resetToCleanState()
 
     // Clear animations from the preview
@@ -136,7 +157,7 @@ function resetSvgFromBackup() {
     svgRoot = document.querySelector('#svg-viewer svg');
     prepopulateLocalStorage(svgRoot);
     populateTreeView(svgRoot);
-    saveCurrentStateAsClean();
+    saveCurrentStateAsClean(); // This will reset hasUnsavedChanges to false
     
     // Reinitialize hover and select functionality to restore shape selection
     initializeHoverAndSelect();
@@ -153,3 +174,6 @@ window.removeAnimation = removeAnimation;
 window.resetAllAnimations = resetAllAnimations;
 window.clearAllAnimations = clearAllAnimations;
 window.resetSvgFromBackup = resetSvgFromBackup;
+window.markAsUnsaved = markAsUnsaved;
+window.getHasUnsavedChanges = getHasUnsavedChanges;
+window.checkForUnsavedChanges = checkForUnsavedChanges;

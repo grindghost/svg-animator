@@ -275,6 +275,23 @@
     position: relative;
 }
 
+/* Single column layout for privacy and terms pages */
+.legal-page.single-column {
+    display: block;
+    max-width: 800px;
+}
+
+/* Legal pages list styling */
+.legal-page.single-column ul {
+    margin: 16px 0;
+    padding-left: 44px; /* 24px base + 20px extra for legal pages */
+}
+
+.legal-page.single-column ol {
+    margin: 16px 0;
+    padding-left: 44px; /* Same as legal pages ULs */
+}
+
 /* Table of Contents */
 .table-of-contents {
     position: sticky;
@@ -455,7 +472,7 @@ html {
 }
 
 .legal-page strong {
-    color: var(--text-primary);
+    color: var(--warning-text);
     font-weight: 600;
 }
 

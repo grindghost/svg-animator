@@ -105,6 +105,7 @@ async function importProject(file) {
         // Restore localStorage data
         if (project.metadata.animations) {
             localStorage.setItem('svg-animations', JSON.stringify(project.metadata.animations));
+            markAsUnsaved(); // Mark as unsaved when importing project
         }
         
         // Rebuild UI
