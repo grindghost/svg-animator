@@ -333,6 +333,7 @@ svg {
     background: var(--header-bg);
     padding: 20px;
     border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     font-weight: 600;
     color: var(--text-primary);
     font-size: 1.1rem;
@@ -2561,28 +2562,6 @@ blockquote {
     color: var(--text-primary);
 }
 
-.favorites-btn {
-    background: var(--primary);
-    color: white;
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    margin-right: 8px;
-}
-
-.favorites-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-.favorites-btn.active {
-    background: var(--primary-dark);
-    box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-}
 
 .clear-tags-btn {
     background: none;
@@ -2636,6 +2615,31 @@ blockquote {
 .tag-filter-btn.active:hover {
     background: var(--primary-dark);
     border-color: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.favorites-tag-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.favorites-tag-btn:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+}
+
+.favorites-tag-btn.active {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.favorites-tag-btn.active:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
     transform: translateY(-1px);
 }
 
@@ -2730,19 +2734,19 @@ blockquote {
 }
 
 .favorite-btn.favorited {
-    background: #fbbf24;
+    background: #ef4444;
     color: white;
 }
 
 .favorite-btn.favorited:hover {
-    background: #f59e0b;
+    background: #dc2626;
 }
 
-.star-icon {
+.heart-icon {
     transition: all 0.2s ease;
 }
 
-.favorite-btn.favorited .star-icon {
+.favorite-btn.favorited .heart-icon {
     fill: currentColor;
 }
 
