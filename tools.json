@@ -5,7 +5,7 @@
       "description": "A powerful browser-based SVG editor with advanced drawing tools and shape manipulation capabilities.",
       "image": "https://via.placeholder.com/300x200/6366f1/ffffff?text=SVG-Edit",
       "url": "https://svg-edit.github.io/svgedit/",
-      "tags": ["editing", "authoring", "browser-based"]
+      "tags": ["editing", "authoring", "browser-based", "collaboration", "design", "other"]
     },
     {
       "name": "Figma",
@@ -54,7 +54,7 @@
       "description": "Online SVG animation tool for creating interactive and animated SVG graphics.",
       "image": "https://via.placeholder.com/300x200/3b82f6/ffffff?text=SVGator",
       "url": "https://www.svgator.com/",
-      "tags": ["animating", "authoring", "browser-based"]
+      "tags": ["animating", "authoring", "browser-based", "free", "vector", "graphics", "interactive", "web"]
     }
   ]
 }

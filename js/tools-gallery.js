@@ -9,12 +9,15 @@ class ToolsGallery {
         this.toolsData = null;
         this.selectedTags = [];
         this.searchTerm = '';
+        this.showFavoritesOnly = false;
+        this.favorites = this.loadFavorites();
         
         // Filter elements
         this.searchInput = document.getElementById('search-input');
         this.clearSearchBtn = document.getElementById('clear-search');
         this.clearTagsBtn = document.getElementById('clear-tags');
         this.tagButtonsContainer = document.getElementById('tag-buttons');
+        this.favoritesBtn = document.getElementById('favorites-btn');
         
         if (!this.toolsGrid) {
             console.error('Tools grid element not found!');
@@ -29,6 +32,7 @@ class ToolsGallery {
         try {
             await this.loadTools();
             this.renderTagButtons();
+            this.updateFavoritesButton();
             this.renderTools();
         } catch (error) {
             console.error('Failed to load tools gallery:', error);
@@ -95,6 +99,13 @@ class ToolsGallery {
 
         let filteredTools = this.toolsData;
 
+        // Filter by favorites
+        if (this.showFavoritesOnly) {
+            filteredTools = filteredTools.filter(tool => 
+                this.favorites.includes(tool.name)
+            );
+        }
+
         // Filter by search term
         if (this.searchTerm) {
             filteredTools = filteredTools.filter(tool => 
@@ -134,18 +145,26 @@ class ToolsGallery {
         const truncatedDescription = this.truncateText(tool.description, 120);
 
         // Create tags HTML if tags exist
-        const tagsHtml = tool.tags && tool.tags.length > 0 
-            ? `<div class="tool-tags">${tool.tags.map(tag => `<span class="tool-tag">${tag}</span>`).join('')}</div>`
-            : '';
+        const tagsHtml = this.createTagsHtml(tool.tags);
+
+        // Trim the URL for display
+        const trimmedUrl = this.trimUrl(tool.url);
 
         card.innerHTML = `
-            <img src="${tool.image}" alt="${tool.name} screenshot" class="tool-image" loading="lazy">
+            <div class="tool-image-container">
+                <img src="${tool.image}" alt="${tool.name} screenshot" class="tool-image" loading="lazy">
+                <button class="favorite-btn" data-tool-name="${tool.name}" title="Add to favorites">
+                    <svg class="star-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
+                </button>
+            </div>
             <div class="tool-content">
                 <h3 class="tool-name">${tool.name}</h3>
                 <p class="tool-description">${truncatedDescription}</p>
                 ${tagsHtml}
                 <a href="${tool.url}" target="_blank" rel="noopener noreferrer" class="tool-link">
-                    Visit Tool
+                    ${trimmedUrl}
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                     </svg>
@@ -155,14 +174,24 @@ class ToolsGallery {
 
         // Add click handler for the entire card
         card.addEventListener('click', (e) => {
-            // Don't trigger if clicking on the link itself
-            if (e.target.closest('.tool-link')) {
+            // Don't trigger if clicking on the link or favorite button
+            if (e.target.closest('.tool-link') || e.target.closest('.favorite-btn')) {
                 return;
             }
             
             // Open the tool URL in a new tab
             window.open(tool.url, '_blank', 'noopener,noreferrer');
         });
+
+        // Add favorite button functionality
+        const favoriteBtn = card.querySelector('.favorite-btn');
+        favoriteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFavorite(tool.name);
+        });
+
+        // Update favorite button state
+        this.updateFavoriteButton(favoriteBtn, tool.name);
 
         // Add keyboard support
         card.setAttribute('tabindex', '0');
@@ -184,6 +213,54 @@ class ToolsGallery {
             return text;
         }
         return text.substring(0, maxLength).trim() + '...';
+    }
+
+    trimUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            let domain = urlObj.hostname;
+            
+            // Remove 'www.' prefix if present
+            if (domain.startsWith('www.')) {
+                domain = domain.substring(4);
+            }
+            
+            // For very long domains, truncate further
+            if (domain.length > 25) {
+                domain = domain.substring(0, 22) + '...';
+            }
+            
+            return domain;
+        } catch (error) {
+            // Fallback for invalid URLs
+            return url.length > 25 ? url.substring(0, 22) + '...' : url;
+        }
+    }
+
+    createTagsHtml(tags) {
+        if (!tags || tags.length === 0) {
+            return '';
+        }
+
+        const maxVisibleTags = 5;
+        const visibleTags = tags.slice(0, maxVisibleTags);
+        const hiddenTags = tags.slice(maxVisibleTags);
+
+        let tagsHtml = `<div class="tool-tags">`;
+        
+        // Add visible tags
+        visibleTags.forEach(tag => {
+            tagsHtml += `<span class="tool-tag">${tag}</span>`;
+        });
+
+        // Add "show more" button if there are hidden tags
+        if (hiddenTags.length > 0) {
+            const hiddenTagsText = hiddenTags.join(', ');
+            tagsHtml += `<span class="tool-tag tool-tag-more" data-tooltip="${hiddenTagsText}">+${hiddenTags.length}</span>`;
+        }
+
+        tagsHtml += `</div>`;
+        return tagsHtml;
     }
 
     showLoading() {
@@ -339,6 +416,13 @@ class ToolsGallery {
                 this.applyFilters();
             });
         }
+
+        // Favorites button
+        if (this.favoritesBtn) {
+            this.favoritesBtn.addEventListener('click', () => {
+                this.toggleFavoritesFilter();
+            });
+        }
     }
 
     updateClearSearchButton() {
@@ -347,6 +431,73 @@ class ToolsGallery {
                 this.clearSearchBtn.classList.add('visible');
             } else {
                 this.clearSearchBtn.classList.remove('visible');
+            }
+        }
+    }
+
+    // Favorites management methods
+    loadFavorites() {
+        try {
+            const favorites = localStorage.getItem('svg-tools-favorites');
+            return favorites ? JSON.parse(favorites) : [];
+        } catch (error) {
+            console.error('Error loading favorites:', error);
+            return [];
+        }
+    }
+
+    saveFavorites() {
+        try {
+            localStorage.setItem('svg-tools-favorites', JSON.stringify(this.favorites));
+        } catch (error) {
+            console.error('Error saving favorites:', error);
+        }
+    }
+
+    toggleFavorite(toolName) {
+        const index = this.favorites.indexOf(toolName);
+        if (index > -1) {
+            this.favorites.splice(index, 1);
+        } else {
+            this.favorites.push(toolName);
+        }
+        this.saveFavorites();
+        this.updateFavoriteButtons();
+        this.applyFilters();
+    }
+
+    updateFavoriteButton(button, toolName) {
+        if (this.favorites.includes(toolName)) {
+            button.classList.add('favorited');
+            button.title = 'Remove from favorites';
+        } else {
+            button.classList.remove('favorited');
+            button.title = 'Add to favorites';
+        }
+    }
+
+    updateFavoriteButtons() {
+        const buttons = this.toolsGrid.querySelectorAll('.favorite-btn');
+        buttons.forEach(button => {
+            const toolName = button.getAttribute('data-tool-name');
+            this.updateFavoriteButton(button, toolName);
+        });
+    }
+
+    toggleFavoritesFilter() {
+        this.showFavoritesOnly = !this.showFavoritesOnly;
+        this.updateFavoritesButton();
+        this.applyFilters();
+    }
+
+    updateFavoritesButton() {
+        if (this.favoritesBtn) {
+            if (this.showFavoritesOnly) {
+                this.favoritesBtn.classList.add('active');
+                this.favoritesBtn.textContent = 'Show All';
+            } else {
+                this.favoritesBtn.classList.remove('active');
+                this.favoritesBtn.textContent = 'Show Favorites';
             }
         }
     }
