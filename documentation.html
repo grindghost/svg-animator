@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/theme-manager.js"></script>
+    <title>Documentation - SVG Animator Pro</title>
+</head>
+<body>
+    <!-- Fixed Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-logo">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <h1 class="header-title">SVG Animator Pro</h1>
+            </div>
+            <div class="header-subtitle">Documentation</div>
+        </div>
+    </header>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
+    <div class="container">
+        <div class="legal-page">
+            <h1>Documentation</h1>
+            <p class="last-updated">Complete guide to SVG Animator Pro features and functionality</p>
+
+            <section>
+                <h2>What is SVG?</h2>
+                <p>Scalable Vector Graphics (SVG) is a powerful XML-based markup language for describing two-dimensional vector graphics. Unlike raster images (like JPEG or PNG), SVG graphics are resolution-independent and can scale to any size without losing quality.</p>
+                
+                <h3>📜 Brief History of SVG</h3>
+                <p>SVG was developed by the World Wide Web Consortium (W3C) and first became a W3C Recommendation in 2001. Here's a quick timeline:</p>
+                <ol>
+                    <li><strong>1998:</strong> Initial SVG specification development begins</li>
+                    <li><strong>2001:</strong> SVG 1.0 becomes a W3C Recommendation</li>
+                    <li><strong>2003:</strong> SVG 1.1 specification released</li>
+                    <li><strong>2011:</strong> SVG 1.1 (Second Edition) with improved mobile support</li>
+                    <li><strong>2016:</strong> SVG 2.0 specification (still in development)</li>
+                    <li><strong>Today:</strong> SVG is supported by all modern browsers and widely used across the web</li>
+                </ol>
+
+                <h3>🎯 Why SVG is Perfect for Web Animation</h3>
+                <ul>
+                    <li><strong>Scalable:</strong> Looks crisp at any size, from mobile screens to large displays</li>
+                    <li><strong>Lightweight:</strong> Small file sizes compared to raster images</li>
+                    <li><strong>Editable:</strong> Can be modified with code, making it perfect for dynamic content</li>
+                    <li><strong>Accessible:</strong> Screen readers can interpret SVG content</li>
+                    <li><strong>Interactive:</strong> Supports user interactions and animations</li>
+                    <li><strong>Future-proof:</strong> Vector format ensures longevity across different devices</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>SVG Animation Types</h2>
+                <p>There are several ways to animate SVG graphics, each with its own advantages and use cases:</p>
+                
+                <h3>🎬 Types of SVG Animations</h3>
+                
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h5>CSS Animations</h5>
+                        <p><strong>What we use in SVG Animator Pro</strong><br>
+                        Pure CSS keyframe animations applied to SVG elements. No JavaScript required, excellent browser support, and lightweight.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>SMIL Animations</h5>
+                        <p>Built-in SVG animation elements like &lt;animate&gt;, &lt;animateTransform&gt;, and &lt;animateMotion&gt;. Native to SVG but limited browser support.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>JavaScript Animations</h5>
+                        <p>Programmatic animations using libraries like GSAP, Anime.js, or custom JavaScript. Very powerful but requires JavaScript execution.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Web Animations API</h5>
+                        <p>Modern JavaScript API for creating animations. More powerful than CSS but still requires JavaScript and has limited browser support.</p>
+                    </div>
+                </div>
+
+                <h3>🌟 Why CSS Animations Are Superior</h3>
+                <div class="highlight-box">
+                    <h4>🚀 The CSS Animation Advantage</h4>
+                    <p>SVG Animator Pro uses CSS animations for several compelling reasons that make it the best choice for web-based SVG animation:</p>
+                    
+                    <h5>🌐 Universal Browser Support</h5>
+                    <ul>
+                        <li><strong>No JavaScript Required:</strong> Animations work even when JavaScript is disabled</li>
+                        <li><strong>Broad Compatibility:</strong> Supported in all modern browsers, including older versions</li>
+                        <li><strong>Mobile Optimized:</strong> Excellent performance on mobile devices and tablets</li>
+                        <li><strong>Accessibility Friendly:</strong> Respects user preferences for reduced motion</li>
+                    </ul>
+
+                    <h5>⚡ Performance Benefits</h5>
+                    <ul>
+                        <li><strong>Hardware Acceleration:</strong> CSS animations are optimized by the browser's rendering engine</li>
+                        <li><strong>Lightweight:</strong> No external libraries or JavaScript execution overhead</li>
+                        <li><strong>Battery Efficient:</strong> Less CPU usage means better battery life on mobile devices</li>
+                        <li><strong>Instant Loading:</strong> Animations start immediately without waiting for JavaScript to load</li>
+                    </ul>
+
+                    <h5>🔧 Developer Benefits</h5>
+                    <ul>
+                        <li><strong>Easy to Debug:</strong> CSS animations can be inspected and modified in browser dev tools</li>
+                        <li><strong>Maintainable:</strong> Simple, readable code that's easy to understand and modify</li>
+                        <li><strong>Portable:</strong> Animations work in any environment that supports CSS</li>
+                        <li><strong>Future-proof:</strong> CSS is a web standard that will continue to be supported</li>
+                    </ul>
+
+                    <h5>🎨 Creative Flexibility</h5>
+                    <ul>
+                        <li><strong>Compound Animations:</strong> Multiple CSS animations can run simultaneously on the same element</li>
+                        <li><strong>Precise Control:</strong> Fine-tuned timing, easing, and keyframe control</li>
+                        <li><strong>Responsive:</strong> Animations can adapt to different screen sizes and orientations</li>
+                        <li><strong>Theme Integration:</strong> Animations work seamlessly with CSS themes and dark/light modes</li>
+                    </ul>
+                </div>
+
+                <h3>📊 Animation Type Comparison</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>CSS Animations</th>
+                            <th>SMIL</th>
+                            <th>JavaScript</th>
+                            <th>Web Animations API</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Browser Support</strong></td>
+                            <td>✅ Excellent</td>
+                            <td>❌ Limited</td>
+                            <td>✅ Good</td>
+                            <td>⚠️ Modern only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Performance</strong></td>
+                            <td>✅ Hardware accelerated</td>
+                            <td>⚠️ Variable</td>
+                            <td>⚠️ Depends on library</td>
+                            <td>✅ Hardware accelerated</td>
+                        </tr>
+                        <tr>
+                            <td><strong>No JavaScript Required</strong></td>
+                            <td>✅ Yes</td>
+                            <td>✅ Yes</td>
+                            <td>❌ No</td>
+                            <td>❌ No</td>
+                        </tr>
+                        <tr>
+                            <td><strong>File Size</strong></td>
+                            <td>✅ Minimal</td>
+                            <td>✅ Minimal</td>
+                            <td>❌ Large (with libraries)</td>
+                            <td>⚠️ Medium</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Complexity</strong></td>
+                            <td>✅ Simple</td>
+                            <td>⚠️ Medium</td>
+                            <td>❌ Complex</td>
+                            <td>⚠️ Medium</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2>Getting Started</h2>
+                <p>SVG Animator Pro is a powerful, free tool for creating stunning SVG animations. This guide will walk you through all the features and help you create professional animations with ease.</p>
+                
+                <h3>Quick Start</h3>
+                <ol>
+                    <li><strong>Upload SVG:</strong> Click "Upload SVG File" or drag & drop your SVG file</li>
+                    <li><strong>Select Element:</strong> Click on any element in your SVG to select it</li>
+                    <li><strong>Choose Animation:</strong> Select an animation type from the dropdown</li>
+                    <li><strong>Adjust Settings:</strong> Modify speed and parameters as needed</li>
+                    <li><strong>Apply Animation:</strong> Click "Apply Animation" to add it to your element</li>
+                    <li><strong>Export:</strong> Download your animated SVG when ready</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Core Features</h2>
+                
+                <h3>🎨 SVG Upload & Management</h3>
+                <ul>
+                    <li><strong>File Upload:</strong> Support for standard SVG files with drag & drop functionality</li>
+                    <li><strong>Bounds Visualization:</strong> Toggle button (⊞) to show SVG boundaries and dimensions</li>
+                    <li><strong>Element Selection:</strong> Click any SVG element to select and animate it</li>
+                    <li><strong>Selection Management:</strong> Click outside elements or press Escape to clear selection</li>
+                </ul>
+
+                <h3>🎬 Animation System</h3>
+                <p>The heart of SVG Animator Pro is its powerful animation system that allows you to create complex, layered animations:</p>
+                
+                <h4>Available Animation Types</h4>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h5>Beating</h5>
+                        <p>Pulsing scale animation with customizable amplitude</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Fade</h5>
+                        <p>Smooth opacity transition from visible to transparent</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Tremble</h5>
+                        <p>Shaking effect with adjustable intensity</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Blink</h5>
+                        <p>Quick on/off opacity animation</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Bounce</h5>
+                        <p>Elastic bouncing motion</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Breath</h5>
+                        <p>Gentle breathing-like scale animation</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Spin</h5>
+                        <p>Continuous rotation animation</p>
+                    </div>
+                    <div class="feature-card">
+                        <h5>Stroke Dash</h5>
+                        <p>Animated stroke drawing effect</p>
+                    </div>
+                </div>
+
+                <h3>⚡ Compound Animations</h3>
+                <div class="highlight-box">
+                    <h4>🌟 Advanced Feature: Animation Layering</h4>
+                    <p><strong>You can apply multiple animations to the same element!</strong> This powerful feature allows you to create complex, layered effects by combining different animation types.</p>
+                    
+                    <h5>How to Create Compound Animations:</h5>
+                    <ol>
+                        <li><strong>Apply First Animation:</strong> Select an element and apply your first animation (e.g., "Spin")</li>
+                        <li><strong>Keep Element Selected:</strong> The element remains selected after applying the first animation</li>
+                        <li><strong>Apply Second Animation:</strong> Choose a different animation type (e.g., "Beating") and apply it</li>
+                        <li><strong>Continue Layering:</strong> You can add as many animations as you want to the same element</li>
+                        <li><strong>Adjust Individually:</strong> Each animation can have its own speed and parameters</li>
+                    </ol>
+                    
+                    <h5>Example Combinations:</h5>
+                    <ul>
+                        <li><strong>Spinning Heart:</strong> Spin + Beating for a rotating, pulsing heart</li>
+                        <li><strong>Nervous Element:</strong> Tremble + Blink for a jittery, blinking effect</li>
+                        <li><strong>Floating Star:</strong> Bounce + Fade for a gentle floating appearance</li>
+                        <li><strong>Breathing Spinner:</strong> Spin + Breath for a rotating element that gently scales</li>
+                    </ul>
+                </div>
+
+                <h3>🎛️ Animation Controls</h3>
+                <ul>
+                    <li><strong>Speed Control:</strong> Adjust animation duration from 0.1s to 10s</li>
+                    <li><strong>Parameter Controls:</strong> Some animations have customizable parameters (e.g., amplitude, intensity)</li>
+                    <li><strong>Real-time Preview:</strong> See animations in action before applying them</li>
+                    <li><strong>Animation Management:</strong> View and remove individual animations from elements</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Shape Styling</h2>
+                <p>Enhance your SVG elements with powerful styling controls:</p>
+                
+                <h3>🎨 Visual Customization</h3>
+                <ul>
+                    <li><strong>Fill Color:</strong> Change the interior color of shapes with color picker</li>
+                    <li><strong>Fill Opacity:</strong> Adjust transparency from 0% to 100%</li>
+                    <li><strong>Stroke Color:</strong> Modify outline color of shapes</li>
+                    <li><strong>Stroke Opacity:</strong> Control stroke transparency</li>
+                    <li><strong>Stroke Width:</strong> Adjust line thickness from 0 to 20px</li>
+                </ul>
+                
+                <p><strong>Pro Tip:</strong> Combine styling with animations for even more dynamic effects. For example, animate a shape while gradually changing its fill color!</p>
+            </section>
+
+            <section>
+                <h2>Project Management</h2>
+                
+                <h3>💾 Save & Export</h3>
+                <ul>
+                    <li><strong>Export Project:</strong> Save your entire project with all animations and settings</li>
+                    <li><strong>Import Project:</strong> Load previously saved projects to continue working</li>
+                    <li><strong>Download Animated SVG:</strong> Export your final animated SVG file</li>
+                    <li><strong>Lottie Export:</strong> Convert animations to Lottie format for web use</li>
+                </ul>
+
+                <h3>🔄 Workflow Features</h3>
+                <ul>
+                    <li><strong>Clear All Animations:</strong> Reset your SVG to its original state</li>
+                    <li><strong>Undo/Redo:</strong> Navigate through your changes (keyboard shortcuts available)</li>
+                    <li><strong>Auto-save:</strong> Your work is automatically saved in browser storage</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>User Interface</h2>
+                
+                <h3>🌙 Theme System</h3>
+                <ul>
+                    <li><strong>Dark/Light Mode:</strong> Toggle between themes with the sun/moon button</li>
+                    <li><strong>System Detection:</strong> Automatically follows your system's theme preference</li>
+                    <li><strong>Persistent Storage:</strong> Remembers your theme choice across sessions</li>
+                </ul>
+
+                <h3>📱 Responsive Design</h3>
+                <ul>
+                    <li><strong>Mobile Optimized:</strong> Works great on tablets and mobile devices</li>
+                    <li><strong>Touch Support:</strong> Full touch interaction for mobile users</li>
+                    <li><strong>Adaptive Layout:</strong> Interface adjusts to different screen sizes</li>
+                </ul>
+
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <ul>
+                    <li><strong>Escape:</strong> Clear current selection</li>
+                    <li><strong>Ctrl/Cmd + Z:</strong> Undo last action</li>
+                    <li><strong>Ctrl/Cmd + Y:</strong> Redo last action</li>
+                    <li><strong>Delete:</strong> Remove selected animation</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Advanced Techniques</h2>
+                
+                <h3>🎯 Best Practices</h3>
+                <ul>
+                    <li><strong>Start Simple:</strong> Begin with basic animations and layer complexity gradually</li>
+                    <li><strong>Test Performance:</strong> Complex compound animations may impact performance</li>
+                    <li><strong>Use Appropriate Speeds:</strong> Match animation speed to your design's purpose</li>
+                    <li><strong>Consider Accessibility:</strong> Some users may prefer reduced motion</li>
+                </ul>
+
+                <h3>🔧 Technical Details</h3>
+                <ul>
+                    <li><strong>CSS Animations:</strong> All animations use CSS keyframes for optimal performance</li>
+                    <li><strong>SVG Preservation:</strong> Original SVG structure is maintained during animation</li>
+                    <li><strong>Browser Compatibility:</strong> Works in all modern browsers with SVG support</li>
+                    <li><strong>File Size:</strong> Animations add minimal overhead to your SVG files</li>
+                </ul>
+
+                <h3>🚀 Performance Tips</h3>
+                <ul>
+                    <li><strong>Limit Complex Animations:</strong> Too many compound animations can slow down rendering</li>
+                    <li><strong>Optimize SVG:</strong> Clean, optimized SVGs perform better</li>
+                    <li><strong>Test on Target Devices:</strong> Always test animations on your intended devices</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Troubleshooting</h2>
+                
+                <h3>Common Issues</h3>
+                <ul>
+                    <li><strong>Animation Not Working:</strong> Ensure the element is properly selected and the animation is applied</li>
+                    <li><strong>Performance Issues:</strong> Try reducing the number of compound animations</li>
+                    <li><strong>Export Problems:</strong> Make sure all animations are properly applied before exporting</li>
+                    <li><strong>File Upload Issues:</strong> Ensure your SVG file is valid and not corrupted</li>
+                </ul>
+
+                <h3>Getting Help</h3>
+                <p>If you encounter issues or have questions:</p>
+                <ul>
+                    <li>Check the status bar for helpful messages</li>
+                    <li>Try refreshing the page and re-uploading your SVG</li>
+                    <li>Ensure you're using a modern browser with SVG support</li>
+                    <li>Contact us through our GitHub repository for technical support</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Examples & Inspiration</h2>
+                
+                <h3>🎨 Creative Ideas</h3>
+                <ul>
+                    <li><strong>Loading Spinners:</strong> Combine Spin + Fade for elegant loading indicators</li>
+                    <li><strong>Interactive Buttons:</strong> Use Beating + Tremble for engaging hover effects</li>
+                    <li><strong>Attention Grabbers:</strong> Combine Blink + Bounce for eye-catching elements</li>
+                    <li><strong>Subtle Animations:</strong> Use Breath + Fade for gentle, professional effects</li>
+                </ul>
+
+                <h3>🎯 Use Cases</h3>
+                <ul>
+                    <li><strong>Web Design:</strong> Create engaging micro-interactions and loading states</li>
+                    <li><strong>Presentations:</strong> Add dynamic elements to make slides more engaging</li>
+                    <li><strong>Social Media:</strong> Create animated graphics for posts and stories</li>
+                    <li><strong>Educational Content:</strong> Use animations to highlight important information</li>
+                </ul>
+            </section>
+
+            <div class="back-link">
+                <a href="index.html" class="btn btn-primary">← Back to SVG Animator Pro</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize theme manager
+        if (typeof initializeThemeManager === 'function') {
+            initializeThemeManager();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/theme-manager.js"></script>
+    <title>Privacy Policy - SVG Animator Pro</title>
+</head>
+<body>
+    <!-- Fixed Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-logo">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <h1 class="header-title">SVG Animator Pro</h1>
+            </div>
+            <div class="header-subtitle">Privacy Policy</div>
+        </div>
+    </header>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
+    <div class="container">
+        <div class="legal-page">
+            <h1>Privacy Policy</h1>
+            <p class="last-updated">Last updated: December 2024</p>
+
+            <section>
+                <h2>Introduction</h2>
+                <p>SVG Animator Pro is a free, open-source initiative created for fun and educational purposes. We are committed to protecting your privacy and being transparent about how we handle your information.</p>
+            </section>
+
+            <section>
+                <h2>Data We Do NOT Collect</h2>
+                <p>We want to be completely clear about what we do NOT collect:</p>
+                <ul>
+                    <li><strong>No file storage:</strong> We do not store, save, or retain any of your SVG files or projects on our servers</li>
+                    <li><strong>No usage tracking:</strong> We do not track your usage patterns, editing history, or interactions with the application</li>
+                    <li><strong>No personal information:</strong> We do not collect names, email addresses, or any personally identifiable information</li>
+                    <li><strong>No file content analysis:</strong> We do not analyze, scan, or process your file contents beyond what's necessary for the animation features</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Data We May Collect</h2>
+                <p>In the future, we may implement the following minimal data collection:</p>
+                <ul>
+                    <li><strong>Website analytics:</strong> We may use Google Analytics to track general website traffic and usage patterns (anonymized)</li>
+                    <li><strong>Performance metrics:</strong> Basic performance data to improve the application's speed and reliability</li>
+                </ul>
+                <p>Any future data collection will be clearly communicated and this privacy policy will be updated accordingly.</p>
+            </section>
+
+            <section>
+                <h2>Local Storage</h2>
+                <p>The application may use your browser's local storage to:</p>
+                <ul>
+                    <li>Remember your theme preferences (dark/light mode)</li>
+                    <li>Temporarily cache project data for your current session</li>
+                    <li>Store application settings and preferences</li>
+                </ul>
+                <p>This data remains on your device and is not transmitted to our servers.</p>
+            </section>
+
+            <section>
+                <h2>SVG Metadata</h2>
+                <p>When you export animated SVGs from our application, we may add custom metadata tags to facilitate re-importing the files later. This metadata:</p>
+                <ul>
+                    <li>Contains only animation configuration data</li>
+                    <li>Does not include any personal information</li>
+                    <li>Can be removed manually if desired</li>
+                    <li>Is only used to enhance the user experience within our application</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Third-Party Services</h2>
+                <p>We may use third-party services such as:</p>
+                <ul>
+                    <li>Google Analytics (for website traffic analysis)</li>
+                    <li>Content Delivery Networks (for faster loading)</li>
+                </ul>
+                <p>These services have their own privacy policies, and we encourage you to review them.</p>
+            </section>
+
+            <section>
+                <h2>Your Rights</h2>
+                <p>Since we don't collect personal data, there's no personal information to access, modify, or delete. However, you can:</p>
+                <ul>
+                    <li>Clear your browser's local storage at any time</li>
+                    <li>Disable JavaScript to prevent any local storage usage</li>
+                    <li>Use the application in incognito/private browsing mode</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Changes to This Policy</h2>
+                <p>We may update this privacy policy from time to time. Any changes will be posted on this page with an updated "Last updated" date.</p>
+            </section>
+
+            <section>
+                <h2>Contact</h2>
+                <p>If you have any questions about this privacy policy, please contact us through our GitHub repository or the contact information provided on our main page.</p>
+            </section>
+
+            <div class="back-link">
+                <a href="index.html" class="btn btn-primary">← Back to SVG Animator Pro</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize theme manager
+        if (typeof initializeThemeManager === 'function') {
+            initializeThemeManager();
+        }
+    </script>
+</body>
+</html>
