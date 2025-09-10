@@ -446,7 +446,63 @@ let animationsData =
         }
       };
     }
+  },
+
+"boiled": {
+  params: { 
+    intensity: 4, 
+    frequency: 0.02, 
+    speed: 5, 
+    to: 60 
+  },
+  defaultSpeed: "5.0",
+  apply: function (element, p) {
+    let defs = document.querySelector("svg defs");
+    if (!defs) {
+      defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      document.querySelector("svg").prepend(defs);
+    }
+
+    // Unique filter per element
+    const filterId = "boilEffect-" + element.id;
+    let filter = document.getElementById(filterId);
+    if (filter) filter.remove();
+
+    filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+    filter.setAttribute("id", filterId);
+    filter.setAttribute("x", "-50%");
+    filter.setAttribute("y", "-50%");
+    filter.setAttribute("width", "200%");
+    filter.setAttribute("height", "200%");
+
+    const turbulence = document.createElementNS("http://www.w3.org/2000/svg", "feTurbulence");
+    turbulence.setAttribute("type", "turbulence");
+    turbulence.setAttribute("baseFrequency", p.frequency ?? 0.02);
+    turbulence.setAttribute("numOctaves", "1");
+    turbulence.setAttribute("result", "turbulence");
+
+    const animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+    animate.setAttribute("attributeName", "seed");
+    animate.setAttribute("from", "1");
+    animate.setAttribute("to", p.to ?? 60);
+    animate.setAttribute("dur", (p.speed ?? 5) + "s");
+    animate.setAttribute("repeatCount", "indefinite");
+    turbulence.appendChild(animate);
+
+    const displacement = document.createElementNS("http://www.w3.org/2000/svg", "feDisplacementMap");
+    displacement.setAttribute("in", "SourceGraphic");
+    displacement.setAttribute("in2", "turbulence");
+    displacement.setAttribute("scale", p.intensity ?? 4);
+    displacement.setAttribute("xChannelSelector", "R");
+    displacement.setAttribute("yChannelSelector", "G");
+
+    filter.appendChild(turbulence);
+    filter.appendChild(displacement);
+    defs.appendChild(filter);
+
+    element.setAttribute("filter", `url(#${filterId})`);
   }
+}
 
 }
 

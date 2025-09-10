@@ -1,6 +1,48 @@
 // Animation application, management, and parameter control functionality
 // SVG Animator Pro - Animation Manager Module
 
+// Remove any temporary preview (keyframe or filter-based)
+function removeTempPreview(wrapper) {
+    if (!wrapper || !wrapper.classList.contains("temp-anim")) return;
+
+    // 1. Remove temp keyframe animation
+    if (wrapper.style.animation && wrapper.style.animation.includes("temp-generic")) {
+        wrapper.style.animation = "";
+        removeStyleTag("temp-generic");
+    }
+
+    // 2. Remove filter-based animation (like boiled)
+    if (wrapper.hasAttribute("filter")) {
+        const filterUrl = wrapper.getAttribute("filter"); // e.g. url(#boilEffect-abc123)
+        wrapper.removeAttribute("filter");
+
+        // Try to remove the filter definition itself
+        if (filterUrl && filterUrl.startsWith("url(")) {
+            const idMatch = filterUrl.match(/#([^)]*)/);
+            if (idMatch) {
+                const filterId = idMatch[1];
+                const filterElem = document.getElementById(filterId);
+                if (filterElem && filterElem.tagName.toLowerCase() === "filter") {
+                    filterElem.remove();
+                }
+            }
+        }
+    }
+
+    // 3. Remove animation marker classes
+    wrapper.classList.forEach(cls => {
+        if (cls.endsWith("-animation-class")) {
+            wrapper.classList.remove(cls);
+        }
+    });
+
+    // 4. If wrapper has no animation left, unwrap it
+    if (!wrapper.style.animation && !wrapper.hasAttribute("filter")) {
+        unwrapWrapper(wrapper);
+    }
+}
+
+
 // Remove style tag by ID
 function removeStyleTag(styleId=undefined) {
     if (styleId == undefined) {
@@ -22,15 +64,6 @@ function removeStyleTag(styleId=undefined) {
     }
 }
 
-// Clean animation styles from elements
-function _CleanAnimationStyle(element, animation_name) {
-    let animations = element.style.animation.split(', ');
-    animations = animations.filter(animation => {
-        return !animation.includes(animation_name);
-    });
-
-    element.style.animation = animations.join(', ');
-}
 
 function CleanAnimationStyle(element, animation_name) {
     // Function to remove the animation from a single element
@@ -64,7 +97,7 @@ function stopAnimation(element, animName = undefined) {
 
     // ✅ Case 1: stopping preview animation
     if (wrapper.classList.contains("temp-anim")) {
-        unwrapWrapper(wrapper);
+        removeTempPreview(wrapper);
         return;
     }
 
@@ -122,7 +155,13 @@ function applyTempAnimation(element, speed, animName = undefined) {
         document.getElementById("selection-box").remove();
     }
 
-    removeStyleTag("temp-generic");
+    // removeStyleTag("temp-generic");
+    // 🧹 Clean up any old preview first
+    const oldWrapper = document.querySelector(".anim-wrapper.temp-anim");
+    if (oldWrapper) {
+        removeTempPreview(oldWrapper);
+    }
+
 
     // ✅ Find or create a temp wrapper
     let wrapper;
@@ -141,6 +180,14 @@ function applyTempAnimation(element, speed, animName = undefined) {
     if (!animationData) {
         console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
         return;
+    }
+
+    // ✅ NEW special case: filter-based animations like "boiled"
+    if (animationData.apply) {
+        animationData.apply(wrapper, animationData.params);
+        wrapper.classList.add("application-animation-class");
+        wrapper.classList.add(`${current_selected_anim_in_dropdown}-animation-class`);
+        return; // stop here, skip keyframe logic
     }
 
     // Build keyframes
@@ -338,102 +385,6 @@ function ensureWrapper(element) {
 }
 
 
-// Main animation application function
-function _applyAnimation(element, speed, animName=undefined, save=true) {
-    try {
-        removeStyleTag();
-
-        const elementId = element.getAttribute('id') || element.tagName;
-        let animationName;
-        let selectedAnimation;
-
-        if (animName == undefined) {
-            selectedAnimation = document.getElementById('animation-type').value;
-        } else {
-            selectedAnimation = animName;
-        }
-
-        const savedAnimations = getSavedAnimations().animations[elementId] || {};
-        const existingAnimationName = savedAnimations[selectedAnimation] && savedAnimations[selectedAnimation].animationName;
-        animationName = uniqueID(existingAnimationName);
-
-        const animationData = animationsData[selectedAnimation];
-        if (!animationData) {
-            throw new Error(`Animation "${selectedAnimation}" not found.`);
-        }
-
-        removeStyleTag(animationName);
-
-        // Handle both parametric and static animations
-        let keyframes;
-        if (animationData.generateKeyframes) {
-            // Parametric animation - generate keyframes from current parameters
-            keyframes = animationData.generateKeyframes(animationData.params);
-        } else {
-            // Legacy static animation
-            keyframes = animationData.keyframes;
-        }
-
-        const initialTransformValue = element.style.transform;
-        let keyframesString = '';
-        for (let percentage in keyframes) {
-            let properties = keyframes[percentage];
-            let propsString = Object.keys(properties).map(prop => {
-                return `${prop}: ${initialTransformValue} ${properties[prop]};`;
-            }).join(' ');
-            keyframesString += `${percentage} { ${propsString} } `;
-        }
-
-        const embeddedStyle = `
-            <style id="${animationName}" data-anikit="">
-                @keyframes ${animationName} {
-                    ${keyframesString}
-                }
-            </style>
-        `;
-
-        svgRoot.insertAdjacentHTML('beforeend', embeddedStyle);
-        CleanAnimationStyle(element, animationName);
-
-        const existingAnimation = element.style.animation;
-        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
-        const combinedAnimation = existingAnimation ? `${existingAnimation}, ${newAnimation}` : newAnimation;
-
-        element.setAttribute('style', `animation: ${combinedAnimation} !important`);
-        setCorrectTransformOrigin(element);
-        CleanAnimationStyle(element, "temp-generic");
-
-        element.classList.add(`application-animation-class`);
-        element.classList.add(`${selectedAnimation}-animation-class`);
-
-        if (save == true) {
-            const elementId2 = element.getAttribute('id') || element.tagName;
-            
-            // Prepare properties to save, including parameters for parametric animations
-            const propertiesToSave = { 
-                speed: `${speed}`, 
-                animationName: animationName 
-            };
-            
-            // Add parameter values if this is a parametric animation
-            if (animationData.generateKeyframes && animationData.params) {
-                propertiesToSave.params = { ...animationData.params };
-            }
-            
-            saveAnimation(elementId2, selectedAnimation, propertiesToSave); 
-
-            resetControls();
-            updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
-            showNotification(`Animation "${selectedAnimation}" applied successfully!`, 'success');
-        }
-        
-    } catch (error) {
-        console.error('Error applying animation:', error);
-        updateStatusBar('Error applying animation! ❌');
-        showNotification(`Failed to apply animation: ${error.message}`, 'error');
-    }
-}
-
 // Function to render parameter controls for parametric animations
 function renderParamControls(animationName) {
     const anim = animationsData[animationName];
@@ -493,7 +444,7 @@ function renderParamControls(animationName) {
         } else {
             // Default range
             input.min = "0";
-            input.max = "5";
+            input.max = value;
             input.step = "0.1";
         }
         
@@ -628,7 +579,7 @@ function updateAnimationParamsFromElement(animationName, element) {
 
 // Export functions for use in other modules
 window.removeStyleTag = removeStyleTag;
-window._CleanAnimationStyle = _CleanAnimationStyle;
+window.removeTempPreview = removeTempPreview;
 window.CleanAnimationStyle = CleanAnimationStyle;
 window.stopAnimation = stopAnimation;
 window.applyTempAnimation = applyTempAnimation;

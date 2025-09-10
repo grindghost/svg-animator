@@ -220,8 +220,13 @@ function createTreeViewItem(parent, element, depth = 0) {
         // Clear highlighted treeview item
         const previouslyHighlighted = document.querySelector('.selected');
         if (previouslyHighlighted) {
-            CleanAnimationStyle(svgRoot, "temp-generic");
             previouslyHighlighted.classList.remove('selected');
+        }
+
+        // 🔥 New: also remove any temporary preview wrapper
+        const oldTempWrapper = document.querySelector(".anim-wrapper.temp-anim");
+        if (oldTempWrapper) {
+            removeTempPreview(oldTempWrapper);
         }
 
         // Check if the clicked element is a leaf node

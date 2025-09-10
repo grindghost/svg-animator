@@ -1,0 +1,7 @@
+✅ Enhance global smooth scrolling effect.
+▢ Hide animation speed cursor until an animtion is selected for a shape.
+▢ Remove the temp animation if the user click outside the svg.
+▢ Don't allow to manipulate the first/root element (block it).
+▢ Save project with ctrl+s
+▢ Open project by cmd+o and by cliking in the empty svg zone.
+▢ Display the applied animation as small "tag" button in a container above the svg-preview zone. Each button should contain the name of the animation and a small X, that would allow to delete/remove it from there. Doing so, it should update the "Applied Animations" content also to reflect the removals. I had a crazy idea... Could we allow the user to re-order them? Doing so we would need to re-arrange all the anim-wrapper that wrap the elements so their nesting reflect the order of the animations.
