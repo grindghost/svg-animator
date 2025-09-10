@@ -71,6 +71,11 @@ document.addEventListener('DOMContentLoaded', function() {
         hideControlsSection();
     }
     
+    // Clean up any invalid animation entries from localStorage
+    if (typeof cleanupInvalidAnimations === 'function') {
+        cleanupInvalidAnimations();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');

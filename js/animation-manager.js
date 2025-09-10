@@ -103,16 +103,45 @@ function stopAnimation(element, animName = undefined) {
 
     // ✅ Case 2: stopping permanent animation(s)
     if (animName) {
-        // remove only if wrapper matches that animation
-        if (
-            wrapper.style.animation.includes(animName) ||
-            wrapper.classList.contains(`${animName}-animation-class`)
-        ) {
-            unwrapWrapper(wrapper);
+        // Check if this is an animation ID (UUID format) or animation type name
+        const isAnimationId = animName.includes('-') && animName.length > 20; // UUIDs are longer
+        
+        if (isAnimationId) {
+            // animName is actually an animation ID - find the animation type
+            const elementId = wrapper.getAttribute("id") || wrapper.querySelector('[id]')?.getAttribute("id");
+            if (elementId) {
+                const savedAnimations = getSavedAnimations();
+                const elementAnimations = savedAnimations.animations[elementId];
+                if (elementAnimations && elementAnimations[animName]) {
+                    const animationData = elementAnimations[animName];
+                    // Handle both old format (no type property) and new format (with type property)
+                    const animationType = animationData.type || animName;
+                    const animationName = animationData.animationName;
+                    
+                    if (
+                        wrapper.style.animation.includes(animationName) ||
+                        wrapper.classList.contains(`${animationType}-animation-class`)
+                    ) {
+                        unwrapWrapper(wrapper);
+                    } else {
+                        // might be nested: recurse upwards
+                        const parentWrapper = wrapper.parentNode.closest(".anim-wrapper");
+                        if (parentWrapper) stopAnimation(parentWrapper, animName);
+                    }
+                }
+            }
         } else {
-            // might be nested: recurse upwards
-            const parentWrapper = wrapper.parentNode.closest(".anim-wrapper");
-            if (parentWrapper) stopAnimation(parentWrapper, animName);
+            // animName is an animation type - use old logic for backward compatibility
+            if (
+                wrapper.style.animation.includes(animName) ||
+                wrapper.classList.contains(`${animName}-animation-class`)
+            ) {
+                unwrapWrapper(wrapper);
+            } else {
+                // might be nested: recurse upwards
+                const parentWrapper = wrapper.parentNode.closest(".anim-wrapper");
+                if (parentWrapper) stopAnimation(parentWrapper, animName);
+            }
         }
     } else {
         // stop all: unwrap everything up the chain
@@ -242,11 +271,7 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
 
         const elementId = wrapper.getAttribute("id") || element.getAttribute("id") || element.tagName;
         const selectedAnimation = animName || document.getElementById("animation-type").value;
-        const savedAnimations = getSavedAnimations().animations[elementId] || {};
-        const existingAnimationName =
-            savedAnimations[selectedAnimation] &&
-            savedAnimations[selectedAnimation].animationName;
-        const animationName = uniqueID(existingAnimationName);
+        const animationName = uniqueID();
 
         const animationData = animationsData[selectedAnimation];
         if (!animationData) {
@@ -294,7 +319,7 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
             if (animationData.generateKeyframes && animationData.params) {
                 propertiesToSave.params = { ...animationData.params };
             }
-            saveAnimation(elementId, selectedAnimation, propertiesToSave);
+            const animationId = saveAnimation(elementId, selectedAnimation, propertiesToSave);
 
             resetControls();
             updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);

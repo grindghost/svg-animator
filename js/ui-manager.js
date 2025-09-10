@@ -27,7 +27,12 @@ function updateAnimationListUI(selectedElementId) {
     animationListDiv.innerHTML = '';
 
     if (data.animations[selectedElementId]) {
-        Object.entries(data.animations[selectedElementId]).forEach(([animationType, animationProperties]) => {
+        Object.entries(data.animations[selectedElementId]).forEach(([animationKey, animationData]) => {
+            // Handle both old format (animationType as key) and new format (animationId as key)
+            const isOldFormat = !animationData.type;
+            const animationType = isOldFormat ? animationKey : animationData.type;
+            const animationId = isOldFormat ? animationKey : animationKey;
+            
             const animationDiv = document.createElement('div');
             animationDiv.classList.add('animation-item');
 
@@ -40,7 +45,7 @@ function updateAnimationListUI(selectedElementId) {
             
             const animationSpeed = document.createElement('div');
             animationSpeed.classList.add('animation-speed');
-            animationSpeed.textContent = `Speed: ${animationProperties.speed}s`;
+            animationSpeed.textContent = `Speed: ${animationData.speed}s`;
 
             animationInfo.appendChild(animationName);
             animationInfo.appendChild(animationSpeed);
@@ -51,18 +56,18 @@ function updateAnimationListUI(selectedElementId) {
             speedSlider.min = '0.1';
             speedSlider.max = '5';
             speedSlider.step = '0.1';
-            speedSlider.value = animationProperties.speed;
+            speedSlider.value = animationData.speed;
             speedSlider.dataset.elementId = selectedElementId;
-            speedSlider.dataset.animationType = animationType;
+            speedSlider.dataset.animationId = animationId;
             speedSlider.classList.add('animation-speed-slider');
 
             speedSlider.addEventListener('input', function() {
                 const speed = this.value;
                 const elementId = this.dataset.elementId;
-                const animationType = this.dataset.animationType;
+                const animationId = this.dataset.animationId;
                 
                 // Update the existing anim-wrapper instead of creating a new one
-                updateAnimationSpeed(elementId, animationType, speed);
+                updateAnimationSpeed(elementId, animationId, speed);
                 
                 // Update the speed display in the UI
                 const speedDisplay = this.parentElement.querySelector('.animation-speed');
@@ -77,7 +82,7 @@ function updateAnimationListUI(selectedElementId) {
             removeButton.title = 'Remove animation';
 
             removeButton.addEventListener('click', (e) => {
-                removeAnimation(selectedElementId, animationType);
+                removeAnimation(selectedElementId, animationId);
                 e.stopPropagation();
                 e.preventDefault();
             });
@@ -314,10 +319,8 @@ function prepopulateLocalStorage(element) {
         element.id = generateUniqueID(); // Assigning unique ID if not present
     }
 
-    const existingAnimations = getSavedAnimations();
-    if (!existingAnimations[element.id]) {
-        saveAnimation(element.id, null); // Prepopulate with empty values
-    }
+    // Only create entries for elements that actually have animations
+    // Don't prepopulate empty entries anymore
 
     for (let child of element.children) {
         prepopulateLocalStorage(child);
@@ -432,7 +435,7 @@ function hideControlsSection() {
 }
 
 // Function to update existing anim-wrapper animation speed
-function updateAnimationSpeed(elementId, animationType, newSpeed) {
+function updateAnimationSpeed(elementId, animationId, newSpeed) {
     try {
         // Find the element by ID
         const element = document.querySelector(`#${elementId}`);
@@ -451,16 +454,21 @@ function updateAnimationSpeed(elementId, animationType, newSpeed) {
         // Get the saved animation data to find the animation name
         const savedAnimations = getSavedAnimations();
         const elementAnimations = savedAnimations.animations[elementId];
-        if (!elementAnimations || !elementAnimations[animationType]) {
-            console.error(`No saved animation data found for ${elementId} with type ${animationType}`);
+        if (!elementAnimations || !elementAnimations[animationId]) {
+            console.error(`No saved animation data found for ${elementId} with ID ${animationId}`);
             return;
         }
 
-        const animationName = elementAnimations[animationType].animationName;
+        const animationData = elementAnimations[animationId];
+        const animationName = animationData.animationName;
         if (!animationName) {
-            console.error(`No animation name found for ${elementId} with type ${animationType}`);
+            console.error(`No animation name found for ${elementId} with ID ${animationId}`);
             return;
         }
+
+        // Handle both old format (animationType as key) and new format (animationId as key)
+        const isOldFormat = !animationData.type;
+        const animationType = isOldFormat ? animationId : animationData.type;
 
         // Check if this anim-wrapper has the correct animation class and animation name in style
         const hasCorrectAnimation = animWrapper.classList.contains(`${animationType}-animation-class`) &&
@@ -478,8 +486,10 @@ function updateAnimationSpeed(elementId, animationType, newSpeed) {
         animWrapper.style.animation = newAnimation;
 
         // Update the saved data
-        elementAnimations[animationType].speed = newSpeed.toString();
-        saveAnimation(elementId, animationType, elementAnimations[animationType]);
+        animationData.speed = newSpeed.toString();
+        const data = getSavedAnimations();
+        data.animations[elementId][animationId] = animationData;
+        localStorage.setItem('svg-animations', JSON.stringify(data));
 
         console.log(`Updated animation speed for ${animationType} to ${newSpeed}s`);
         

@@ -49,7 +49,14 @@ function saveAnimation(elementId, type, properties) {
         data.animations[elementId] = {};
     }
 
-    data.animations[elementId][type] = properties;
+    // Generate unique ID for this animation instance
+    const animationId = uniqueID();
+    
+    // Store animation with type as a property
+    data.animations[elementId][animationId] = {
+        type: type,
+        ...properties
+    };
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when saving animation
@@ -59,29 +66,28 @@ function saveAnimation(elementId, type, properties) {
     if (typeof updateDropdownStates === 'function') {
         updateDropdownStates();
     }
+    
+    return animationId; // Return the ID for potential use
 }
 
 // Remove animation from localStorage
-function removeAnimation(elementId, type) {
+function removeAnimation(elementId, animationId) {
     const data = getSavedAnimations();
 
-    if (data.animations[elementId]) {
-        // Remove the corresponding style tag from the DOM,
-        // if not temp, because it will not be found in localstorage...
-        if (type !== "temp") {
-            const styleId = data.animations[elementId][type]['animationName']
-            removeStyleTag(styleId)
+    if (data.animations[elementId] && data.animations[elementId][animationId]) {
+        // Remove the corresponding style tag from the DOM
+        const animationData = data.animations[elementId][animationId];
+        if (animationData.animationName) {
+            removeStyleTag(animationData.animationName);
         }
 
         // Delete from the localStorage
-        delete data.animations[elementId][type];
+        delete data.animations[elementId][animationId];
 
         // Remove the element entry if it has no more animations
-        /*
         if (Object.keys(data.animations[elementId]).length === 0) {
             delete data.animations[elementId];
         }
-        */
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when removing animation
@@ -96,11 +102,31 @@ function removeAnimation(elementId, type) {
     }
 
     // Remove the temporary preview animation style tag
-    removeStyleTag()
+    removeStyleTag();
 
     const element = document.querySelector(`#${elementId}`);
     if (element) {
-        stopAnimation(element, type);
+        stopAnimation(element, animationId);
+    }
+}
+
+// Remove animation by type (for backward compatibility and specific type removal)
+function removeAnimationByType(elementId, type) {
+    const data = getSavedAnimations();
+
+    if (data.animations[elementId]) {
+        // Find all animations of this type and remove them
+        const animationsToRemove = [];
+        for (const [animationId, animationData] of Object.entries(data.animations[elementId])) {
+            if (animationData.type === type) {
+                animationsToRemove.push(animationId);
+            }
+        }
+        
+        // Remove each animation of this type
+        animationsToRemove.forEach(animationId => {
+            removeAnimation(elementId, animationId);
+        });
     }
 }
 
@@ -115,6 +141,36 @@ function resetAllAnimations() {
 
     // Update the UI list
     updateAnimationListUI(null);
+}
+
+// Clean up invalid animation entries (like "none" entries with null types)
+function cleanupInvalidAnimations() {
+    const data = getSavedAnimations();
+    let cleaned = false;
+    
+    for (const elementId in data.animations) {
+        const elementAnimations = data.animations[elementId];
+        for (const animationKey in elementAnimations) {
+            const animationData = elementAnimations[animationKey];
+            
+            // Remove entries with null type or "none" type
+            if (!animationData.type || animationData.type === 'none' || animationData.type === null) {
+                delete elementAnimations[animationKey];
+                cleaned = true;
+            }
+        }
+        
+        // Remove element entry if it has no more animations
+        if (Object.keys(elementAnimations).length === 0) {
+            delete data.animations[elementId];
+            cleaned = true;
+        }
+    }
+    
+    if (cleaned) {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+        console.log('Cleaned up invalid animation entries from localStorage');
+    }
 }
 
 // Clear all animations from localStorage and reset to clean state
@@ -171,9 +227,11 @@ window.resetToCleanState = resetToCleanState;
 window.getSavedAnimations = getSavedAnimations;
 window.saveAnimation = saveAnimation;
 window.removeAnimation = removeAnimation;
+window.removeAnimationByType = removeAnimationByType;
 window.resetAllAnimations = resetAllAnimations;
 window.clearAllAnimations = clearAllAnimations;
 window.resetSvgFromBackup = resetSvgFromBackup;
 window.markAsUnsaved = markAsUnsaved;
 window.getHasUnsavedChanges = getHasUnsavedChanges;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
+window.cleanupInvalidAnimations = cleanupInvalidAnimations;
