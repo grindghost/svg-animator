@@ -69,12 +69,18 @@ function handleSVGUpload(event) {
                 </div>
             `;
             svgViewer.classList.remove('has-content');
+            
+            // Show upload section on error
+            showUploadSection();
         }
     };
     
     reader.onerror = function() {
         updateStatusBar('Error loading SVG file! ❌');
         showNotification('Failed to read the file. Please try again.', 'error');
+        
+        // Show upload section on error
+        showUploadSection();
     };
     
     reader.readAsText(file);

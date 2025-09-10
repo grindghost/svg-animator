@@ -200,6 +200,11 @@ function clearAllAnimations() {
     if (typeof updateDropdownStates === 'function') {
         updateDropdownStates();
     }
+    
+    // Show upload section if no SVG is loaded
+    if (!svgRoot) {
+        showUploadSection();
+    }
 }
 
 // Reset SVG from backup

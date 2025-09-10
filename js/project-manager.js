@@ -122,6 +122,9 @@ async function importProject(file) {
             updateDropdownStates();
         }
         
+        // Hide upload section after successful project import
+        hideUploadSection();
+        
         updateStatusBar(`Project imported: ${file.name} ✨`);
         showNotification('Project imported successfully!', 'success');
         

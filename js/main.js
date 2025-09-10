@@ -71,6 +71,11 @@ document.addEventListener('DOMContentLoaded', function() {
         hideControlsSection();
     }
     
+    // Show upload section on app start (in case no SVG is loaded)
+    if (typeof showUploadSection === 'function') {
+        showUploadSection();
+    }
+    
     // Clean up any invalid animation entries from localStorage
     if (typeof cleanupInvalidAnimations === 'function') {
         cleanupInvalidAnimations();
