@@ -420,35 +420,49 @@ function renderParamControls(animationName) {
         input.type = "range";
         input.className = "param-slider";
         
-        // Set appropriate min/max/step based on parameter type
-        if (param.includes("amplitude") || param.includes("intensity")) {
-            input.min = "0.1";
-            input.max = "3.0";
-            input.step = "0.1";
-        } else if (param.includes("blur")) {
-            input.min = "0";
-            input.max = "20";
-            input.step = "1";
-        } else if (param.includes("skew")) {
-            input.min = "5";
-            input.max = "45";
-            input.step = "1";
-        } else if (param.includes("dash")) {
-            input.min = "1";
-            input.max = "50";
-            input.step = "1";
-        } else if (param.includes("gap")) {
-            input.min = "1";
-            input.max = "30";
-            input.step = "1";
+        // Use paramConfig if available, otherwise fall back to old logic
+        if (anim.paramConfig && anim.paramConfig[param]) {
+            const config = anim.paramConfig[param];
+            input.min = config.min.toString();
+            input.max = config.max.toString();
+            input.step = config.step.toString();
+            // Reset param to default if it's not within the configured range
+            if (value < config.min || value > config.max) {
+                anim.params[param] = config.default;
+                input.value = config.default;
+            } else {
+                input.value = value;
+            }
         } else {
-            // Default range
-            input.min = "0";
-            input.max = value;
-            input.step = "0.1";
+            // Fallback to old logic for backward compatibility
+            if (param.includes("amplitude") || param.includes("intensity")) {
+                input.min = "0.1";
+                input.max = "3.0";
+                input.step = "0.1";
+            } else if (param.includes("blur")) {
+                input.min = "0";
+                input.max = "20";
+                input.step = "1";
+            } else if (param.includes("skew")) {
+                input.min = "5";
+                input.max = "45";
+                input.step = "1";
+            } else if (param.includes("dash")) {
+                input.min = "1";
+                input.max = "50";
+                input.step = "1";
+            } else if (param.includes("gap")) {
+                input.min = "1";
+                input.max = "30";
+                input.step = "1";
+            } else {
+                // Default range
+                input.min = "0";
+                input.max = value;
+                input.step = "0.1";
+            }
+            input.value = value;
         }
-        
-        input.value = value;
         
         const span = document.createElement("span");
         span.className = "param-value";
@@ -504,16 +518,26 @@ function updateAnimationParamsFromElement(animationName, element) {
             const dashValues = strokeDasharray.split(',').map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
             
             if (dashValues.length > 0) {
-                // Use the first value as dashLength if it's reasonable
-                if (dashValues[0] > 0 && dashValues[0] <= 50) {
+                // Use the first value as dashLength if it's within configured range
+                const dashConfig = anim.paramConfig?.dashLength;
+                const minDash = dashConfig?.min || 1;
+                const maxDash = dashConfig?.max || 50;
+                
+                if (dashValues[0] >= minDash && dashValues[0] <= maxDash) {
                     anim.params.dashLength = Math.round(dashValues[0]);
                     paramsUpdated = true;
                 }
                 
-                // Use the second value as gapLength if it exists and is reasonable
-                if (dashValues.length > 1 && dashValues[1] > 0 && dashValues[1] <= 30) {
-                    anim.params.gapLength = Math.round(dashValues[1]);
-                    paramsUpdated = true;
+                // Use the second value as gapLength if it exists and is within configured range
+                if (dashValues.length > 1) {
+                    const gapConfig = anim.paramConfig?.gapLength;
+                    const minGap = gapConfig?.min || 1;
+                    const maxGap = gapConfig?.max || 30;
+                    
+                    if (dashValues[1] >= minGap && dashValues[1] <= maxGap) {
+                        anim.params.gapLength = Math.round(dashValues[1]);
+                        paramsUpdated = true;
+                    }
                 }
             }
         }
@@ -523,7 +547,11 @@ function updateAnimationParamsFromElement(animationName, element) {
         if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
             // Adjust dashLength based on stroke width for better visual balance
             if (strokeWidth > 5) {
-                anim.params.dashLength = Math.max(anim.params.dashLength, Math.round(strokeWidth * 2));
+                const dashConfig = anim.paramConfig?.dashLength;
+                const minDash = dashConfig?.min || 1;
+                const maxDash = dashConfig?.max || 50;
+                const newDashLength = Math.max(anim.params.dashLength, Math.round(strokeWidth * 2));
+                anim.params.dashLength = Math.min(Math.max(newDashLength, minDash), maxDash);
                 paramsUpdated = true;
             }
         }
@@ -531,19 +559,28 @@ function updateAnimationParamsFromElement(animationName, element) {
         // If no existing stroke-dasharray, create a reasonable default based on stroke-width
         if (!strokeDasharray || strokeDasharray === 'none') {
             const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width')) || 1;
-            anim.params.dashLength = Math.max(8, Math.round(strokeWidth * 3));
-            anim.params.gapLength = Math.max(4, Math.round(strokeWidth * 1.5));
+            const dashConfig = anim.paramConfig?.dashLength;
+            const gapConfig = anim.paramConfig?.gapLength;
+            
+            const minDash = dashConfig?.min || 1;
+            const maxDash = dashConfig?.max || 50;
+            const minGap = gapConfig?.min || 1;
+            const maxGap = gapConfig?.max || 30;
+            
+            anim.params.dashLength = Math.min(Math.max(8, Math.round(strokeWidth * 3)), maxDash);
+            anim.params.gapLength = Math.min(Math.max(4, Math.round(strokeWidth * 1.5)), maxGap);
             paramsUpdated = true;
         }
         
-        // Ensure minimum reasonable values
-        if (anim.params.dashLength < 3) {
-            anim.params.dashLength = 3;
-            paramsUpdated = true;
+        // Ensure values are within configured ranges
+        const dashConfig = anim.paramConfig?.dashLength;
+        const gapConfig = anim.paramConfig?.gapLength;
+        
+        if (dashConfig) {
+            anim.params.dashLength = Math.min(Math.max(anim.params.dashLength, dashConfig.min), dashConfig.max);
         }
-        if (anim.params.gapLength < 2) {
-            anim.params.gapLength = 2;
-            paramsUpdated = true;
+        if (gapConfig) {
+            anim.params.gapLength = Math.min(Math.max(anim.params.gapLength, gapConfig.min), gapConfig.max);
         }
     }
     
@@ -552,8 +589,12 @@ function updateAnimationParamsFromElement(animationName, element) {
         const strokeWidth = parseFloat(getStyleValue(svgElement, 'stroke-width'));
         
         if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
-            // Adjust blur amount based on stroke width
-            anim.params.blurAmount = Math.max(anim.params.blurAmount, Math.round(strokeWidth * 2));
+            // Adjust blur amount based on stroke width, respecting config limits
+            const blurConfig = anim.paramConfig?.blurAmount;
+            const minBlur = blurConfig?.min || 0;
+            const maxBlur = blurConfig?.max || 20;
+            const newBlurAmount = Math.max(anim.params.blurAmount, Math.round(strokeWidth * 2));
+            anim.params.blurAmount = Math.min(Math.max(newBlurAmount, minBlur), maxBlur);
             paramsUpdated = true;
         }
     }
@@ -565,7 +606,11 @@ function updateAnimationParamsFromElement(animationName, element) {
         if (strokeWidth && !isNaN(strokeWidth) && strokeWidth > 0) {
             // Adjust skew amount based on stroke width for better visual effect
             if (strokeWidth > 3) {
-                anim.params.skewAmount = Math.max(anim.params.skewAmount, Math.round(strokeWidth * 3));
+                const skewConfig = anim.paramConfig?.skewAmount;
+                const minSkew = skewConfig?.min || 5;
+                const maxSkew = skewConfig?.max || 45;
+                const newSkewAmount = Math.max(anim.params.skewAmount, Math.round(strokeWidth * 3));
+                anim.params.skewAmount = Math.min(Math.max(newSkewAmount, minSkew), maxSkew);
                 paramsUpdated = true;
             }
         }

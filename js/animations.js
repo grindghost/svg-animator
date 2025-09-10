@@ -5,6 +5,14 @@ let animationsData =
     "params": { 
       "amplitude": 1.2 
     },
+    "paramConfig": {
+      "amplitude": {
+        "min": 0.1,
+        "max": 3.0,
+        "step": 0.1,
+        "default": 1.2
+      }
+    },
     "defaultSpeed": "1.5",
     "generateKeyframes": function(p) {
       return {
@@ -46,6 +54,14 @@ let animationsData =
   "tremble": {
     "params": { 
       "intensity": 1.5 
+    },
+    "paramConfig": {
+      "intensity": {
+        "min": 0.1,
+        "max": 3.0,
+        "step": 0.1,
+        "default": 1.5
+      }
     },
     "defaultSpeed": "0.5",
     "generateKeyframes": function(p) {
@@ -180,6 +196,14 @@ let animationsData =
   "blur" : {
     "params": { 
       "blurAmount": 10 
+    },
+    "paramConfig": {
+      "blurAmount": {
+        "min": 0,
+        "max": 20,
+        "step": 1,
+        "default": 10
+      }
     },
     "defaultSpeed": "0.5",
     "generateKeyframes": function(p) {
@@ -392,6 +416,14 @@ let animationsData =
     "params": { 
       "skewAmount": 20 
     },
+    "paramConfig": {
+      "skewAmount": {
+        "min": 5,
+        "max": 45,
+        "step": 1,
+        "default": 20
+      }
+    },
     "defaultSpeed": "0.5",
     "generateKeyframes": function(p) {
       return {
@@ -425,6 +457,20 @@ let animationsData =
       "dashLength": 10,
       "gapLength": 5
     },
+    "paramConfig": {
+      "dashLength": {
+        "min": 1,
+        "max": 50,
+        "step": 1,
+        "default": 10
+      },
+      "gapLength": {
+        "min": 1,
+        "max": 30,
+        "step": 1,
+        "default": 5
+      }
+    },
     "defaultSpeed": "2.0",
     "generateKeyframes": function(p) {
       const totalLength = p.dashLength + p.gapLength;
@@ -454,6 +500,32 @@ let animationsData =
     frequency: 0.02, 
     speed: 5, 
     to: 60 
+  },
+  paramConfig: {
+    intensity: {
+      min: 1,
+      max: 10,
+      step: 0.5,
+      default: 4
+    },
+    frequency: {
+      min: 0.01,
+      max: 0.1,
+      step: 0.01,
+      default: 0.02
+    },
+    speed: {
+      min: 1,
+      max: 10,
+      step: 0.5,
+      default: 5
+    },
+    to: {
+      min: 10,
+      max: 100,
+      step: 5,
+      default: 60
+    }
   },
   defaultSpeed: "5.0",
   apply: function (element, p) {
