@@ -643,9 +643,41 @@ function visualizeSVGBounds(forceShow = null) {
     }
 }
 
+// Function to show bounds control (when SVG is loaded)
+function showBoundsControl() {
+    const boundsControl = document.querySelector('.bounds-control');
+    if (boundsControl) {
+        boundsControl.classList.add('visible');
+    }
+}
+
+// Function to hide bounds control (when no SVG is loaded)
+function hideBoundsControl() {
+    const boundsControl = document.querySelector('.bounds-control');
+    if (boundsControl) {
+        boundsControl.classList.remove('visible');
+        // Also hide any active bounds visualization
+        const existingBounds = document.getElementById('svg-bounds');
+        if (existingBounds) {
+            existingBounds.remove();
+        }
+        // Reset button state
+        const toggleButton = document.getElementById('toggle-bounds');
+        if (toggleButton) {
+            toggleButton.classList.remove('active');
+        }
+        // Reset label
+        const boundsLabel = document.querySelector('.bounds-label');
+        if (boundsLabel) {
+            boundsLabel.textContent = 'Show SVG bounds';
+        }
+    }
+}
+
 // Function to toggle SVG bounds visualization
 function toggleSVGBounds() {
     const toggleButton = document.getElementById('toggle-bounds');
+    const boundsLabel = document.querySelector('.bounds-label');
     if (!toggleButton) return;
     
     const isActive = toggleButton.classList.contains('active');
@@ -657,11 +689,17 @@ function toggleSVGBounds() {
         if (existingBounds) {
             existingBounds.remove();
         }
+        if (boundsLabel) {
+            boundsLabel.textContent = 'Show SVG bounds';
+        }
         updateStatusBar('SVG bounds hidden');
     } else {
         // Show bounds
         toggleButton.classList.add('active');
         visualizeSVGBounds(true);
+        if (boundsLabel) {
+            boundsLabel.textContent = 'Hide SVG bounds';
+        }
         updateStatusBar('SVG bounds visible');
     }
 }
@@ -723,10 +761,16 @@ function initializeHoverAndSelect() {
     const svgViewer = document.getElementById('svg-viewer');
     svgViewer.addEventListener('click', clearSelectionOnOutsideClick);
 
-    // Add event listener for bounds toggle button
+    // Add event listener for bounds toggle button and control container
     const toggleButton = document.getElementById('toggle-bounds');
+    const boundsControl = document.querySelector('.bounds-control');
+    
     if (toggleButton) {
         toggleButton.addEventListener('click', toggleSVGBounds);
+    }
+    
+    if (boundsControl) {
+        boundsControl.addEventListener('click', toggleSVGBounds);
     }
 
     // Add window resize handler to update bounds visualization

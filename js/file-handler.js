@@ -47,6 +47,11 @@ function handleSVGUpload(event) {
                 updateDropdownStates();
             }
             
+            // Show bounds control now that SVG is loaded
+            if (typeof showBoundsControl === 'function') {
+                showBoundsControl();
+            }
+            
             // Hide upload section after successful import
             hideUploadSection();
             
@@ -169,6 +174,11 @@ function clearSVGViewer() {
     const animationList = document.getElementById('animation-list-div');
     if (animationList) {
         animationList.innerHTML = '<div class="placeholder-text">No animations applied yet</div>';
+    }
+    
+    // Hide bounds control since no SVG is loaded
+    if (typeof hideBoundsControl === 'function') {
+        hideBoundsControl();
     }
     
     // Show upload section again

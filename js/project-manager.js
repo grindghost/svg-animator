@@ -122,6 +122,11 @@ async function importProject(file) {
             updateDropdownStates();
         }
         
+        // Show bounds control now that SVG is loaded
+        if (typeof showBoundsControl === 'function') {
+            showBoundsControl();
+        }
+        
         // Hide upload section after successful project import
         hideUploadSection();
         

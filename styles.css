@@ -799,6 +799,29 @@ svg {
     justify-content: space-between;
 }
 
+.bounds-control {
+    display: none; /* Hidden by default */
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px;
+    padding-right: 8px;
+    border-radius: var(--radius);
+    transition: background-color 0.2s ease;
+}
+
+.bounds-control.visible {
+    display: flex;
+}
+
+.bounds-control:hover {
+    background: var(--card-bg);
+}
+
+.bounds-control:hover .bounds-label {
+    color: var(--primary);
+}
+
 .bounds-toggle {
     background: var(--header-bg);
     color: var(--text-secondary);
@@ -813,6 +836,14 @@ svg {
     width: 32px;
     height: 32px;
     font-size: 12px;
+}
+
+.bounds-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: color 0.2s ease;
 }
 
 .bounds-toggle:hover {

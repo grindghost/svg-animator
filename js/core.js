@@ -14,6 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeKeyboardShortcuts();
     addHelpTooltips();
     
+    // Hide bounds control initially (no SVG loaded)
+    // Use setTimeout to ensure the function is available after all modules are loaded
+    setTimeout(() => {
+        if (typeof hideBoundsControl === 'function') {
+            hideBoundsControl();
+        }
+    }, 100);
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');
