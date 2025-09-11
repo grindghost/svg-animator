@@ -752,6 +752,12 @@ function clearSelectionOnOutsideClick(event) {
         // Hide controls section
         hideControlsSection();
         
+        // 🔥 New: also remove any temporary preview wrapper
+        const oldTempWrapper = document.querySelector(".anim-wrapper.temp-anim");
+        if (oldTempWrapper) {
+            removeTempPreview(oldTempWrapper);
+        }
+        
         // Update status
         updateStatusBar('Selection cleared! 🚫');
     }
@@ -829,6 +835,80 @@ function createTooltip(element) {
     });
 }
 
+// Function to setup SVG viewer tooltip
+function setupSVGViewerTooltip() {
+    const svgViewer = document.getElementById('svg-viewer');
+    if (!svgViewer) return;
+
+    let tooltip = null;
+    let isOverSVG = false;
+
+    function createClearTooltip() {
+        if (tooltip) return tooltip;
+        
+        tooltip = document.createElement('div');
+        tooltip.classList.add('tooltip', 'clear-selection-tooltip');
+        tooltip.textContent = 'Click to clear selection';
+        document.body.appendChild(tooltip);
+        return tooltip;
+    }
+
+    function showTooltip(event) {
+        // Only show tooltip if there's an active selection and we're not over SVG
+        if (!selectedElement || !document.getElementById('selection-box') || isOverSVG) return;
+        
+        // Check if we're hovering over the svg-viewer container or its non-SVG children
+        const target = event.target;
+        const isSVGViewerHover = target === svgViewer || 
+                                target.classList.contains('placeholder-text') ||
+                                (target.closest('#svg-viewer') === svgViewer && 
+                                 target.tagName !== 'svg' && 
+                                 !target.closest('svg'));
+        
+        if (!isSVGViewerHover) {
+            return;
+        }
+        
+        const tooltip = createClearTooltip();
+        tooltip.style.visibility = 'visible';
+        tooltip.style.left = `${event.pageX + 10}px`;
+        tooltip.style.top = `${event.pageY - 30}px`;
+        
+        // Add visible class for smooth animation
+        setTimeout(() => {
+            tooltip.classList.add('visible');
+        }, 10);
+    }
+
+    function hideTooltip() {
+        if (!tooltip) return;
+        
+        tooltip.classList.remove('visible');
+        setTimeout(() => {
+            tooltip.style.visibility = 'hidden';
+        }, 200);
+    }
+
+    // Track when mouse is over SVG elements
+    svgViewer.addEventListener('mouseover', function(event) {
+        if (event.target.tagName === 'svg' || event.target.closest('svg')) {
+            isOverSVG = true;
+            hideTooltip();
+        }
+    });
+
+    svgViewer.addEventListener('mouseout', function(event) {
+        if (event.target.tagName === 'svg' || event.target.closest('svg')) {
+            isOverSVG = false;
+        }
+    });
+
+    // Add event listeners to the SVG viewer
+    svgViewer.addEventListener('mouseenter', showTooltip);
+    svgViewer.addEventListener('mouseleave', hideTooltip);
+    svgViewer.addEventListener('mousemove', showTooltip);
+}
+
 // Export functions for use in other modules
 window.removeHandles = removeHandles;
 window.createHandlesForElement = createHandlesForElement;
@@ -845,3 +925,4 @@ window.createTooltip = createTooltip;
 window.visualizeSVGBounds = visualizeSVGBounds;
 window.clearSelectionOnOutsideClick = clearSelectionOnOutsideClick;
 window.toggleSVGBounds = toggleSVGBounds;
+window.setupSVGViewerTooltip = setupSVGViewerTooltip;

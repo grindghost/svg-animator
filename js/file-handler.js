@@ -36,6 +36,7 @@ function handleSVGUpload(event) {
             populateTreeView(svgRoot);
             saveCurrentStateAsClean();
             initializeHoverAndSelect();
+            setupSVGViewerTooltip();
             
             updateStatusBar(`SVG loaded: ${file.name} ✨`);
             

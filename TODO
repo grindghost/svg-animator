@@ -2,21 +2,22 @@
 ✅ Hide animation speed cursor until an animtion is selected for a shape.
 ✅ Open project by cmd+o and by cliking in the empty svg zone.
 ✅ Compute color and stroke on selection.
-▢ Clean temp animations in a more robut manner (on each click).
-▢ Remove temp style when user click inside the svg preview zone (just outside).
-▢ Add label next to display bounding box options (to make it more clear).
+✅ Add label next to display bounding box options (to make it more clear).
+✅ Don't allow to manipulate the first/root element (block it).
+✅ Remove temp style when user click inside the svg preview zone (just outside).
+▢ Somewhere in the doc., add a code explainer of what/how we doing the compounding animation in the svg, with example. I'd like to explain that the scale/translation transformation are applied at the first level on a first .wrapping-group. Then, each animation is applied on outter .anim-wrapper group with the inline style with the animation. I'd also like to mention something important with a visual marker: that this modified animated svg will be sanitize/stripped from their custom code once re-open in Adobe Illustrator, so the animation works will be lost. To re-edit visually an animated svg with the app, we have made test, and it's better to use inkscape, because it doesn't sanitize the animated svg, so it preserves the applied animation.
+▢ Layer tree: correct overflow on right. Display custom id (layer name) if found. Button to hide and bookmark the current selection
 
-▢ Remove the temp animation if the user click outside the svg.
-▢ Don't allow to manipulate the first/root element (block it).
 ▢ Save project with ctrl+s.
 ▢ Display the applied animation as small "tag" button in a container above the svg-preview zone. Each button should contain the name of the animation and a small X, that would allow to delete/remove it from there. Doing so, it should update the "Applied Animations" content also to reflect the removals. I had a crazy idea... Could we allow the user to re-order them? Doing so we would need to re-arrange all the anim-wrapper that wrap the elements so their nesting reflect the order of the animations.
 
 ▢ Hide side panels to maximize svg preview.
 
+▢ Add right click menu, on the shape to allow to apply animations on the fly, and apply recipes.
+
+
 ▢ Support to hide animations/shapes.
 ▢ Support to ree-order multiple anmation (via an index).
-▢ Disable svg root selection: When user select svg root, wrap the svg inner content around a <g> (not the svg itself). The svg root itself should stay immune to outter wrapping.
-▢ Layer tree: correct overflow on right. Display custom id (layer name) if found. Button to hide and bookmark the current selection
 ▢ Allow managing "Recipes" to reapply custom recipe easily.
 ▢ Undo/redo with Domdiff.
 ▢ Add google analytics.
