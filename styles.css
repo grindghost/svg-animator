@@ -2241,6 +2241,17 @@ select:disabled {
     transition: all 0.2s ease;
 }
 
+/* Special hover effect for image elements using filters */
+.hover-effect[data-tag="image"] {
+    fill: none !important; /* Reset fill for images */
+    /* filter: brightness(0) saturate(100%) invert(100%) sepia(100%); */
+    filter: brightness(0.2) saturate(100%) invert(75%) sepia(74%) saturate(2419%) hue-rotate(194deg) brightness(107%) contrast(98%);
+
+    pointer-events: visiblePainted;
+    cursor: pointer !important;
+    transition: all 0.2s ease;
+}
+
 g {
     pointer-events: none;
 }

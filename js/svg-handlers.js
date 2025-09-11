@@ -488,6 +488,11 @@ function setCorrectTransformOrigin(element) {
 
 // Function to add hover effect on SVG elements
 function addHoverEffect(svgElement) {
+    // Add data attribute for image elements to enable special CSS targeting
+    if (svgElement.tagName === 'image') {
+        svgElement.setAttribute('data-tag', 'image');
+    }
+    
     svgElement.addEventListener('mouseenter', function() {
         this.classList.add('hover-effect');
     });
