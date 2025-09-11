@@ -54,6 +54,7 @@
                     <li><a href="#project-management">6. Project Management</a></li>
                     <li><a href="#user-interface">7. User Interface</a></li>
                     <li><a href="#advanced-techniques">8. Advanced Techniques</a></li>
+                    <li class="toc-sub"><a href="#compound-animation-architecture">8.1 How Compound Animations Work</a></li>
                     <li><a href="#troubleshooting">9. Troubleshooting</a></li>
                     <li><a href="#examples">10. Examples & Inspiration</a></li>
                 </ul>
@@ -381,6 +382,81 @@
                     <li><strong>Browser Compatibility:</strong> Works in all modern browsers with SVG support</li>
                     <li><strong>File Size:</strong> Animations add minimal overhead to your SVG files</li>
                 </ul>
+
+                <h3 id="compound-animation-architecture">🏗️ How Compound Animations Work</h3>
+                <div class="highlight-box">
+                    <h4>🔬 Technical Deep Dive: Animation Architecture</h4>
+                    <p>SVG Animator Pro uses a sophisticated two-level wrapping system to enable compound animations. Understanding this structure helps you work more effectively with complex animations.</p>
+                    
+                    <h5>📋 The Two-Level Wrapping System</h5>
+                    <p>When you apply animations to SVG elements, the system creates a hierarchical structure:</p>
+                    
+                    <div class="code-example">
+                        <h6>🎯 Level 1: <code>.wrapping-group</code> (Transformations)</h6>
+                        <p>The first level handles <strong>scale and translation transformations</strong>. This wrapper is created automatically for leaf elements (shapes without children) to provide a stable foundation for transformations.</p>
+                        
+                        <h6>🎯 Level 2: <code>.anim-wrapper</code> (Animations)</h6>
+                        <p>Each animation creates an outer <code>.anim-wrapper</code> group with <strong>inline CSS animation styles</strong>. Multiple animations create nested wrapper groups, allowing complex layered effects.</p>
+                    </div>
+
+                    <h5>💡 Code Example: Before and After</h5>
+                    <div class="code-example">
+                        <h6>📄 Original SVG Structure:</h6>
+                        <pre><code>&lt;svg viewBox="0 0 100 100"&gt;
+  &lt;circle id="heart" cx="50" cy="50" r="20" fill="red"/&gt;
+&lt;/svg&gt;</code></pre>
+                        
+                        <h6>🎬 After Applying "Spin" + "Beating" Animations:</h6>
+                        <pre><code>&lt;svg viewBox="0 0 100 100"&gt;
+  &lt;g class="anim-wrapper" style="animation: beating-anim-123 2s infinite ease-in-out;"&gt;
+    &lt;g class="anim-wrapper" style="animation: spin-anim-456 3s infinite linear;"&gt;
+      &lt;g class="wrapping-group" id="unique-id-789"&gt;
+        &lt;circle id="heart" cx="50" cy="50" r="20" fill="red"/&gt;
+      &lt;/g&gt;
+    &lt;/g&gt;
+  &lt;/g&gt;
+&lt;/svg&gt;</code></pre>
+                    </div>
+
+                    <h5>🔍 How It Works:</h5>
+                    <ol>
+                        <li><strong>Element Selection:</strong> You select the circle element</li>
+                        <li><strong>Wrapping Group Creation:</strong> System wraps it in <code>.wrapping-group</code> for transformation stability</li>
+                        <li><strong>First Animation:</strong> "Spin" creates first <code>.anim-wrapper</code> with CSS animation</li>
+                        <li><strong>Second Animation:</strong> "Beating" creates second <code>.anim-wrapper</code> wrapping the first</li>
+                        <li><strong>Result:</strong> Nested structure allows both animations to run simultaneously</li>
+                    </ol>
+
+                    <div class="warning-box">
+                        <h4>⚠️ Important: Editor Compatibility</h4>
+                        <p><strong>Adobe Illustrator Warning:</strong> When you open an animated SVG in Adobe Illustrator, it will <strong>sanitize and strip all custom animation code</strong>, removing your animations completely. This is a known limitation of Illustrator's SVG handling.</p>
+                        
+                        <p><strong>✅ Recommended Solution:</strong> For visual editing of animated SVGs, use <strong>Inkscape</strong> instead. Our testing shows that Inkscape preserves the animation structure and allows you to continue editing your animated graphics without losing the animation work.</p>
+                        
+                        <div class="editor-comparison">
+                            <div class="comparison-item">
+                                <h6>❌ Adobe Illustrator</h6>
+                                <p>Strips animation code<br/>Loses all animation work</p>
+                            </div>
+                            <div class="comparison-item">
+                                <h6>✅ Inkscape</h6>
+                                <p>Preserves animations<br/>Maintains editing capability</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5>🎨 CSS Animation Structure</h5>
+                    <p>Each animation generates unique CSS keyframes with descriptive names:</p>
+                    <pre><code>@keyframes spin-anim-456 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes beating-anim-123 {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}</code></pre>
+                </div>
 
                 <h3>🚀 Performance Tips</h3>
                 <ul>

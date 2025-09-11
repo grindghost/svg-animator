@@ -506,15 +506,96 @@ html {
     margin: 20px 0;
 }
 
+.warning-box strong {
+    color: var(--warning-text, #856404) !important;
+}
+
+.warning-box h4 {
+    color: var(--warning-text, #856404) !important;
+}
+
 .warning-box h3 {
-    color: var(--warning-text, #856404);
+    color: var(--warning-text, #856404) !important;
     margin-top: 0;
     margin-bottom: 12px;
 }
 
 .warning-box p {
-    color: var(--warning-text, #856404);
+    color: var(--warning-text, #856404) !important;
     margin-bottom: 0;
+}
+
+/* Code example styles */
+.code-example {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.code-example h6 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.code-example p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.code-example pre {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    overflow-x: auto;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.code-example code {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--accent-color);
+}
+
+/* Editor comparison styles */
+.editor-comparison {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.comparison-item {
+    flex: 1;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.comparison-item h6 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.comparison-item p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary) !important;
 }
 
 .back-link {
