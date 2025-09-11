@@ -280,43 +280,49 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
 
         removeStyleTag(animationName);
 
-        // Build keyframes
-        const keyframes = animationData.generateKeyframes
-            ? animationData.generateKeyframes(animationData.params)
-            : animationData.keyframes;
+        // Handle apply-based animations (like "boiled")
+        if (animationData.apply) {
+            animationData.apply(wrapper, animationData.params);
+            wrapper.classList.add("application-animation-class");
+            wrapper.classList.add(`${selectedAnimation}-animation-class`);
+        } else {
+            // Build keyframes for keyframe-based animations
+            const keyframes = animationData.generateKeyframes
+                ? animationData.generateKeyframes(animationData.params)
+                : animationData.keyframes;
 
-        let keyframesString = "";
-        for (let percentage in keyframes) {
-            let properties = keyframes[percentage];
-            let propsString = Object.keys(properties)
-                .map(prop => `${prop}: ${properties[prop]};`)
-                .join(" ");
-            keyframesString += `${percentage} { ${propsString} } `;
+            let keyframesString = "";
+            for (let percentage in keyframes) {
+                let properties = keyframes[percentage];
+                let propsString = Object.keys(properties)
+                    .map(prop => `${prop}: ${properties[prop]};`)
+                    .join(" ");
+                keyframesString += `${percentage} { ${propsString} } `;
+            }
+
+            const embeddedStyle = `
+                <style id="${animationName}" data-anikit="">
+                    @keyframes ${animationName} {
+                        ${keyframesString}
+                    }
+                </style>
+            `;
+            svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+
+            // Apply permanent animation
+            const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+            wrapper.style.animation = newAnimation;
         }
 
-        const embeddedStyle = `
-            <style id="${animationName}" data-anikit="">
-                @keyframes ${animationName} {
-                    ${keyframesString}
-                }
-            </style>
-        `;
-        svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
-
-        // Apply permanent animation
-        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
-        wrapper.style.animation = newAnimation;
-
         setCorrectTransformOrigin(wrapper);
-        wrapper.classList.add("application-animation-class");
-        wrapper.classList.add(`${selectedAnimation}-animation-class`);
 
         if (save === true) {
             const propertiesToSave = {
                 speed: `${speed}`,
                 animationName: animationName
             };
-            if (animationData.generateKeyframes && animationData.params) {
+            // Save parameters for both generateKeyframes and apply-based animations
+            if (animationData.params) {
                 propertiesToSave.params = { ...animationData.params };
             }
             const animationId = saveAnimation(elementId, selectedAnimation, propertiesToSave);

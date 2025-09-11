@@ -82,6 +82,9 @@ function setupEventListeners() {
         }
     });
 
+    // Applied animation editor event listeners
+    setupAppliedAnimationEditorListeners();
+
     // Animation type dropdown
     document.getElementById('animation-type').addEventListener('change', function() {
         const element = selectedElement;
@@ -368,8 +371,211 @@ function initializeDropdowns() {
     updateDropdownStates();
 }
 
+// Setup event listeners for applied animation editor
+function setupAppliedAnimationEditorListeners() {
+    // Close applied animation editor
+    document.getElementById('close-applied-editor').addEventListener('click', function() {
+        hideAppliedAnimationEditor();
+    });
+
+    // Applied animation speed slider
+    document.getElementById('applied-speed-slider').addEventListener('input', function() {
+        const speed = this.value;
+        document.getElementById('applied-speed-display').textContent = `${speed}s`;
+        
+        // Apply temporary animation to preview changes (only if speed slider is visible)
+        const speedControlGroup = document.querySelector('.applied-animation-controls .control-group');
+        if (speedControlGroup && speedControlGroup.style.display !== 'none' && currentlyEditingAnimation && selectedElement) {
+            updateAnimationPreview(selectedElement, speed, currentlyEditingAnimation);
+            
+            // Auto-save the speed change to localStorage
+            saveParameterChange(currentlyEditingAnimation, 'speed', speed);
+        }
+    });
+
+    // Note: Apply Changes button removed - changes are now saved in real-time
+
+    // Remove applied animation button
+    document.getElementById('remove-applied-animation').addEventListener('click', function() {
+        if (currentlyEditingAnimation) {
+            if (confirm('Are you sure you want to remove this animation?')) {
+                removeAnimation(currentlyEditingAnimation.elementId, currentlyEditingAnimation.animationId);
+                hideAppliedAnimationEditor();
+                showNotification('Animation removed successfully!', 'success');
+            }
+        }
+    });
+
+    // Parameter slider changes (real-time preview)
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('param-slider') && 
+            e.target.closest('#applied-param-controls')) {
+            
+            const param = e.target.dataset.param;
+            const value = parseFloat(e.target.value);
+            
+            // Update the value display
+            const valueSpan = e.target.parentElement.querySelector('.param-value');
+            if (valueSpan) {
+                valueSpan.textContent = value;
+            }
+            
+            // Update the animation parameters in the global animations object for real-time preview
+            if (currentlyEditingAnimation && window.animationsData && window.animationsData[currentlyEditingAnimation.animationType]) {
+                window.animationsData[currentlyEditingAnimation.animationType].params[param] = value;
+            }
+            
+            // Apply temporary animation to preview changes
+            if (currentlyEditingAnimation && selectedElement) {
+                const speedControlGroup = document.querySelector('.applied-animation-controls .control-group');
+                let speed = currentlyEditingAnimation.animationData.speed; // Use original speed as default
+                
+                // Only get speed from slider if it's visible
+                if (speedControlGroup && speedControlGroup.style.display !== 'none') {
+                    speed = document.getElementById('applied-speed-slider').value;
+                }
+                
+                updateAnimationPreview(selectedElement, speed, currentlyEditingAnimation);
+                
+                // Auto-save the parameter change to localStorage
+                saveParameterChange(currentlyEditingAnimation, param, value);
+            }
+        }
+    });
+}
+
+// Helper function to save parameter changes in real-time
+function saveParameterChange(editingAnimation, paramName, value) {
+    const data = getSavedAnimations();
+    if (data.animations[editingAnimation.elementId] && data.animations[editingAnimation.elementId][editingAnimation.animationId]) {
+        const animationData = data.animations[editingAnimation.elementId][editingAnimation.animationId];
+        
+        // Initialize params if they don't exist
+        if (!animationData.params) {
+            animationData.params = {};
+        }
+        
+        // Update the parameter
+        if (paramName === 'speed') {
+            animationData.speed = parseFloat(value);
+        } else {
+            animationData.params[paramName] = parseFloat(value);
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('svg-animations', JSON.stringify(data));
+        markAsUnsaved();
+        
+        // Update the UI list to reflect the change
+        updateAnimationListUI(editingAnimation.elementId);
+    }
+}
+
+// Helper function to update animation preview in real-time
+function updateAnimationPreview(element, speed, editingAnimation) {
+    // Find the existing animation wrapper
+    const wrapper = element.closest('.anim-wrapper');
+    if (!wrapper) return;
+    
+    const animationType = editingAnimation.animationType;
+    const animationData = window.animationsData && window.animationsData[animationType];
+    
+    if (!animationData) return;
+    
+    // Get the original animation name from the saved data
+    const data = getSavedAnimations();
+    const savedAnimationData = data.animations[editingAnimation.elementId] && data.animations[editingAnimation.elementId][editingAnimation.animationId];
+    const originalAnimationName = savedAnimationData ? savedAnimationData.animationName : null;
+    
+    if (!originalAnimationName) return;
+    
+    // Handle apply-based animations (like "boiled")
+    if (animationData.apply) {
+        // Re-apply the animation with current parameters
+        animationData.apply(wrapper, animationData.params);
+    } else {
+        // Handle keyframe-based animations
+        const keyframes = animationData.generateKeyframes
+            ? animationData.generateKeyframes(animationData.params)
+            : animationData.keyframes;
+            
+        if (keyframes) {
+            // Update the existing animation style instead of creating a new one
+            let existingStyle = document.getElementById(originalAnimationName);
+            
+            // Build keyframes string
+            let keyframesString = "";
+            for (let percentage in keyframes) {
+                let properties = keyframes[percentage];
+                let propsString = Object.keys(properties)
+                    .map(prop => `${prop}: ${properties[prop]};`)
+                    .join(" ");
+                keyframesString += `${percentage} { ${propsString} } `;
+            }
+            
+            // Update the existing style or create it if it doesn't exist
+            if (existingStyle) {
+                // Update the existing style with proper CSS format
+                const newCSS = `@keyframes ${originalAnimationName} { ${keyframesString} }`;
+                console.log('Updating existing style:', originalAnimationName, 'with:', newCSS);
+                existingStyle.textContent = newCSS;
+            } else {
+                console.log('Creating new style for:', originalAnimationName);
+                const embeddedStyle = `
+                    <style id="${originalAnimationName}" data-anikit="">
+                        @keyframes ${originalAnimationName} {
+                            ${keyframesString}
+                        }
+                    </style>
+                `;
+                svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+            }
+            
+            // Update the animation timing (speed) on the wrapper
+            const currentAnimation = wrapper.style.animation;
+            const newAnimation = currentAnimation.replace(/\d+\.?\d*s/, `${speed}s`);
+            console.log('Animation update:', currentAnimation, '->', newAnimation);
+            wrapper.style.animation = newAnimation;
+        }
+    }
+}
+
+// Helper function to update an applied animation
+function updateAppliedAnimation(elementId, animationId, speed, params) {
+    const data = getSavedAnimations();
+    if (data.animations[elementId] && data.animations[elementId][animationId]) {
+        const animationData = data.animations[elementId][animationId];
+        
+        // Update the saved data
+        animationData.speed = parseFloat(speed);
+        if (params) {
+            animationData.params = params;
+        }
+        
+        // Save the updated data
+        localStorage.setItem('svg-animations', JSON.stringify(data));
+        markAsUnsaved();
+        
+        // Update the UI
+        updateAnimationListUI(elementId);
+        
+        // Reapply the animation with new parameters
+        const element = document.getElementById(elementId);
+        if (element) {
+            // First, remove the existing animation
+            stopAnimation(element, animationData.animationName);
+            // Then apply the animation with new parameters
+            applyAnimation(element, speed, animationData.type, false);
+        }
+    }
+}
+
 window.setupEventListeners = setupEventListeners;
 window.showPreviewBadge = showPreviewBadge;
 window.hidePreviewBadge = hidePreviewBadge;
 window.exportToLottie = exportToLottie;
 window.initializeDropdowns = initializeDropdowns;
+window.setupAppliedAnimationEditorListeners = setupAppliedAnimationEditorListeners;
+window.updateAppliedAnimation = updateAppliedAnimation;
+window.updateAnimationPreview = updateAnimationPreview;
+window.saveParameterChange = saveParameterChange;

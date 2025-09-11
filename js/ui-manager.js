@@ -14,11 +14,15 @@ function populateAnimationDropdown() {
     });
 }
 
+// Global variable to track currently selected animation for editing
+let currentlyEditingAnimation = null;
+
 // Update animation list UI
 function updateAnimationListUI(selectedElementId) {
     if (!selectedElementId) {
         const animationListDiv = document.getElementById('animation-list-div');
         animationListDiv.innerHTML = '<div class="placeholder-text">No animations applied yet</div>';
+        hideAppliedAnimationEditor();
         return;
     }
 
@@ -34,7 +38,10 @@ function updateAnimationListUI(selectedElementId) {
             const animationId = isOldFormat ? animationKey : animationKey;
             
             const animationDiv = document.createElement('div');
-            animationDiv.classList.add('animation-item');
+            animationDiv.classList.add('animation-item', 'animation-selector');
+            animationDiv.dataset.elementId = selectedElementId;
+            animationDiv.dataset.animationId = animationId;
+            animationDiv.dataset.animationType = animationType;
 
             const animationInfo = document.createElement('div');
             animationInfo.classList.add('animation-info');
@@ -50,32 +57,6 @@ function updateAnimationListUI(selectedElementId) {
             animationInfo.appendChild(animationName);
             animationInfo.appendChild(animationSpeed);
 
-            // Speed slider
-            const speedSlider = document.createElement('input');
-            speedSlider.type = 'range';
-            speedSlider.min = '0.1';
-            speedSlider.max = '5';
-            speedSlider.step = '0.1';
-            speedSlider.value = animationData.speed;
-            speedSlider.dataset.elementId = selectedElementId;
-            speedSlider.dataset.animationId = animationId;
-            speedSlider.classList.add('animation-speed-slider');
-
-            speedSlider.addEventListener('input', function() {
-                const speed = this.value;
-                const elementId = this.dataset.elementId;
-                const animationId = this.dataset.animationId;
-                
-                // Update the existing anim-wrapper instead of creating a new one
-                updateAnimationSpeed(elementId, animationId, speed);
-                
-                // Update the speed display in the UI
-                const speedDisplay = this.parentElement.querySelector('.animation-speed');
-                if (speedDisplay) {
-                    speedDisplay.textContent = `Speed: ${speed}s`;
-                }
-            });
-
             const removeButton = document.createElement('button');
             removeButton.classList.add('remove-btn');
             removeButton.innerHTML = '×';
@@ -87,14 +68,179 @@ function updateAnimationListUI(selectedElementId) {
                 e.preventDefault();
             });
 
+            // Add click handler for animation selection
+            animationDiv.addEventListener('click', (e) => {
+                if (e.target === removeButton) return; // Don't select when clicking remove
+                selectAnimationForEditing(selectedElementId, animationId, animationType, animationData);
+            });
+
             animationDiv.appendChild(animationInfo);
-            animationDiv.appendChild(speedSlider);
             animationDiv.appendChild(removeButton);
             animationListDiv.appendChild(animationDiv);
         });
     } else {
         animationListDiv.innerHTML = '<div class="placeholder-text">No animations applied to this element</div>';
+        hideAppliedAnimationEditor();
     }
+}
+
+// Function to select an animation for editing
+function selectAnimationForEditing(elementId, animationId, animationType, animationData) {
+    // Remove previous selection
+    document.querySelectorAll('.animation-item.selected').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Add selection to clicked item
+    const clickedItem = document.querySelector(`[data-element-id="${elementId}"][data-animation-id="${animationId}"]`);
+    if (clickedItem) {
+        clickedItem.classList.add('selected');
+    }
+    
+    // Store current editing state
+    currentlyEditingAnimation = {
+        elementId: elementId,
+        animationId: animationId,
+        animationType: animationType,
+        animationData: animationData
+    };
+    
+    // Show the applied animation editor
+    showAppliedAnimationEditor(animationType, animationData);
+}
+
+// Function to show the applied animation editor
+function showAppliedAnimationEditor(animationType, animationData) {
+    const editor = document.getElementById('applied-animation-editor');
+    const title = document.getElementById('applied-animation-title');
+    const speedSlider = document.getElementById('applied-speed-slider');
+    const speedDisplay = document.getElementById('applied-speed-display');
+    const paramControls = document.getElementById('applied-param-controls');
+    
+    // Update title
+    title.textContent = `🎭 Edit ${animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ')}`;
+    
+    // Update speed controls (only if the animation uses defaultSpeedSlider)
+    const anim = window.animationsData && window.animationsData[animationType] ? window.animationsData[animationType] : null;
+    const speedControlGroup = document.querySelector('.applied-animation-controls .control-group');
+    
+    if (anim && anim.defaultSpeedSlider !== false) {
+        // Show speed controls
+        speedSlider.value = animationData.speed;
+        speedDisplay.textContent = `${animationData.speed}s`;
+        if (speedControlGroup) {
+            speedControlGroup.style.display = 'block';
+        }
+    } else {
+        // Hide speed controls for animations that don't use defaultSpeedSlider
+        if (speedControlGroup) {
+            speedControlGroup.style.display = 'none';
+        }
+    }
+    
+    // Clear existing parameter controls
+    paramControls.innerHTML = '';
+    
+    // Load animation definition and render parameters
+    if (window.animationsData && window.animationsData[animationType]) {
+        const anim = window.animationsData[animationType];
+        if (anim.params) {
+            // Create a copy of the animation parameters to work with
+            const workingParams = { ...anim.params };
+            
+            // Override with saved parameter values if available
+            if (animationData.params) {
+                Object.assign(workingParams, animationData.params);
+            }
+            
+            for (const [param, defaultValue] of Object.entries(anim.params)) {
+                // Use saved parameter values if available, otherwise use defaults
+                const paramValue = workingParams[param] !== undefined ? workingParams[param] : defaultValue;
+                
+                const controlWrapper = document.createElement("div");
+                controlWrapper.className = "param-control";
+                
+                const label = document.createElement("label");
+                label.className = "param-label";
+                label.textContent = `${param}: `;
+                
+                const input = document.createElement("input");
+                input.type = "range";
+                input.className = "param-slider";
+                input.dataset.param = param;
+                
+                // Use paramConfig if available, otherwise fall back to old logic
+                if (anim.paramConfig && anim.paramConfig[param]) {
+                    const config = anim.paramConfig[param];
+                    input.min = config.min.toString();
+                    input.max = config.max.toString();
+                    input.step = config.step.toString();
+                    input.value = paramValue;
+                } else {
+                    // Fallback to old logic for backward compatibility
+                    if (param.includes("amplitude") || param.includes("intensity")) {
+                        input.min = "0.1";
+                        input.max = "3.0";
+                        input.step = "0.1";
+                    } else if (param.includes("blur")) {
+                        input.min = "0";
+                        input.max = "20";
+                        input.step = "1";
+                    } else if (param.includes("skew")) {
+                        input.min = "5";
+                        input.max = "45";
+                        input.step = "1";
+                    } else if (param.includes("dash")) {
+                        input.min = "1";
+                        input.max = "50";
+                        input.step = "1";
+                    } else if (param.includes("gap")) {
+                        input.min = "1";
+                        input.max = "30";
+                        input.step = "1";
+                    } else {
+                        // Default range
+                        input.min = "0";
+                        input.max = paramValue;
+                        input.step = "0.1";
+                    }
+                    input.value = paramValue;
+                }
+                
+                const span = document.createElement("span");
+                span.className = "param-value";
+                span.textContent = paramValue;
+                
+                controlWrapper.appendChild(label);
+                controlWrapper.appendChild(input);
+                controlWrapper.appendChild(span);
+                paramControls.appendChild(controlWrapper);
+                
+                // Update the working parameters with the current value
+                workingParams[param] = paramValue;
+            }
+            
+            // Store the working parameters in the global animations object for real-time preview
+            if (window.animationsData && window.animationsData[animationType]) {
+                window.animationsData[animationType].params = workingParams;
+            }
+        }
+    }
+    
+    // Show the editor
+    editor.style.display = 'block';
+}
+
+// Function to hide the applied animation editor
+function hideAppliedAnimationEditor() {
+    const editor = document.getElementById('applied-animation-editor');
+    editor.style.display = 'none';
+    currentlyEditingAnimation = null;
+    
+    // Remove selection from all items
+    document.querySelectorAll('.animation-item.selected').forEach(item => {
+        item.classList.remove('selected');
+    });
 }
 
 // Function to check if an element is the root SVG element
@@ -662,3 +808,6 @@ window.isRootSVGElement = isRootSVGElement;
 window.showRootElementMessage = showRootElementMessage;
 window.hideRootElementMessage = hideRootElementMessage;
 window.hideAnimationControls = hideAnimationControls;
+window.hideAppliedAnimationEditor = hideAppliedAnimationEditor;
+window.showAppliedAnimationEditor = showAppliedAnimationEditor;
+window.selectAnimationForEditing = selectAnimationForEditing;

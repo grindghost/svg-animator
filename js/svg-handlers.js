@@ -518,6 +518,11 @@ function selectElement(elementId, element) {
         return;
     }
 
+    // Hide applied animation editor when selecting a new element
+    if (typeof hideAppliedAnimationEditor === 'function') {
+        hideAppliedAnimationEditor();
+    }
+
     // Add the handles
     createHandlesForElement(element)
 

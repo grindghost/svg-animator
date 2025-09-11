@@ -7,6 +7,7 @@
     --primary-light: #a5b4fc;
     --secondary: #f8fafc;
     --accent: #10b981;
+    --accent-light: #34d399;
     --accent-dark: #059669;
     --danger: #ef4444;
     --danger-dark: #dc2626;
@@ -52,6 +53,7 @@
     --primary-light: #c7d2fe;
     --secondary: #1e293b;
     --accent: #34d399;
+    --accent-light: #6ee7b7;
     --accent-dark: #10b981;
     --danger: #f87171;
     --danger-dark: #ef4444;
@@ -1846,6 +1848,207 @@ select:disabled {
     animation: slideDown 0.3s ease-out;
 }
 
+/* Applied Animation Editor Panel */
+.applied-animation-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--panel-bg);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: slideInFromLeft 0.3s ease-out;
+    overflow-y: auto;
+}
+
+.applied-animation-header {
+    background: var(--accent);
+    color: white;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--accent-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.applied-animation-header span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.applied-animation-controls {
+    padding: 20px;
+}
+
+.applied-animation-controls .control-group {
+    margin-bottom: 20px;
+}
+
+.applied-animation-controls .control-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.applied-animation-controls .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.applied-animation-controls .speed-slider {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.applied-animation-controls .speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.applied-animation-controls .speed-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.applied-animation-controls .speed-display {
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 40px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.applied-animation-controls .param-control {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 8px 0;
+}
+
+.applied-animation-controls .param-label {
+    min-width: 100px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.applied-animation-controls .param-slider {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.applied-animation-controls .param-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.applied-animation-controls .param-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.applied-animation-controls .param-value {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 500;
+    color: var(--accent);
+    font-size: 0.85rem;
+}
+
+.applied-animation-actions {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.applied-animation-actions .btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+}
+
+.btn-danger:hover {
+    background: var(--danger-dark);
+    border-color: var(--danger-dark);
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 @keyframes slideDown {
     from {
         opacity: 0;
@@ -2266,11 +2469,50 @@ select:disabled {
     margin-bottom: 8px;
     border: 1px solid var(--border);
     transition: all 0.2s ease;
+    cursor: pointer;
 }
 
 .animation-item:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow);
+    background: var(--accent-light);
+}
+
+.animation-item.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.animation-item.selected .animation-name,
+.animation-item.selected .animation-speed {
+    color: white;
+}
+
+.animation-selector {
+    position: relative;
+}
+
+.animation-selector::after {
+    content: '✏️';
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    font-size: 14px;
+}
+
+.animation-selector:hover::after {
+    opacity: 1;
+}
+
+.animation-item.selected::after {
+    opacity: 1;
+    content: '✓';
 }
 
 .animation-item:last-child {

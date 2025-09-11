@@ -146,6 +146,38 @@
                             </div>
                         </div>
 
+                        <!-- Applied Animation Editor Panel -->
+                        <div id="applied-animation-editor" class="applied-animation-panel" style="display: none;">
+                            <div class="applied-animation-header">
+                                <span id="applied-animation-title">🎭 Edit Animation</span>
+                                <button id="close-applied-editor" class="close-btn" title="Close editor">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="applied-animation-controls">
+                                <div class="control-group">
+                                    <label class="control-label">Speed</label>
+                                    <div class="speed-control">
+                                        <input type="range" id="applied-speed-slider" min="0.1" max="5" step="0.1" value="1.5" class="speed-slider" title="Animation speed">
+                                        <span id="applied-speed-display" class="speed-display">1.5s</span>
+                                    </div>
+                                </div>
+                                <div id="applied-param-controls" class="param-controls">
+                                    <!-- Dynamic parameter controls will be inserted here -->
+                                </div>
+                                <div class="applied-animation-actions">
+                                    <button id="remove-applied-animation" class="btn btn-danger">
+                                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                        </svg>
+                                        Remove Animation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         <button id="apply-animation" class="btn btn-primary" disabled>
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                 <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V3.5A.5.5 0 0 1 8 3zM3.732 4.732a.5.5 0 0 1 .707 0l2 2a.5.5 0 0 1 0 .707l-2 2a.5.5 0 1 1-.707-.707L5.293 8 3.732 6.939a.5.5 0 0 1 0-.707zM8 13a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-.5.5z"/>
@@ -205,7 +237,7 @@
         <!-- Bottom Section -->
         <div class="panel">
             <div class="panel-header">
-                <span>🎭 Applied Animations</span>
+                <span>🎭 Animation Selector</span>
             </div>
             <div class="panel-content">
                 <div id="animation-list-div" class="animation-list">
