@@ -1462,6 +1462,45 @@ select:disabled {
     margin-bottom: 20px;
 }
 
+/* Root element message styling */
+.root-element-message {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.root-message-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.root-message-icon {
+    font-size: 2rem;
+    opacity: 0.7;
+}
+
+.root-message-text {
+    text-align: left;
+}
+
+.root-message-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.root-message-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
 .file-upload input[type="file"] {
     position: absolute;
     opacity: 0;

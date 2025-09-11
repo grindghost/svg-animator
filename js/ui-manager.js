@@ -97,6 +97,11 @@ function updateAnimationListUI(selectedElementId) {
     }
 }
 
+// Function to check if an element is the root SVG element
+function isRootSVGElement(element) {
+    return element && element.tagName && element.tagName.toLowerCase() === 'svg' && element === svgRoot;
+}
+
 // Function to get appropriate icon for SVG element types
 function getElementIcon(tagName, hasChildren) {
     const tag = tagName.toLowerCase();
@@ -259,41 +264,60 @@ function createTreeViewItem(parent, element, depth = 0) {
         // Set the selected element in SVG and add the 'selected-element' class
         selectedElement = targetElement;
 
-        CleanAnimationStyle(selectedElement, "temp-generic");
-        createHandlesForElement(selectedElement);
-
-        // Check if any element in the DOM already has the 'selected-element' class
-        const existingElementWithClass = document.querySelector('.selected-element');
-        if (!existingElementWithClass) {
-            selectedElement.classList.add('selected-element');
+        // Check if this is the root SVG element
+        if (isRootSVGElement(element)) {
+            // For root SVG element, show special message and disable controls
+            hideRootElementMessage(); // Clear any existing message first
+            showRootElementMessage();
+            
+            // Don't create handles or bounding box for root element
+            // Don't add selected-element class to prevent manipulation
+            
+            // Show controls section but with disabled controls
+            showControlsSection();
+            
+            updateStatusBar(`Root element selected - not manipulable 🎨`);
         } else {
-            existingElementWithClass.classList.remove('selected-element');
-            selectedElement.classList.add('selected-element');
+            // For regular elements, proceed with normal selection behavior
+            CleanAnimationStyle(selectedElement, "temp-generic");
+            createHandlesForElement(selectedElement);
+
+            // Check if any element in the DOM already has the 'selected-element' class
+            const existingElementWithClass = document.querySelector('.selected-element');
+            if (!existingElementWithClass) {
+                selectedElement.classList.add('selected-element');
+            } else {
+                existingElementWithClass.classList.remove('selected-element');
+                selectedElement.classList.add('selected-element');
+            }
+
+            // Draw the bounding box around the selected element in SVG
+            drawBoundingBox(selectedElement);
+
+            // Reset the animation controls
+            resetControls();
+
+            // Update the animation details UI for the selected element
+            updateAnimationListUI(selectedElement.id);
+
+            // Update the animation count message
+            updateAnimationCountMessage(selectedElement.id);
+
+            // Enable the dropdown for animation types
+            document.getElementById('animation-type').disabled = false;
+            
+            // Show and update shape styling controls
+            showShapeStylingControls();
+            updateStylingControlsFromElement(selectedElement);
+            
+            // Show controls section
+            showControlsSection();
+            
+            // Hide root element message if it was showing
+            hideRootElementMessage();
+            
+            updateStatusBar(`Selected: ${label} 🎯`);
         }
-
-        // Draw the bounding box around the selected element in SVG
-        drawBoundingBox(selectedElement);
-
-        // Reset the animation controls
-        resetControls();
-
-        // Update the animation details UI for the selected element
-        updateAnimationListUI(selectedElement.id);
-
-        // Update the animation count message
-        updateAnimationCountMessage(selectedElement.id);
-
-        // Enable the dropdown for animation types
-        document.getElementById('animation-type').disabled = false;
-        
-        // Show and update shape styling controls
-        showShapeStylingControls();
-        updateStylingControlsFromElement(selectedElement);
-        
-        // Show controls section
-        showControlsSection();
-        
-        updateStatusBar(`Selected: ${label} 🎯`);
         
         e.stopPropagation();
     });
@@ -546,6 +570,59 @@ function showUploadSection() {
     }
 }
 
+// Function to show root element message and hide controls
+function showRootElementMessage() {
+    // Hide all control panels
+    hideShapeStylingControls();
+    hideAnimationControls();
+    
+    // Create or show the root element message
+    let messageDiv = document.getElementById('root-element-message');
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'root-element-message';
+        messageDiv.className = 'root-element-message';
+        messageDiv.innerHTML = `
+            <div class="root-message-content">
+                <div class="root-message-icon">🎨</div>
+                <div class="root-message-text">
+                    <div class="root-message-title">Root Element Selected</div>
+                    <div class="root-message-description">The root element is not manipulable. Select a child element to apply styling or animations.</div>
+                </div>
+            </div>
+        `;
+        
+        // Insert the message after the controls section
+        const controlsSection = document.querySelector('.controls-section');
+        if (controlsSection) {
+            controlsSection.appendChild(messageDiv);
+        }
+    } else {
+        messageDiv.style.display = 'block';
+    }
+}
+
+// Function to hide root element message
+function hideRootElementMessage() {
+    const messageDiv = document.getElementById('root-element-message');
+    if (messageDiv) {
+        messageDiv.style.display = 'none';
+    }
+}
+
+// Function to hide animation controls
+function hideAnimationControls() {
+    const animationType = document.getElementById('animation-type');
+    const speedControlGroup = document.getElementById('speed-control-group');
+    const animationParamPanel = document.getElementById('animation-param-panel');
+    const applyButton = document.getElementById('apply-animation');
+    
+    if (animationType) animationType.disabled = true;
+    if (speedControlGroup) speedControlGroup.style.display = 'none';
+    if (animationParamPanel) animationParamPanel.style.display = 'none';
+    if (applyButton) applyButton.disabled = true;
+}
+
 // Initialize upload button functionality
 function initializeUploadButton() {
     const uploadBtn = document.getElementById('upload-svg-btn');
@@ -574,3 +651,7 @@ window.updateAnimationCountMessage = updateAnimationCountMessage;
 window.hideUploadSection = hideUploadSection;
 window.showUploadSection = showUploadSection;
 window.initializeUploadButton = initializeUploadButton;
+window.isRootSVGElement = isRootSVGElement;
+window.showRootElementMessage = showRootElementMessage;
+window.hideRootElementMessage = hideRootElementMessage;
+window.hideAnimationControls = hideAnimationControls;

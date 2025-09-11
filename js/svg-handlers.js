@@ -335,6 +335,12 @@ function startMoving(event) {
 
     const svgElement = document.querySelector(".selected-element");
     if (!svgElement) return;
+    
+    // Don't allow movement of root SVG element
+    if (isRootSVGElement && isRootSVGElement(svgElement)) {
+        console.log('Cannot move root SVG element');
+        return;
+    }
 
     let startX = event.clientX;
     let startY = event.clientY;
@@ -505,6 +511,12 @@ function addHoverEffect(svgElement) {
 // Function to select an element in the SVG and the tree view with simulated click event
 function selectElement(elementId, element) {
     console.log('selectElement called with ID:', elementId); // Debugging line
+
+    // Check if this is the root SVG element - don't create handles for it
+    if (isRootSVGElement && isRootSVGElement(element)) {
+        console.log('Root SVG element selected - skipping handle creation');
+        return;
+    }
 
     // Add the handles
     createHandlesForElement(element)
