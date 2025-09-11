@@ -14,6 +14,7 @@ let animationsData =
       }
     },
     "defaultSpeed": "1.5",
+    "defaultSpeedSlider": true,
     "generateKeyframes": function(p) {
       return {
         "0%": {
@@ -48,7 +49,8 @@ let animationsData =
             "opacity": "0"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "tremble": {
@@ -64,6 +66,7 @@ let animationsData =
       }
     },
     "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
     "generateKeyframes": function(p) {
       const intensity = p.intensity;
       return {
@@ -109,7 +112,8 @@ let animationsData =
         "99.5%": { "opacity": "0" },
         "100%": { "opacity": "1" }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "bounce": {
@@ -134,7 +138,8 @@ let animationsData =
             "transform": "translate(0,0px) scaleY(1)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
 
@@ -152,7 +157,8 @@ let animationsData =
             "transform": "scale(0.9099999999999999)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "spin": {
@@ -165,7 +171,8 @@ let animationsData =
             "transform": "rotate(360deg)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "flip-horizontal" : {
@@ -190,7 +197,8 @@ let animationsData =
             "transform": "rotateY(360deg)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "blur" : {
@@ -206,6 +214,7 @@ let animationsData =
       }
     },
     "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
     "generateKeyframes": function(p) {
       return {
         "0%": { "filter": "blur(0)" },
@@ -229,7 +238,8 @@ let animationsData =
             "transform": "translate(0, 0px)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
     "clock" : {
@@ -287,7 +297,8 @@ let animationsData =
             "transform": "rotate(360deg)"
         }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": false
   },
 
     "metronome" : {
@@ -320,7 +331,8 @@ let animationsData =
         "transform": "translate(-10px) rotate(-20deg)"
       }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": false
   },
 
     "swim" : {
@@ -339,7 +351,8 @@ let animationsData =
       "91.66667%": { "transform": "translate(-0.70744px,-5.43063px) rotate(6.16192deg) scale(1)" },
       "100%": { "transform": "translate(0,0) rotate(0) scale(1)" }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
     "squeeze" : {
@@ -364,7 +377,8 @@ let animationsData =
             "transform": "scale(0.5,1)"
           }
     },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
   "pulse" : {
@@ -409,7 +423,8 @@ let animationsData =
             "transform": "scale(0.85)"
           }
         },
-    "defaultSpeed": "0.5"
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true
   },
 
     "skew" : {
@@ -425,6 +440,7 @@ let animationsData =
       }
     },
     "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
     "generateKeyframes": function(p) {
       return {
         "0%, 50%, 100%": {
@@ -472,6 +488,7 @@ let animationsData =
       }
     },
     "defaultSpeed": "2.0",
+    "defaultSpeedSlider": true,
     "generateKeyframes": function(p) {
       const totalLength = p.dashLength + p.gapLength;
       return {
@@ -528,6 +545,7 @@ let animationsData =
     }
   },
   defaultSpeed: "5.0",
+  defaultSpeedSlider: false,
   apply: function (element, p) {
     let defs = document.querySelector("svg defs");
     if (!defs) {

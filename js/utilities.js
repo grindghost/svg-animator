@@ -89,6 +89,16 @@ function setupEventListeners() {
         const animationName = document.getElementById('animation-type').value;
 
         if (this.value !== "none") {
+            // Check if the selected animation should show the speed slider
+            const animationData = animationsData[animationName];
+            const showSpeedSlider = animationData && animationData.defaultSpeedSlider !== false;
+            
+            // Show/hide speed control group based on animation's defaultSpeedSlider property
+            const speedControlGroup = document.getElementById('speed-control-group');
+            if (speedControlGroup) {
+                speedControlGroup.style.display = showSpeedSlider ? 'block' : 'none';
+            }
+            
             // Render parameter controls for parametric animations
             renderParamControls(animationName);
             
@@ -102,6 +112,12 @@ function setupEventListeners() {
         } else {
             // Hide parameter panel when no animation is selected
             document.getElementById('animation-param-panel').style.display = 'none';
+            
+            // Show speed control group by default when no animation is selected
+            const speedControlGroup = document.getElementById('speed-control-group');
+            if (speedControlGroup) {
+                speedControlGroup.style.display = 'block';
+            }
             
             document.getElementById('speed-slider').setAttribute('disabled', true);
             document.getElementById('apply-animation').setAttribute('disabled', true);
