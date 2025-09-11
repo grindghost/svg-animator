@@ -103,7 +103,10 @@
                                 <div class="control-group">
                                     <label class="control-label">Fill Color</label>
                                     <div class="color-controls">
-                                        <input type="color" id="fill-color" class="color-picker" value="#000000" title="Select fill color">
+                                        <div class="color-picker-wrapper">
+                                            <input type="color" id="fill-color" class="color-picker" value="#000000" title="Select fill color">
+                                            <div id="fill-color-indicator" class="color-indicator" style="display: none;"></div>
+                                        </div>
                                         <input type="range" id="fill-opacity" min="0" max="100" value="100" class="opacity-slider" title="Fill opacity">
                                         <span id="fill-opacity-display" class="opacity-display">100%</span>
                                     </div>
@@ -112,7 +115,10 @@
                                 <div class="control-group">
                                     <label class="control-label">Stroke Color</label>
                                     <div class="color-controls">
-                                        <input type="color" id="stroke-color" class="color-picker" value="#000000" title="Select stroke color">
+                                        <div class="color-picker-wrapper">
+                                            <input type="color" id="stroke-color" class="color-picker" value="#000000" title="Select stroke color">
+                                            <div id="stroke-color-indicator" class="color-indicator" style="display: none;"></div>
+                                        </div>
                                         <input type="range" id="stroke-opacity" min="0" max="100" value="100" class="opacity-slider" title="Stroke opacity">
                                         <span id="stroke-opacity-display" class="opacity-display">100%</span>
                                     </div>
