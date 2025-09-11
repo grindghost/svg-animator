@@ -81,6 +81,12 @@ function removeAnimation(elementId, animationId) {
             removeStyleTag(animationData.animationName);
         }
 
+        // Stop the animation and remove the wrapper
+        const element = document.querySelector(`#${elementId}`);
+        if (element) {
+            stopAnimation(element, animationData.animationName);
+        }
+
         // Delete from the localStorage
         delete data.animations[elementId][animationId];
 
@@ -103,11 +109,6 @@ function removeAnimation(elementId, animationId) {
 
     // Remove the temporary preview animation style tag
     removeStyleTag();
-
-    const element = document.querySelector(`#${elementId}`);
-    if (element) {
-        stopAnimation(element, animationId);
-    }
 }
 
 // Remove animation by type (for backward compatibility and specific type removal)

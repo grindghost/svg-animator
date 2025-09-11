@@ -517,10 +517,8 @@ function updateAnimationPreview(element, speed, editingAnimation) {
             if (existingStyle) {
                 // Update the existing style with proper CSS format
                 const newCSS = `@keyframes ${originalAnimationName} { ${keyframesString} }`;
-                console.log('Updating existing style:', originalAnimationName, 'with:', newCSS);
                 existingStyle.textContent = newCSS;
             } else {
-                console.log('Creating new style for:', originalAnimationName);
                 const embeddedStyle = `
                     <style id="${originalAnimationName}" data-anikit="">
                         @keyframes ${originalAnimationName} {
@@ -534,7 +532,6 @@ function updateAnimationPreview(element, speed, editingAnimation) {
             // Update the animation timing (speed) on the wrapper
             const currentAnimation = wrapper.style.animation;
             const newAnimation = currentAnimation.replace(/\d+\.?\d*s/, `${speed}s`);
-            console.log('Animation update:', currentAnimation, '->', newAnimation);
             wrapper.style.animation = newAnimation;
         }
     }
