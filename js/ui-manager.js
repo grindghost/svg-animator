@@ -156,6 +156,13 @@ function createTreeViewItem(parent, element, depth = 0) {
         return;
     }
 
+    // Skip over <linearGradient>, <clipPath>, and <use> elements
+    if (element.tagName === 'linearGradient' || 
+        element.tagName === 'clipPath' || 
+        element.tagName === 'use') {
+        return;
+    }
+
     // ✅ NEW: Skip wrapper groups but process their children
     if (element.classList.contains('anim-wrapper') || 
         element.classList.contains('wrapping-group')) {

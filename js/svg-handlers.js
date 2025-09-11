@@ -770,7 +770,12 @@ function initializeHoverAndSelect() {
         // Find the closest ancestor or self that is an SVG element with an ID
         let targetElement = event.target.closest('svg [id]');
         console.log(targetElement)
-        if (targetElement) {
+        
+        // Skip linearGradient, clipPath, and use elements
+        if (targetElement && 
+            targetElement.tagName !== 'linearGradient' && 
+            targetElement.tagName !== 'clipPath' && 
+            targetElement.tagName !== 'use') {
             selectElement(targetElement.id, targetElement);
         }
     });
