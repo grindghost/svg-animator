@@ -2031,9 +2031,11 @@ select:disabled {
 
 .element-tree {
     overflow-y: auto;
+    overflow-x: hidden;
     max-height: 100%;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
+    padding-right: 8px; /* Accommodate translateX(4px) transform */
 }
 
 .element-tree summary,

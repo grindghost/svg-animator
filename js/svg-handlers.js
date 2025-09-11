@@ -805,35 +805,10 @@ function initializeHoverAndSelect() {
     // Initialize hover effects for all SVG elements
     const svgElements = svgRoot.querySelectorAll('*');
     svgElements.forEach(element => {
-        createTooltip(element); 
         addHoverEffect(element);
     });
 }
 
-function createTooltip(element) {
-    const tooltip = document.createElement('div');
-    tooltip.classList.add('tooltip');
-    tooltip.textContent = element.tagName + ' : ' + element.id;
-    document.body.appendChild(tooltip);
-
-    element.addEventListener('mouseenter', function(event) {
-        tooltip.style.visibility = 'visible';
-        tooltip.style.left = `${event.pageX + 10}px`;
-        tooltip.style.top = `${event.pageY - 30}px`;
-        
-        // Add visible class for smooth animation
-        setTimeout(() => {
-            tooltip.classList.add('visible');
-        }, 10);
-    });
-
-    element.addEventListener('mouseleave', function() {
-        tooltip.classList.remove('visible');
-        setTimeout(() => {
-            tooltip.style.visibility = 'hidden';
-        }, 200);
-    });
-}
 
 // Function to setup SVG viewer tooltip
 function setupSVGViewerTooltip() {
@@ -921,7 +896,6 @@ window.setCorrectTransformOrigin = setCorrectTransformOrigin;
 window.addHoverEffect = addHoverEffect;
 window.selectElement = selectElement;
 window.initializeHoverAndSelect = initializeHoverAndSelect;
-window.createTooltip = createTooltip;
 window.visualizeSVGBounds = visualizeSVGBounds;
 window.clearSelectionOnOutsideClick = clearSelectionOnOutsideClick;
 window.toggleSVGBounds = toggleSVGBounds;
