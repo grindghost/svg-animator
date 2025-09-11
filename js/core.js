@@ -34,10 +34,10 @@ function resetControls() {
     document.getElementById('speed-slider').value = '1.5';
     document.getElementById('speedDisplay').textContent = '1.5s';
     
-    // Show speed control group by default when resetting controls
+    // Hide speed control group by default when resetting controls
     const speedControlGroup = document.getElementById('speed-control-group');
     if (speedControlGroup) {
-        speedControlGroup.style.display = 'block';
+        speedControlGroup.style.display = 'none';
     }
     
     // Hide the parameter panel when resetting controls

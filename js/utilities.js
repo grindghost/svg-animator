@@ -113,10 +113,10 @@ function setupEventListeners() {
             // Hide parameter panel when no animation is selected
             document.getElementById('animation-param-panel').style.display = 'none';
             
-            // Show speed control group by default when no animation is selected
+            // Hide speed control group when no animation is selected
             const speedControlGroup = document.getElementById('speed-control-group');
             if (speedControlGroup) {
-                speedControlGroup.style.display = 'block';
+                speedControlGroup.style.display = 'none';
             }
             
             document.getElementById('speed-slider').setAttribute('disabled', true);
