@@ -112,13 +112,18 @@ function selectAnimationForEditing(elementId, animationId, animationType, animat
 // Function to show the applied animation editor
 function showAppliedAnimationEditor(animationType, animationData) {
     const editor = document.getElementById('applied-animation-editor');
-    const title = document.getElementById('applied-animation-title');
+    const editorTab = document.getElementById('editor-tab');
+    const controlsTab = document.getElementById('controls-tab');
+    const controlsContent = document.getElementById('controls-content');
+    const animationNameSpan = document.getElementById('editor-animation-name');
+    const animationIdSpan = document.getElementById('editor-animation-id');
     const speedSlider = document.getElementById('applied-speed-slider');
     const speedDisplay = document.getElementById('applied-speed-display');
     const paramControls = document.getElementById('applied-param-controls');
     
-    // Update title
-    title.textContent = `🎭 Edit ${animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ')}`;
+    // Update tab content with animation info
+    animationNameSpan.textContent = `🎭 ${animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ')}`;
+    animationIdSpan.textContent = `ID: ${animationData.animationId}`;
     
     // Update speed controls (only if the animation uses defaultSpeedSlider)
     const anim = window.animationsData && window.animationsData[animationType] ? window.animationsData[animationType] : null;
@@ -226,15 +231,36 @@ function showAppliedAnimationEditor(animationType, animationData) {
             }
         }
     }
-    
-    // Show the editor
-    editor.style.display = 'block';
+    console.log('Switching to editor tab');
+    // Switch to editor tab
+    controlsTab.classList.remove('active');
+    editorTab.classList.add('active');
+    editorTab.style.display = 'flex';
+    controlsContent.classList.remove('active');
+    editor.classList.add('active');
+
+    // Show controls content
+    controlsContent.style.display = 'block';
+
+    // hide controls section
+    hideControlsSection();
+
 }
 
 // Function to hide the applied animation editor
 function hideAppliedAnimationEditor() {
     const editor = document.getElementById('applied-animation-editor');
-    editor.style.display = 'none';
+    const editorTab = document.getElementById('editor-tab');
+    const controlsTab = document.getElementById('controls-tab');
+    const controlsContent = document.getElementById('controls-content');
+    
+    // Switch back to controls tab
+    editorTab.classList.remove('active');
+    editorTab.style.display = 'none';
+    controlsTab.classList.add('active');
+    controlsContent.classList.add('active');
+    editor.classList.remove('active');
+    
     currentlyEditingAnimation = null;
     
     // Remove selection from all items

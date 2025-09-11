@@ -378,6 +378,16 @@ function setupAppliedAnimationEditorListeners() {
         hideAppliedAnimationEditor();
     });
 
+    // Tab switching
+    document.getElementById('controls-tab').addEventListener('click', function() {
+        switchToTab('controls');
+    });
+
+    document.getElementById('editor-tab').addEventListener('click', function() {
+        // Editor tab click is handled by the animation selection
+        // This is just for completeness
+    });
+
     // Applied animation speed slider
     document.getElementById('applied-speed-slider').addEventListener('input', function() {
         const speed = this.value;
@@ -576,3 +586,27 @@ window.setupAppliedAnimationEditorListeners = setupAppliedAnimationEditorListene
 window.updateAppliedAnimation = updateAppliedAnimation;
 window.updateAnimationPreview = updateAnimationPreview;
 window.saveParameterChange = saveParameterChange;
+
+// Function to switch between tabs
+function switchToTab(tabName) {
+    const controlsTab = document.getElementById('controls-tab');
+    const editorTab = document.getElementById('editor-tab');
+    const controlsContent = document.getElementById('controls-content');
+    const editor = document.getElementById('applied-animation-editor');
+
+    if (tabName === 'controls') {
+        controlsTab.classList.add('active');
+        editorTab.classList.remove('active');
+        editorTab.style.display = 'none';
+        controlsContent.classList.add('active');
+        editor.classList.remove('active');
+    } else if (tabName === 'editor') {
+        controlsTab.classList.remove('active');
+        editorTab.classList.add('active');
+        editorTab.style.display = 'flex';
+        controlsContent.classList.remove('active');
+        editor.classList.add('active');
+    }
+}
+
+window.switchToTab = switchToTab;

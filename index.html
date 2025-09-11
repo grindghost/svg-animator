@@ -51,12 +51,24 @@
 
         <div class="main-grid">
             <!-- Left Panel - Controls -->
-            <div class="panel">
+            <div class="panel panel-with-tabs">
                 <div class="panel-header">
-                    <span>🎬 Animation Controls</span>
+                    <div class="panel-tabs">
+                        <button id="controls-tab" class="tab-button active" data-tab="controls">
+                            <span>🎬 Animation Controls</span>
+                        </button>
+                        <button id="editor-tab" class="tab-button" data-tab="editor" style="display: none;">
+                            <div class="animation-info">
+                                <span id="editor-animation-name">🎭 Edit Animation</span>
+                                <small id="editor-animation-id" class="animation-id">ID: loading...</small>
+                            </div>
+                        </button>
+                    </div>
                 </div>
                 <div class="panel-content">
-                    <div class="upload-section">
+                    <!-- Controls Tab Content -->
+                    <div id="controls-content" class="tab-content active">
+                        <div class="upload-section">
                         <div class="file-upload">
                             <input type="file" id="svg-upload" accept=".svg">
                             <label for="svg-upload" class="upload-button">
@@ -146,10 +158,17 @@
                             </div>
                         </div>
 
-                        <!-- Applied Animation Editor Panel -->
-                        <div id="applied-animation-editor" class="applied-animation-panel" style="display: none;">
-                            <div class="applied-animation-header">
-                                <span id="applied-animation-title">🎭 Edit Animation</span>
+                        <button id="apply-animation" class="btn btn-primary" disabled>
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V3.5A.5.5 0 0 1 8 3zM3.732 4.732a.5.5 0 0 1 .707 0l2 2a.5.5 0 0 1 0 .707l-2 2a.5.5 0 1 1-.707-.707L5.293 8 3.732 6.939a.5.5 0 0 1 0-.707zM8 13a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-.5.5z"/>
+                            </svg>
+                            Apply Animation
+                        </button>
+                    </div>
+
+                    <!-- Applied Animation Editor Tab Content -->
+                        <div id="applied-animation-editor" class="tab-content">
+                            <div class="tab-content-header">
                                 <button id="close-applied-editor" class="close-btn" title="Close editor">
                                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
@@ -177,13 +196,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <button id="apply-animation" class="btn btn-primary" disabled>
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M8 3a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h1.5V3.5A.5.5 0 0 1 8 3zM3.732 4.732a.5.5 0 0 1 .707 0l2 2a.5.5 0 0 1 0 .707l-2 2a.5.5 0 1 1-.707-.707L5.293 8 3.732 6.939a.5.5 0 0 1 0-.707zM8 13a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-.5.5z"/>
-                            </svg>
-                            Apply Animation
-                        </button>
                     </div>
                 </div>
             </div>
