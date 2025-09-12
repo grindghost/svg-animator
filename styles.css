@@ -204,6 +204,19 @@
     font-weight: 400;
 }
 
+.version-badge {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 2px;
+    box-shadow: var(--shadow);
+    letter-spacing: 0.5px;
+    /* text-transform: uppercase; */
+}
+
 /* Footer Styles */
 .app-footer {
     background: var(--card-bg);
@@ -3102,6 +3115,7 @@ blockquote {
     
     .header-subtitle {
         font-size: 0.8rem;
+        display: none; /* Hide tagline on mobile */
     }
     
     body {
@@ -3151,6 +3165,7 @@ blockquote {
     
     .header-subtitle {
         font-size: 0.75rem;
+        display: none; /* Hide tagline on mobile */
     }
     
     .footer-content {
