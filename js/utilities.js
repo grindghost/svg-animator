@@ -373,10 +373,6 @@ function initializeDropdowns() {
 
 // Setup event listeners for applied animation editor
 function setupAppliedAnimationEditorListeners() {
-    // Close applied animation editor
-    document.getElementById('close-applied-editor').addEventListener('click', function() {
-        hideAppliedAnimationEditor();
-    });
 
     // Tab switching
     document.getElementById('controls-tab').addEventListener('click', function() {

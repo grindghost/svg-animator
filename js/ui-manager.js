@@ -106,11 +106,11 @@ function selectAnimationForEditing(elementId, animationId, animationType, animat
     };
     
     // Show the applied animation editor
-    showAppliedAnimationEditor(animationType, animationData);
+    showAppliedAnimationEditor(animationType, animationData, animationId);
 }
 
 // Function to show the applied animation editor
-function showAppliedAnimationEditor(animationType, animationData) {
+function showAppliedAnimationEditor(animationType, animationData, animationId) {
     const editor = document.getElementById('applied-animation-editor');
     const editorTab = document.getElementById('editor-tab');
     const controlsTab = document.getElementById('controls-tab');
@@ -122,8 +122,28 @@ function showAppliedAnimationEditor(animationType, animationData) {
     const paramControls = document.getElementById('applied-param-controls');
     
     // Update tab content with animation info
-    animationNameSpan.textContent = `🎭 ${animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ')}`;
-    animationIdSpan.textContent = `ID: ${animationData.animationId}`;
+    // Show just the animation name in the button (without emoji)
+    animationNameSpan.textContent = animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ');
+    
+    // Use the animationId parameter passed to the function
+    animationIdSpan.textContent = `${animationId}`;
+    
+    // Update the tab content header with animation ID
+    const tabContentHeader = document.querySelector('.tab-content-header');
+    if (tabContentHeader) {
+        // Remove any existing animation ID display
+        const existingIdDisplay = tabContentHeader.querySelector('.animation-id-display');
+        if (existingIdDisplay) {
+            existingIdDisplay.remove();
+        }
+        
+        // Add animation ID to the header
+        const idDisplay = document.createElement('div');
+        idDisplay.className = 'animation-id-display';
+        idDisplay.textContent = `Animation ID: ${animationId}`;
+        idDisplay.style.cssText = 'font-size: 0.8rem; color: var(--text-muted);';
+        tabContentHeader.appendChild(idDisplay);
+    }
     
     // Update speed controls (only if the animation uses defaultSpeedSlider)
     const anim = window.animationsData && window.animationsData[animationType] ? window.animationsData[animationType] : null;
@@ -253,6 +273,15 @@ function hideAppliedAnimationEditor() {
     const editorTab = document.getElementById('editor-tab');
     const controlsTab = document.getElementById('controls-tab');
     const controlsContent = document.getElementById('controls-content');
+    
+    // Clean up animation ID display from tab header
+    const tabContentHeader = document.querySelector('.tab-content-header');
+    if (tabContentHeader) {
+        const existingIdDisplay = tabContentHeader.querySelector('.animation-id-display');
+        if (existingIdDisplay) {
+            existingIdDisplay.remove();
+        }
+    }
     
     // Switch back to controls tab
     editorTab.classList.remove('active');

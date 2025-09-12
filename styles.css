@@ -953,12 +953,18 @@ svg {
 }
 
 .tab-content-header {
-    padding: 16px 20px;
-    background: var(--accent-light);
+    padding: 16px 20px 16px 0;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
+}
+
+.animation-id-display {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    opacity: 0.8;
 }
 
 .bounds-control {
