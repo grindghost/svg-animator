@@ -377,6 +377,7 @@ function setupAppliedAnimationEditorListeners() {
     // Tab switching
     document.getElementById('controls-tab').addEventListener('click', function() {
         switchToTab('controls');
+
     });
 
     document.getElementById('editor-tab').addEventListener('click', function() {
@@ -596,6 +597,25 @@ function switchToTab(tabName) {
         editorTab.style.display = 'none';
         controlsContent.classList.add('active');
         editor.classList.remove('active');
+
+        // remove hidden class from controls-section
+        const controlsSection = document.querySelector('.controls-section');
+        if (controlsSection) {
+            controlsSection.classList.remove('hidden');
+        }
+
+        // display animation-count-message
+        const animationCountMessage = document.getElementById('animation-count-message');
+        if (animationCountMessage) {
+            animationCountMessage.style.display = 'block';
+        }
+
+        // display animation-list-div
+        const animationListDiv = document.getElementById('animation-list-div');
+        if (animationListDiv) {
+            animationListDiv.style.display = 'block';
+        }
+
     } else if (tabName === 'editor') {
         controlsTab.classList.remove('active');
         editorTab.classList.add('active');

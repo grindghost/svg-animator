@@ -72,6 +72,13 @@ function updateAnimationListUI(selectedElementId) {
             animationDiv.addEventListener('click', (e) => {
                 if (e.target === removeButton) return; // Don't select when clicking remove
                 selectAnimationForEditing(selectedElementId, animationId, animationType, animationData);
+
+                // Smooth scroll to .animation-id-display
+                // add offset of 100px
+                const animationIdDisplay = document.querySelector('.tab-button');
+                if (animationIdDisplay) {
+                    animationIdDisplay.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest', top: 100 });
+                }
             });
 
             animationDiv.appendChild(animationInfo);
@@ -262,6 +269,12 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
     // Show controls content
     controlsContent.style.display = 'block';
 
+    // Hide the controls placeholder when in editor mode
+    const controlsPlaceholder = document.querySelector('.controls-placeholder');
+    if (controlsPlaceholder) {
+        controlsPlaceholder.style.display = 'none';
+    }
+
     // hide controls section
     hideControlsSection();
 
@@ -290,12 +303,48 @@ function hideAppliedAnimationEditor() {
     controlsContent.classList.add('active');
     editor.classList.remove('active');
     
+    // When returning to controls tab, we need to restore the proper state
+    const controlsPlaceholder = document.querySelector('.controls-placeholder');
+    const controlsSection = document.querySelector('.controls-section');
+    
+    // Check if there's a selected element by looking for elements with 'selected-element' class
+    const selectedElement = document.querySelector('.selected-element');
+    const hasSelectedElement = selectedElement !== null;
+    
+    
+    if (hasSelectedElement) {
+        // Element is selected - show controls section and hide placeholder
+        if (controlsSection) {
+            controlsSection.classList.remove('hidden');
+        }
+        if (controlsPlaceholder) {
+            controlsPlaceholder.style.display = 'none';
+        }
+    } else {
+        // No element selected - hide controls section and show placeholder
+        if (controlsSection) {
+            controlsSection.classList.add('hidden');
+        }
+        if (controlsPlaceholder) {
+            controlsPlaceholder.style.display = 'block';
+        }
+    }
+    
     currentlyEditingAnimation = null;
     
-    // Remove selection from all items
+    // Remove selection from all animation items in the bottom panel
     document.querySelectorAll('.animation-item.selected').forEach(item => {
         item.classList.remove('selected');
     });
+    
+    // Clear any visual selection indicators in the animation list
+    const animationListDiv = document.getElementById('animation-list-div');
+    if (animationListDiv) {
+        // Remove any selection styling from animation items
+        animationListDiv.querySelectorAll('.animation-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+    }
 }
 
 // Function to check if an element is the root SVG element
