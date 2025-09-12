@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://svg-animator-pro.vercel.app/sitemap.xml
+
+# Allow all search engines to crawl all content
+# Since this is a free tool, we want maximum visibility
+
+# Block access to JavaScript files (not needed for SEO)
+Disallow: /js/
+
+# Allow access to CSS and images
+Allow: /styles.css
+Allow: /assets/
+
+# Crawl delay (optional - helps prevent overloading)
+Crawl-delay: 1
