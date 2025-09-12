@@ -806,8 +806,36 @@ function updateAnimationCountMessage(elementId) {
                 <span class="count-text">This element already has ${count} animation${count > 1 ? 's' : ''} applied. You can add more!</span>
             </div>
         `;
+        
+        // Add click event listener for smooth scroll to animation list
+        messageDiv.style.cursor = 'pointer';
+        messageDiv.title = 'Click to scroll to applied animations';
+        
+        // Remove any existing event listeners to prevent duplicates
+        messageDiv.removeEventListener('click', scrollToAnimationList);
+        messageDiv.addEventListener('click', scrollToAnimationList);
     } else {
         messageDiv.style.display = 'none';
+    }
+}
+
+// Function to smoothly scroll to the animation list
+// add offset of 100px     
+function scrollToAnimationList() {
+    const animationList = document.querySelector('.animation-list');
+    if (animationList) {
+        // Get the position of the animation list
+        const rect = animationList.getBoundingClientRect();
+        const offset = 200; // Negative offset of 100px
+        
+        // Calculate the target scroll position
+        const targetPosition = window.pageYOffset + rect.top - offset;
+        
+        // Smooth scroll to the calculated position
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
     }
 }
 
