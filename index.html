@@ -198,6 +198,18 @@
                             </div>
                         </div>
 
+                        <div class="control-group">
+                            <label class="control-label">🧪 Apply Recipe</label>
+                            <div class="select-wrapper">
+                                <select id="recipe-selector" disabled>
+                                    <option value="none">Select recipe...</option>
+                                </select>
+                            </div>
+                            <div class="recipe-manage-link">
+                                <a href="#" id="manage-recipes-link" class="manage-recipes-link">Manage recipes</a>
+                            </div>
+                        </div>
+
                         <div id="speed-control-group" class="control-group" style="display: none;">
                             <label class="control-label">Animation Speed</label>
                             <div class="speed-control">
@@ -343,6 +355,10 @@
         <div class="panel">
             <div class="panel-header">
                 <span>🎭 Animation Selector</span>
+                <button id="create-recipe-btn" class="btn btn-primary create-recipe-btn" disabled title="Create animation recipe">
+
+                    🧪 Create Recipe
+                </button>
             </div>
             <div class="panel-content">
                 <div id="animation-list-div" class="animation-list">
@@ -542,10 +558,50 @@
     <script src="js/utilities.js"></script>
     <script src="js/shape-styling.js"></script>
     <script src="js/project-manager.js"></script>
+    <script src="js/recipe-manager.js"></script>
+    <script src="js/recipe-ui.js"></script>
     <script type="module" src="js/lottie-exporter.js"></script>
     <script src="js/tools-gallery.js"></script>
     <script src="js/articles.js"></script>
     <script src="js/hamburger-menu.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- Recipe Creation Overlay -->
+    <div id="recipe-overlay" class="recipe-overlay hidden">
+        <div class="recipe-modal">
+            <div class="recipe-modal-header">
+                <h3>🧪 Create Animation Recipe</h3>
+                <button id="recipe-close-btn" class="recipe-close-btn" title="Close">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="recipe-modal-content">
+                <div class="recipe-form">
+                    <p class="recipe-description">Save the current animations on the selected element as a reusable recipe.</p>
+                    
+                    <div class="form-group">
+                        <label for="recipe-name" class="form-label">Recipe Name</label>
+                        <input type="text" id="recipe-name" class="form-input" placeholder="Enter recipe name..." maxlength="50">
+                        <div id="recipe-name-error" class="form-error hidden"></div>
+                    </div>
+                    
+                    <div class="recipe-actions">
+                        <button id="recipe-cancel-btn" class="btn btn-secondary">Cancel</button>
+                        <button id="recipe-save-btn" class="btn btn-primary" disabled>Save Recipe</button>
+                    </div>
+                </div>
+                
+                <div class="recipe-list-section">
+                    <h4>Existing Recipes</h4>
+                    <div id="recipe-list" class="recipe-list">
+                        <div class="recipe-placeholder">No recipes saved yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

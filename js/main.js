@@ -81,6 +81,15 @@ document.addEventListener('DOMContentLoaded', function() {
         cleanupInvalidAnimations();
     }
     
+    // Initialize recipe functionality
+    if (typeof initializeRecipeManager === 'function') {
+        initializeRecipeManager();
+    }
+    
+    if (typeof initializeRecipeUI === 'function') {
+        initializeRecipeUI();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');
