@@ -1,0 +1,41 @@
+{
+  "navigation": {
+    "sections": [
+      {
+        "title": "Pages",
+        "links": [
+          {
+            "href": "index.html",
+            "text": "🏠 Home",
+            "icon": "🏠"
+          },
+          {
+            "href": "origin-story.html",
+            "text": "📖 Origin Story",
+            "icon": "📖"
+          },
+          {
+            "href": "documentation.html",
+            "text": "📚 Documentation",
+            "icon": "📚"
+          }
+        ]
+      }
+    ],
+    "pageSpecificSections": {
+      "index.html": [
+        {
+          "title": "Index Sections",
+          "links": [
+            {
+              "href": "#tools-gallery",
+              "text": "Tools & Resources",
+              "icon": "🛠️",
+              "isScrollLink": true
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
