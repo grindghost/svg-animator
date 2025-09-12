@@ -1797,9 +1797,18 @@ select:disabled {
     gap: 8px;
 }
 
+#applied-param-controls {
+    padding: 16px 0 0 0 !important;
+    border-top: 1px solid var(--border);
+    background: var(--card-bg);
+}
+
 .param-controls {
     padding: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
     background: var(--card-bg);
+    
 }
 
 .param-control {
@@ -2005,7 +2014,7 @@ select:disabled {
 
 .applied-animation-controls .speed-display {
     font-weight: 500;
-    color: var(--accent);
+    /* color: var(--accent); */
     min-width: 40px;
     text-align: center;
     font-size: 0.9rem;
@@ -2013,6 +2022,7 @@ select:disabled {
 
 .applied-animation-controls .param-control {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 12px;
     margin-bottom: 16px;
@@ -2057,10 +2067,10 @@ select:disabled {
 }
 
 .applied-animation-controls .param-value {
-    min-width: 40px;
-    text-align: right;
+    min-width: 56px;
+    text-align: center;
     font-weight: 500;
-    color: var(--accent);
+    /* color: var(--accent); */
     font-size: 0.85rem;
 }
 
