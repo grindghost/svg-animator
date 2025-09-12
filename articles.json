@@ -1,0 +1,40 @@
+{
+  "articles": [
+    {
+      "title": "The Complete Guide to SVG Animation",
+      "author": "Sarah Chen",
+      "url": "https://css-tricks.com/guide-svg-animations/",
+      "description": "Learn the fundamentals of SVG animation techniques and best practices"
+    },
+    {
+      "title": "Optimizing SVG Performance for Web",
+      "author": "Mike Rodriguez",
+      "url": "https://web.dev/optimizing-svg/",
+      "description": "Tips and tricks to make your SVG animations lightning fast"
+    },
+    {
+      "title": "Creating Interactive SVG Icons",
+      "author": "Emma Thompson",
+      "url": "https://www.smashingmagazine.com/interactive-svg-icons/",
+      "description": "Build engaging icon animations that respond to user interactions"
+    },
+    {
+      "title": "SVG Animation Libraries Comparison",
+      "author": "David Park",
+      "url": "https://blog.logrocket.com/svg-animation-libraries/",
+      "description": "Compare popular SVG animation libraries and choose the right one"
+    },
+    {
+      "title": "Advanced SVG Path Animation",
+      "author": "Lisa Wang",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths",
+      "description": "Master complex path animations and morphing effects"
+    },
+    {
+      "title": "SVG Accessibility Best Practices",
+      "author": "Alex Johnson",
+      "url": "https://www.w3.org/WAI/WCAG21/Understanding/",
+      "description": "Ensure your animated SVGs are accessible to all users"
+    }
+  ]
+}

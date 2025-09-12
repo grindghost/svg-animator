@@ -32,6 +32,12 @@
               "text": "Tools & Resources",
               "icon": "🛠️",
               "isScrollLink": true
+            },
+            {
+              "href": "#articles-section",
+              "text": "📚 Interesting Articles",
+              "icon": "📚",
+              "isScrollLink": true
             }
           ]
         }
