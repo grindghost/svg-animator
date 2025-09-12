@@ -43,10 +43,43 @@
         </svg>
     </button>
 
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger-menu" id="hamburger-menu" title="Open navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Navigation Overlay -->
+    <div class="nav-overlay" id="nav-overlay">
+        <div class="nav-content">
+            <div class="nav-header">
+                <h3>Navigation</h3>
+                <button class="nav-close" id="nav-close" title="Close navigation">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <h4>Pages</h4>
+                    <ul>
+                        <li><a href="index.html" class="nav-link">🏠 Home</a></li>
+                        <li><a href="origin-story.html" class="nav-link">📖 Origin Story</a></li>
+                        <li><a href="documentation.html" class="nav-link">📚 Documentation</a></li>
+                        <li><a href="privacy-policy.html" class="nav-link">🔒 Privacy Policy</a></li>
+                        <li><a href="terms-of-service.html" class="nav-link">📋 Terms of Service</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </div>
+
     <div class="container">
         <div class="legal-page single-column">
             <h1>Privacy Policy</h1>
-            <p class="last-updated">Last updated: December 2024</p>
+            <p class="last-updated">Last updated: September 2025</p>
 
             <section>
                 <h2>Introduction</h2>
@@ -179,5 +212,6 @@
             initializeThemeManager();
         }
     </script>
+    <script src="js/hamburger-menu.js"></script>
 </body>
 </html>
