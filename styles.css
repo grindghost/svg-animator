@@ -200,6 +200,7 @@
 
 .header-subtitle {
     font-size: 0.9rem;
+    margin-right: 50px;
     color: var(--text-secondary);
     font-weight: 400;
 }
@@ -449,6 +450,7 @@ html {
 
 .legal-page h1 {
     font-size: 2.5rem;
+    line-height: 1.2;
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
     -webkit-background-clip: text;
