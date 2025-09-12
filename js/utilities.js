@@ -356,11 +356,8 @@ function initializeDropdowns() {
         }
         
         if (exportLottieItem) {
-            if (hasAnimations && hasSvg) {
-                exportLottieItem.removeAttribute('disabled');
-            } else {
-                exportLottieItem.setAttribute('disabled', 'true');
-            }
+            // Always keep Lottie export disabled until functionality is ready
+            exportLottieItem.setAttribute('disabled', 'true');
         }
     }
     
