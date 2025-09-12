@@ -162,17 +162,32 @@ let animationsData =
   },
 
   "spin": {
-    "keyframes": {
+    "params": { 
+      "direction": 1 
+    },
+    "paramConfig": {
+      "direction": {
+        "min": -1,
+        "max": 1,
+        "step": 2,
+        "default": 1
+      }
+    },
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
+    "generateKeyframes": function(p) {
+      const direction = p.direction || 1;
+      const endRotation = direction >= 0 ? 360 : -360;
+      return {
         "0%": {
             "animation-timing-function": "cubic-bezier(0.5856,0.0703,0.4143,0.9297)",
             "transform": "rotate(0deg)"
         },
         "100%": {
-            "transform": "rotate(360deg)"
+            "transform": `rotate(${endRotation}deg)`
         }
-    },
-    "defaultSpeed": "0.5",
-    "defaultSpeedSlider": true
+      };
+    }
   },
 
   "flip-horizontal" : {
@@ -243,62 +258,80 @@ let animationsData =
   },
 
     "clock" : {
-    "keyframes": {
+    "params": { 
+      "direction": 1 
+    },
+    "paramConfig": {
+      "direction": {
+        "min": -1,
+        "max": 1,
+        "step": 2,
+        "default": 1
+      }
+    },
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
+    "generateKeyframes": function(p) {
+      const direction = p.direction || 1;
+      const rotationValues = direction >= 0 ? 
+        [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360] :
+        [0, -30, -60, -90, -120, -150, -180, -210, -240, -270, -300, -330, -360];
+      
+      return {
         "0%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(0deg)"
+            "transform": `rotate(${rotationValues[0]}deg)`
         },
         "8.33333%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(30deg)"
+            "transform": `rotate(${rotationValues[1]}deg)`
         },
         "16.66667%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(60deg)"
+            "transform": `rotate(${rotationValues[2]}deg)`
         },
         "25%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(90deg)"
+            "transform": `rotate(${rotationValues[3]}deg)`
         },
         "33.33333%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(120deg)"
+            "transform": `rotate(${rotationValues[4]}deg)`
         },
         "41.66667%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(150deg)"
+            "transform": `rotate(${rotationValues[5]}deg)`
         },
         "50%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(180deg)"
+            "transform": `rotate(${rotationValues[6]}deg)`
         },
         "58.33333%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(210deg)"
+            "transform": `rotate(${rotationValues[7]}deg)`
         },
         "66.66667%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(240deg)"
+            "transform": `rotate(${rotationValues[8]}deg)`
         },
         "75%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(270deg)"
+            "transform": `rotate(${rotationValues[9]}deg)`
         },
         "83.33333%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(300deg)"
+            "transform": `rotate(${rotationValues[10]}deg)`
         },
         "91.66667%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(330deg)"
+            "transform": `rotate(${rotationValues[11]}deg)`
         },
         "100%": {
             "animation-timing-function": "cubic-bezier(0,0.7,0.3,1)",
-            "transform": "rotate(360deg)"
+            "transform": `rotate(${rotationValues[12]}deg)`
         }
-    },
-    "defaultSpeed": "0.5",
-    "defaultSpeedSlider": false
+      };
+    }
   },
 
     "metronome" : {

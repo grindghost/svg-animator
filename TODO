@@ -7,26 +7,27 @@
 ✅ Remove temp style when user click inside the svg preview zone (just outside).
 ✅ Somewhere in the doc., add a code explainer of what/how we doing the compounding animation in the svg, with example. I'd like to explain that the scale/translation transformation are applied at the first level on a first .wrapping-group. Then, each animation is applied on outter .anim-wrapper group with the inline style with the animation. I'd also like to mention something important with a visual marker: that this modified animated svg will be sanitize/stripped from their custom code once re-open in Adobe Illustrator, so the animation works will be lost. To re-edit visually an animated svg with the app, we have made test, and it's better to use inkscape, because it doesn't sanitize the animated svg, so it preserves the applied animation.
 ✅ Layer tree: correct overflow on right. 
-▢ Layer tree: Display custom id (layer name) if found. 
-▢ Button to hide and bookmark the current selection (on the summary elements)
+✅ Allow managing "Recipes" to reapply custom recipe easily.
+✅ Add google analytics.
+✅ Seo optimisation and favicons
 
+▢  Wrap in vite app (simple js).
+▢ Layer tree: Display custom id (layer name) if found. 
+▢ Hide side panels to maximize svg preview.
+▢ Add right click menu, on the shape to allow to apply animations on the fly, and apply recipes.
 ▢ Save project with ctrl+s.
+
+▢ Named destinaton: Button to hide and bookmark the current selection (on the summary elements)
 ▢ Display the applied animation as small "tag" button in a container above the svg-preview zone. Each button should contain the name of the animation and a small X, that would allow to delete/remove it from there. Doing so, it should update the "Applied Animations" content also to reflect the removals. I had a crazy idea... Could we allow the user to re-order them? Doing so we would need to re-arrange all the anim-wrapper that wrap the elements so their nesting reflect the order of the animations.
 
-▢ Hide side panels to maximize svg preview.
 
-▢ Add right click menu, on the shape to allow to apply animations on the fly, and apply recipes.
 
 
 ▢ Support to hide animations/shapes.
 ▢ Support to ree-order multiple anmation (via an index).
-▢ Allow managing "Recipes" to reapply custom recipe easily.
 ▢ Undo/redo with Domdiff.
-▢ Add google analytics.
-▢ Seo optimisation and favicons
-▢  Wrap in vite app (simple js).
 ▢ Disable lottie export and add badge saying: "soon".
 
-▢  Allow to check multiple element in the treeview, and wrap them all in a anim-wrapper to apply animation on them.
+▢ Allow to check multiple element in the treeview, and wrap them all in a anim-wrapper to apply animation on them.
 
 ▢ Research other useful parameters to control the animations.
