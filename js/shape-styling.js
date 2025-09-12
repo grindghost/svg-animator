@@ -252,6 +252,14 @@ function updateStylingControlsFromElement(element) {
         return;
     }
     
+    // Check if this is a group element - disable styling controls
+    if (actualShape.tagName === 'g') {
+        disableStylingControls();
+        showUnsupportedFillIndicator('group');
+        showUnsupportedFillMessage('Group elements cannot be styled');
+        return;
+    }
+    
     // Enable styling controls for non-image elements
     enableStylingControls();
     
@@ -492,6 +500,10 @@ function showUnsupportedFillIndicator(type) {
         // For image elements, show gray with ? for both fill and stroke
         showUnsupportedIndicator('fill');
         showUnsupportedIndicator('stroke');
+    } else if (type === 'group') {
+        // For group elements, show gray with ? for both fill and stroke
+        showUnsupportedIndicator('fill');
+        showUnsupportedIndicator('stroke');
     } else {
         // For gradients/patterns, show gray with ? for the specific type
         const targetType = type === 'gradient' ? 'fill' : 'stroke';
@@ -517,7 +529,9 @@ function showUnsupportedIndicator(type) {
         // Show the custom indicator
         indicator.style.display = 'block';
         indicator.className = 'color-indicator unsupported';
-        indicator.title = type === 'image' ? 'Image element - styling not supported' : `Unsupported ${type} - not editable`;
+        indicator.title = type === 'image' ? 'Image element - styling not supported' : 
+                         type === 'group' ? 'Group element - styling not supported' : 
+                         `Unsupported ${type} - not editable`;
         
         // Disable click for unsupported types
         indicator.style.pointerEvents = 'none';
