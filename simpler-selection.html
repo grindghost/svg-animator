@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SVG.js v3 – Import & Edit with Groups</title>
+  <!-- Core + Plugins -->
+  <script src="https://unpkg.com/@svgdotjs/svg.js"></script>
+  <script src="https://unpkg.com/@svgdotjs/svg.select.js"></script>
+  <script src="https://unpkg.com/@svgdotjs/svg.resize.js"></script>
+  <script src="https://unpkg.com/@svgdotjs/svg.draggable.js"></script>
+  <style>
+    body { background:#f0f0f0; font-family:sans-serif; padding:1rem; }
+    #canvas { width:800px; height:500px; border:1px solid #ccc; background:white; }
+    input[type="file"] { margin-bottom:10px; }
+
+    /* Selection overlays */
+    .svg_select_shape,
+    .svg_select_shape_pointSelect {
+      fill: none !important;
+      stroke: #888 !important;
+    }
+    .svgjs-handle {
+      fill: white;
+      stroke: black;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>SVG.js v3 – Upload & Edit (Groups Supported)</h2>
+  <input type="file" id="fileInput" accept=".svg" />
+  <div id="canvas"></div>
+
+<script>
+  const draw = new SVG().addTo("#canvas").size("100%", "100%");
+  let selected = null;
+
+  function enableEditing(el) {
+    el.draggable();
+    el.resize({ grid: 20, degree: 15 });
+
+    el.on("click", e => {
+      e.stopPropagation();
+
+      // Clear previous selection
+      if (selected && selected !== el) {
+        selected.select(false);
+        if (typeof selected.pointSelect === "function") {
+          selected.pointSelect(false);
+        }
+      }
+
+      // Apply selection
+      el.select();
+      if (typeof el.pointSelect === "function") {
+        el.pointSelect();
+      }
+      selected = el;
+    });
+  }
+
+  // Clear selection on empty canvas click
+  draw.on("click", e => {
+    if (e.target === draw.node && selected) {
+      selected.select(false);
+      if (typeof selected.pointSelect === "function") {
+        selected.pointSelect(false);
+      }
+      selected = null;
+    }
+  });
+
+  // Handle SVG file upload
+  document.getElementById("fileInput").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = event => {
+      const svgString = event.target.result;
+
+      // Clear old drawing
+      draw.clear();
+
+      // Parse uploaded SVG
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgString, "image/svg+xml");
+      const svgNode = doc.documentElement;
+
+      // Import into SVG.js
+      const imported = SVG(svgNode);
+      draw.add(imported);
+
+      // Enable editing for shapes AND groups
+      imported.find("polygon, rect, circle, ellipse, path, line, polyline, g, image").forEach(el => {
+        enableEditing(el);
+      });
+    };
+    reader.readAsText(file);
+  });
+</script>
+</body>
+</html>
