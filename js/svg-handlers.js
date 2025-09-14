@@ -776,10 +776,9 @@ function initializeHoverAndSelect() {
         let targetElement = event.target.closest('svg [id]');
         console.log(targetElement)
         
-        // Skip linearGradient, clipPath, and use elements
+        // Skip linearGradient and use elements
         if (targetElement && 
             targetElement.tagName !== 'linearGradient' && 
-            targetElement.tagName !== 'clipPath' && 
             targetElement.tagName !== 'use') {
             selectElement(targetElement.id, targetElement);
         }
