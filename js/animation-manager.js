@@ -20,9 +20,127 @@ function restoreClipPathShapeAppearance(element) {
     // Restore original style
     const originalStyle = element.getAttribute('data-original-style');
     if (originalStyle !== null) {
-        element.setAttribute('style', originalStyle);
+        // ✅ NEW: Clean any animation references from the original style before restoring
+        let cleanedStyle = originalStyle;
+        
+        // Remove animation property from the style string
+        cleanedStyle = cleanedStyle.replace(/animation\s*:\s*[^;]+;?\s*/g, '');
+        
+        // Remove any remaining semicolons that might be left hanging
+        cleanedStyle = cleanedStyle.replace(/;\s*;/g, ';');
+        cleanedStyle = cleanedStyle.replace(/;\s*$/, '');
+        
+        element.setAttribute('style', cleanedStyle);
         element.removeAttribute('data-original-style');
     }
+}
+
+// ✅ NEW: Special animation stopping for clipPath elements
+function stopClipPathAnimation(element, animName = undefined) {
+    if (!element || !isInsideClipPath(element)) return;
+    
+    console.log('stopClipPathAnimation called:', {
+        elementId: element.id,
+        animName: animName,
+        currentStyle: element.getAttribute('style'),
+        originalStyle: element.getAttribute('data-original-style')
+    });
+    
+    // Case 1: stopping preview animation
+    if (element.style.animation && element.style.animation.includes("temp-generic")) {
+        removeTempPreviewFromClipPathShape(element);
+        return;
+    }
+    
+    // Case 2: stopping permanent animation(s)
+    if (animName) {
+        // Check if this is an animation ID (UUID format), animation type name, or animation name
+        const isAnimationId = animName.includes('-') && animName.length > 20; // UUIDs are longer
+        const isAnimationName = animName.includes('-') && animName.length < 20; // Animation names like "bounce-0lcrujogh"
+        
+        if (isAnimationId) {
+            // animName is actually an animation ID - find the animation type
+            const elementId = element.getAttribute("id");
+            if (elementId) {
+                const savedAnimations = getSavedAnimations();
+                const elementAnimations = savedAnimations.animations[elementId];
+                if (elementAnimations && elementAnimations[animName]) {
+                    const animationData = elementAnimations[animName];
+                    const animationName = animationData.animationName;
+                    
+                    // Check if this element has the animation we want to stop
+                    if (element.style.animation && element.style.animation.includes(animationName)) {
+                        // Remove the animation from the element's style
+                        element.style.animation = "";
+                        
+                        // Remove animation classes
+                        element.classList.remove("application-animation-class");
+                        element.classList.forEach(cls => {
+                            if (cls.endsWith("-animation-class")) {
+                                element.classList.remove(cls);
+                            }
+                        });
+                        
+                        // Restore original appearance
+                        restoreClipPathShapeAppearance(element);
+                    }
+                }
+            }
+        } else if (isAnimationName) {
+            // animName is an animation name (like "bounce-0lcrujogh") - remove it directly
+            if (element.style.animation && element.style.animation.includes(animName)) {
+                // Remove the animation from the element's style
+                element.style.animation = "";
+                
+                // Remove animation classes
+                element.classList.remove("application-animation-class");
+                element.classList.forEach(cls => {
+                    if (cls.endsWith("-animation-class")) {
+                        element.classList.remove(cls);
+                    }
+                });
+                
+                // Restore original appearance
+                restoreClipPathShapeAppearance(element);
+            }
+        } else {
+            // animName is an animation type - use old logic for backward compatibility
+            if (element.style.animation && element.style.animation.includes(animName)) {
+                // Remove the animation from the element's style
+                element.style.animation = "";
+                
+                // Remove animation classes
+                element.classList.remove("application-animation-class");
+                element.classList.forEach(cls => {
+                    if (cls.endsWith("-animation-class")) {
+                        element.classList.remove(cls);
+                    }
+                });
+                
+                // Restore original appearance
+                restoreClipPathShapeAppearance(element);
+            }
+        }
+    } else {
+        // stop all animations on this clipPath element
+        element.style.animation = "";
+        
+        // Remove animation classes
+        element.classList.remove("application-animation-class");
+        element.classList.forEach(cls => {
+            if (cls.endsWith("-animation-class")) {
+                element.classList.remove(cls);
+            }
+        });
+        
+        // Restore original appearance
+        restoreClipPathShapeAppearance(element);
+    }
+    
+    // Clean up selection box
+    try {
+        document.getElementById("selection-box").remove();
+    } catch (e) {}
 }
 
 // Remove any temporary preview (keyframe or filter-based)
@@ -133,6 +251,11 @@ function CleanAnimationStyle(element, animation_name) {
 
 function stopAnimation(element, animName = undefined) {
     if (!element) return;
+
+    // ✅ NEW: Handle clipPath elements specially - they don't use anim-wrapper groups
+    if (isInsideClipPath(element)) {
+        return stopClipPathAnimation(element, animName);
+    }
 
     // ✅ normalize: work on wrapper if shape is inside one
     let wrapper = element;
@@ -1000,6 +1123,7 @@ function scaleAnimationIntensityForClipPath(keyframes, animationType) {
 window.removeStyleTag = removeStyleTag;
 window.removeTempPreview = removeTempPreview;
 window.removeTempPreviewFromClipPathShape = removeTempPreviewFromClipPathShape;
+window.stopClipPathAnimation = stopClipPathAnimation;
 window.CleanAnimationStyle = CleanAnimationStyle;
 window.stopAnimation = stopAnimation;
 window.applyTempAnimation = applyTempAnimation;
