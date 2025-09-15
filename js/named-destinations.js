@@ -48,37 +48,48 @@ function saveNamedDestinations(namedDestinationsData) {
 function createNamedDestination(elementId, element, animationType) {
     const data = getNamedDestinations();
     
+    // If the element is a wrapper (anim-wrapper or wrapping-group), find the original element inside it
+    let originalElement = element;
+    if (element.classList.contains('anim-wrapper') || element.classList.contains('wrapping-group')) {
+        // Find the first child element that's not another wrapper
+        const childElements = element.children;
+        for (let child of childElements) {
+            if (!child.classList.contains('anim-wrapper') && !child.classList.contains('wrapping-group')) {
+                originalElement = child;
+                break;
+            }
+        }
+    }
+    
+    // Ensure original element has an ID for consistent treeview lookup
+    let actualElementId = originalElement.id;
+    if (!actualElementId) {
+        // Generate a unique ID for elements without one
+        actualElementId = `element-${uniqueID()}`;
+        originalElement.id = actualElementId;
+    }
+    
     // Check if element already has a named destination
-    if (data.destinations[elementId]) {
-        return data.destinations[elementId].id; // Return existing destination ID
+    if (data.destinations[actualElementId]) {
+        return data.destinations[actualElementId].id; // Return existing destination ID
     }
     
     // Generate unique ID for this destination
     const destinationId = uniqueID();
     
-    // Create default name based on element and animation
-    const elementTag = element.tagName.toLowerCase();
+    // Create default name based on original element and animation
+    const elementTag = originalElement.tagName.toLowerCase();
     let defaultName;
     
-    // Check if element has a previously saved custom name
-    // Try to find the original element (not wrapped in animation wrapper) to check for saved name
-    let originalElement = document.querySelector(`#${elementId}`);
-    if (!originalElement) {
-        // If not found by ID, try to find by tag name (for elements without IDs)
-        const elements = document.querySelectorAll(elementId);
-        if (elements.length > 0) {
-            originalElement = elements[0]; // Take the first one
-        }
-    }
-    
-    const savedName = originalElement ? originalElement.getAttribute('data-animation-name') : null;
+    // Check if original element has a previously saved custom name
+    const savedName = originalElement.getAttribute('data-animation-name');
     if (savedName) {
         // Use the saved custom name
         defaultName = savedName;
     } else {
         // If element has an ID, use it in the name
-        if (elementId && elementId !== elementTag) {
-            defaultName = `${elementId} (${animationType})`;
+        if (actualElementId && actualElementId !== elementTag) {
+            defaultName = `${actualElementId} (${animationType})`;
         } else {
             // For elements without IDs, use tag name
             defaultName = `${elementTag} (${animationType})`;
@@ -86,9 +97,9 @@ function createNamedDestination(elementId, element, animationType) {
     }
     
     // Store destination data
-    data.destinations[elementId] = {
+    data.destinations[actualElementId] = {
         id: destinationId,
-        elementId: elementId,
+        elementId: actualElementId,
         name: defaultName,
         animationType: animationType,
         createdAt: new Date().toISOString()
@@ -175,20 +186,17 @@ function selectElementByDestination(destinationId) {
     for (const elementId in data.destinations) {
         if (data.destinations[elementId].id === destinationId) {
             const destination = data.destinations[elementId];
-            let element = document.getElementById(destination.elementId);
-            
-            // If element not found by ID, try to find it by tag name (for elements without IDs)
-            if (!element && destination.elementId === destination.elementId.toLowerCase()) {
-                // This might be a tag name, try to find the first element of this type
-                const elements = document.querySelectorAll(destination.elementId);
-                if (elements.length > 0) {
-                    element = elements[0]; // Take the first one
-                }
-            }
+            const element = document.getElementById(destination.elementId);
             
             if (element) {
-                // Use the existing selectElement function to select and highlight the element
-                selectElement(destination.elementId, element);
+                console.log('selectElementByDestination - simulating click on element:', element);
+                // Simulate a click on the SVG element to trigger the same behavior as direct clicking
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                element.dispatchEvent(clickEvent);
                 updateStatusBar(`Selected: ${destination.name} ✨`);
                 return true;
             } else {

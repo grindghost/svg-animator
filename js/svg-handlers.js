@@ -840,12 +840,31 @@ function selectElement(elementId, element) {
     }
 
     // Find the corresponding "summary" element in the tree view
+    console.log('selectElement - looking for treeview element with data-element-id:', elementId);
     let summaryElement = document.querySelector(`summary[data-element-id="${elementId}"]`);
     
     // If a summary wasn't found, try to find a div
     if (!summaryElement) {
         summaryElement = document.querySelector(`div[data-element-id="${elementId}"]`);
     }
+    
+    // If still not found, try to find by element reference (for elements that got new IDs)
+    if (!summaryElement) {
+        console.log('selectElement - element not found by ID, trying to find by element reference');
+        // Look for treeview elements that might correspond to this element
+        const allTreeviewElements = document.querySelectorAll('[data-element-id]');
+        for (let treeviewEl of allTreeviewElements) {
+            const treeviewElementId = treeviewEl.getAttribute('data-element-id');
+            const svgElement = document.getElementById(treeviewElementId);
+            if (svgElement === element) {
+                summaryElement = treeviewEl;
+                console.log('selectElement - found treeview element by element reference:', summaryElement);
+                break;
+            }
+        }
+    }
+    
+    console.log('selectElement - found summaryElement:', summaryElement);
 
     if (summaryElement) {
         // Expand all parent "details" elements
