@@ -1,6 +1,11 @@
 // Main application entry point
 // SVG Animator Pro - Main Module
 
+// Prevent browser from restoring scroll position on page refresh
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+
 // Import all modules by loading them in the correct order
 // This ensures all dependencies are available when needed
 
@@ -18,6 +23,14 @@
 
 // Initialize the application when all modules are loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Scroll to top on page load/refresh to prevent browser from restoring previous scroll position
+    window.scrollTo(0, 0);
+    
+    // Prevent browser from restoring scroll position on page refresh
+    if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'manual';
+    }
+    
     // Ensure all required functions are available
     if (typeof populateAnimationDropdown === 'undefined') {
         console.error('UI Manager module not loaded');
