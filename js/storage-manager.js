@@ -93,6 +93,11 @@ function removeAnimation(elementId, animationId) {
         // Remove the element entry if it has no more animations
         if (Object.keys(data.animations[elementId]).length === 0) {
             delete data.animations[elementId];
+            
+            // Remove named destination for this element since it has no more animations
+            if (typeof removeNamedDestinationForElement === 'function') {
+                removeNamedDestinationForElement(elementId);
+            }
         }
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
@@ -139,6 +144,11 @@ function resetAllAnimations() {
     elementsWithAnimation.forEach(element => {
         stopAnimation(element);
     });
+
+    // Clear all named destinations when resetting all animations
+    if (typeof clearAllNamedDestinations === 'function') {
+        clearAllNamedDestinations();
+    }
 
     // Update the UI list
     updateAnimationListUI(null);

@@ -137,10 +137,15 @@ function stopClipPathAnimation(element, animName = undefined) {
         restoreClipPathShapeAppearance(element);
     }
     
-    // Clean up selection box
+    // Clean up selection box and handles
     try {
         document.getElementById("selection-box").remove();
     } catch (e) {}
+    
+    // Remove handles when stopping clipPath animation
+    if (typeof removeHandles === 'function') {
+        removeHandles();
+    }
 }
 
 // Remove any temporary preview (keyframe or filter-based)
@@ -323,10 +328,15 @@ function stopAnimation(element, animName = undefined) {
         }
     }
 
-    // ✅ Clean up selection box
+    // ✅ Clean up selection box and handles
     try {
         document.getElementById("selection-box").remove();
     } catch (e) {}
+    
+    // Remove handles when stopping animation
+    if (typeof removeHandles === 'function') {
+        removeHandles();
+    }
     
     // ✅ NEW: Restore original appearance for clipPath shapes
     restoreClipPathShapeAppearance(element);

@@ -302,6 +302,20 @@ function createEditDestinationModal() {
     return modal;
 }
 
+// Remove named destination for a specific element
+function removeNamedDestinationForElement(elementId) {
+    const data = getNamedDestinations();
+    
+    if (data.destinations[elementId]) {
+        delete data.destinations[elementId];
+        saveNamedDestinations(data);
+        updateNamedDestinationsUI();
+        return true;
+    }
+    
+    return false;
+}
+
 // Clear all named destinations (useful when clearing all animations)
 function clearAllNamedDestinations() {
     localStorage.setItem(NAMED_DESTINATIONS_KEY, JSON.stringify({ destinations: {} }));
@@ -314,6 +328,7 @@ window.saveNamedDestinations = saveNamedDestinations;
 window.createNamedDestination = createNamedDestination;
 window.updateNamedDestinationName = updateNamedDestinationName;
 window.deleteNamedDestination = deleteNamedDestination;
+window.removeNamedDestinationForElement = removeNamedDestinationForElement;
 window.selectElementByDestination = selectElementByDestination;
 window.updateNamedDestinationsUI = updateNamedDestinationsUI;
 window.clearAllNamedDestinations = clearAllNamedDestinations;
