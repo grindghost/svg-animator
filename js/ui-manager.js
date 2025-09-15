@@ -498,7 +498,7 @@ function createTreeViewItem(parent, element, depth = 0) {
         const icon = '✂️'; // Scissors icon for clipPath
         
         // Create a more descriptive label with icon
-        let label = `clipPath${element.id ? ` (${element.id})` : ''}`;
+        let label = `clipPath`;
         
         // Create the label container with icon and text
         const labelContainer = document.createElement('span');
@@ -560,8 +560,9 @@ function createTreeViewItem(parent, element, depth = 0) {
             // Don't select the clipPath element itself - just clear selection
             selectedElement = null;
 
-            // Hide controls section since no element is selected
-            hideControlsSection();
+            // Show controls section with clipPath message instead of hiding it
+            showControlsSection();
+            showClipPathElementMessage(label);
             
             // Hide root element message if it was showing
             hideRootElementMessage();
@@ -699,6 +700,7 @@ function createTreeViewItem(parent, element, depth = 0) {
         if (isRootSVGElement(element)) {
             // For root SVG element, show special message and disable controls
             hideRootElementMessage(); // Clear any existing message first
+            hideClipPathElementMessage(); // Clear clipPath message too
             showRootElementMessage();
             
             // Clear any existing handles and selection box from previous selection
@@ -762,6 +764,9 @@ function createTreeViewItem(parent, element, depth = 0) {
             
             // Hide root element message if it was showing
             hideRootElementMessage();
+            
+            // Hide clipPath element message if it was showing
+            hideClipPathElementMessage();
             
             updateStatusBar(`Selected: ${label} 🎯`);
         }
@@ -1092,6 +1097,47 @@ function hideRootElementMessage() {
     }
 }
 
+// Function to show clipPath element message
+function showClipPathElementMessage(clipPathLabel) {
+    // Hide all control panels
+    hideShapeStylingControls();
+    hideAnimationControls();
+    hideRecipeControls();
+    
+    // Create or show the clipPath element message
+    let messageDiv = document.getElementById('clippath-element-message');
+    if (!messageDiv) {
+        messageDiv = document.createElement('div');
+        messageDiv.id = 'clippath-element-message';
+        messageDiv.className = 'clippath-element-message';
+        messageDiv.innerHTML = `
+            <div class="clippath-message-content">
+                <div class="clippath-message-icon">✂️</div>
+                <div class="clippath-message-text">
+                    <div class="clippath-message-title">ClipPath Element Selected</div>
+                    <div class="clippath-message-description">ClipPath elements define clipping regions but have no geometry themselves. To manipulate the clipping shape, select the geometric elements (rect, circle, path, etc.) inside this clipPath.</div>
+                </div>
+            </div>
+        `;
+        
+        // Insert the message after the controls section
+        const controlsSection = document.querySelector('.controls-section');
+        if (controlsSection) {
+            controlsSection.appendChild(messageDiv);
+        }
+    } else {
+        messageDiv.style.display = 'block';
+    }
+}
+
+// Function to hide clipPath element message
+function hideClipPathElementMessage() {
+    const messageDiv = document.getElementById('clippath-element-message');
+    if (messageDiv) {
+        messageDiv.style.display = 'none';
+    }
+}
+
 // Function to hide animation controls
 function hideAnimationControls() {
     const animationType = document.getElementById('animation-type');
@@ -1138,6 +1184,9 @@ window.isRootSVGElement = isRootSVGElement;
 function showClipPathWarning(element) {
     // Remove any existing clipPath warning
     hideClipPathWarning();
+    
+    // Hide clipPath element message when showing warning for elements inside clipPath
+    hideClipPathElementMessage();
     
     if (!isInsideClipPath(element)) {
         return; // Not inside clipPath, no warning needed
@@ -1263,6 +1312,8 @@ function hideRecipeControls() {
 
 window.showRootElementMessage = showRootElementMessage;
 window.hideRootElementMessage = hideRootElementMessage;
+window.showClipPathElementMessage = showClipPathElementMessage;
+window.hideClipPathElementMessage = hideClipPathElementMessage;
 window.hideAnimationControls = hideAnimationControls;
 window.hideAppliedAnimationEditor = hideAppliedAnimationEditor;
 window.showRecipeControls = showRecipeControls;

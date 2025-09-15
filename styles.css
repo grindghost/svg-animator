@@ -1716,6 +1716,45 @@ select:disabled {
     line-height: 1.4;
 }
 
+/* ClipPath Element Message Styles */
+.clippath-element-message {
+    margin: 20px 0;
+    padding: 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+}
+
+.clippath-message-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.clippath-message-icon {
+    font-size: 2rem;
+    opacity: 0.7;
+}
+
+.clippath-message-text {
+    text-align: left;
+}
+
+.clippath-message-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.clippath-message-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
 .file-upload input[type="file"] {
     position: absolute;
     opacity: 0;
@@ -4939,10 +4978,10 @@ blockquote {
     color: var(--primary);
 }
 
-.clippath-element::after {
+/* .clippath-element::after {
     content: " (Not selectable)";
     font-size: 0.75rem;
     color: var(--muted-foreground);
     font-weight: normal;
     margin-left: 0.5rem;
-}
+} */
