@@ -750,6 +750,49 @@ function setCorrectTransformOrigin(element) {
     }
 }
 
+// ✅ NEW: Special transform origin calculation for clipPath elements
+function setCorrectTransformOriginForClipPath(element) {
+    // For clipPath elements, we need to calculate the center based on the element's own geometry
+    // rather than screen coordinates, since clipPath elements have different coordinate contexts
+    
+    let centerX, centerY;
+    
+    if (element.tagName === 'rect') {
+        // For rectangles, calculate center from x, y, width, height attributes
+        const x = parseFloat(element.getAttribute('x')) || 0;
+        const y = parseFloat(element.getAttribute('y')) || 0;
+        const width = parseFloat(element.getAttribute('width')) || 0;
+        const height = parseFloat(element.getAttribute('height')) || 0;
+        
+        centerX = x + width / 2;
+        centerY = y + height / 2;
+    } else if (element.tagName === 'circle') {
+        // For circles, center is cx, cy
+        centerX = parseFloat(element.getAttribute('cx')) || 0;
+        centerY = parseFloat(element.getAttribute('cy')) || 0;
+    } else if (element.tagName === 'ellipse') {
+        // For ellipses, center is cx, cy
+        centerX = parseFloat(element.getAttribute('cx')) || 0;
+        centerY = parseFloat(element.getAttribute('cy')) || 0;
+    } else {
+        // For other shapes (path, polygon, etc.), use getBBox() but in local coordinates
+        try {
+            const bbox = element.getBBox();
+            centerX = bbox.x + bbox.width / 2;
+            centerY = bbox.y + bbox.height / 2;
+        } catch (e) {
+            // Fallback to center of SVG viewport
+            centerX = 0;
+            centerY = 0;
+        }
+    }
+    
+    // Set transform origin using the calculated center
+    element.style.transformOrigin = `${centerX}px ${centerY}px`;
+    
+    console.log(`Set clipPath transform origin to: ${centerX}px ${centerY}px for ${element.tagName}`);
+}
+
 // Function to add hover effect on SVG elements
 function addHoverEffect(svgElement) {
     // Add data attribute for image elements to enable special CSS targeting
@@ -1160,6 +1203,7 @@ window.UpdateSelectionBoxesAndHandle = UpdateSelectionBoxesAndHandle;
 window.startMoving = startMoving;
 window.drawBoundingBox = drawBoundingBox;
 window.setCorrectTransformOrigin = setCorrectTransformOrigin;
+window.setCorrectTransformOriginForClipPath = setCorrectTransformOriginForClipPath;
 window.addHoverEffect = addHoverEffect;
 window.selectElement = selectElement;
 window.initializeHoverAndSelect = initializeHoverAndSelect;

@@ -243,9 +243,12 @@ function applyTempAnimationToClipPathShape(element, speed, animName = undefined)
     }
 
     // Build keyframes
-    const keyframes = animationData.generateKeyframes
+    let keyframes = animationData.generateKeyframes
         ? animationData.generateKeyframes(animationData.params)
         : animationData.keyframes;
+        
+    // ✅ FIX: Scale down animation intensity for clipPath elements
+    keyframes = scaleAnimationIntensityForClipPath(keyframes, animationData.type);
 
     if (!keyframes) {
         console.error(`No keyframes found for animation "${current_selected_anim_in_dropdown}"`);
@@ -295,9 +298,12 @@ function applyTempAnimationToClipPathShape(element, speed, animName = undefined)
             }
             
             element.setAttribute('style', newStyle);
+            
+            // ✅ FIX: Set proper transform origin for clipPath elements
+            setCorrectTransformOriginForClipPath(element);
+        } else {
+            setCorrectTransformOrigin(element);
         }
-
-        setCorrectTransformOrigin(element);
         element.classList.add("application-animation-class");
 }
 
@@ -408,9 +414,12 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
         }
 
         // Build keyframes for keyframe-based animations
-        const keyframes = animationData.generateKeyframes
+        let keyframes = animationData.generateKeyframes
             ? animationData.generateKeyframes(animationData.params)
             : animationData.keyframes;
+            
+        // ✅ FIX: Scale down animation intensity for clipPath elements
+        keyframes = scaleAnimationIntensityForClipPath(keyframes, animationData.type);
 
         if (!keyframes) {
             throw new Error(`No keyframes found for animation "${selectedAnimation}"`);
@@ -459,8 +468,8 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
         
         element.setAttribute('style', newStyle);
 
-        // Set transform origin on the element itself
-        setCorrectTransformOrigin(element);
+        // ✅ FIX: Set proper transform origin for clipPath elements
+        setCorrectTransformOriginForClipPath(element);
 
         if (save === true) {
             const propertiesToSave = {
@@ -901,6 +910,60 @@ function updateAnimationParamsFromElement(animationName, element) {
     }
 }
 
+// ✅ NEW: Function to scale down animation intensity for clipPath elements
+function scaleAnimationIntensityForClipPath(keyframes, animationType) {
+    if (!keyframes) return keyframes;
+    
+    // Define scaling factors for different animation types
+    const scalingFactors = {
+        'geometry': 0.3,  // Scale down geometry animations (scale, translate, rotate)
+        'filter': 1.0     // Keep filter animations at full intensity
+    };
+    
+    const scaleFactor = scalingFactors[animationType] || 0.5; // Default scaling
+    
+    const scaledKeyframes = {};
+    
+    for (let percentage in keyframes) {
+        const properties = keyframes[percentage];
+        const scaledProperties = {};
+        
+        for (let prop in properties) {
+            let value = properties[prop];
+            
+            // Scale transform values
+            if (prop === 'transform') {
+                // Scale translate values
+                value = value.replace(/translate\(([^,]+),\s*([^)]+)\)/g, (match, x, y) => {
+                    const scaledX = parseFloat(x) * scaleFactor;
+                    const scaledY = parseFloat(y) * scaleFactor;
+                    return `translate(${scaledX}px, ${scaledY}px)`;
+                });
+                
+                // Scale scale values (but keep them above 0.1 to avoid invisible elements)
+                value = value.replace(/scale\(([^)]+)\)/g, (match, scaleValue) => {
+                    const scale = parseFloat(scaleValue);
+                    const scaledScale = Math.max(0.1, 1 + (scale - 1) * scaleFactor);
+                    return `scale(${scaledScale})`;
+                });
+                
+                // Scale rotate values
+                value = value.replace(/rotate\(([^)]+)\)/g, (match, rotateValue) => {
+                    const rotate = parseFloat(rotateValue);
+                    const scaledRotate = rotate * scaleFactor;
+                    return `rotate(${scaledRotate}deg)`;
+                });
+            }
+            
+            scaledProperties[prop] = value;
+        }
+        
+        scaledKeyframes[percentage] = scaledProperties;
+    }
+    
+    return scaledKeyframes;
+}
+
 // Export functions for use in other modules
 window.removeStyleTag = removeStyleTag;
 window.removeTempPreview = removeTempPreview;
@@ -911,3 +974,4 @@ window.applyAnimationToImage = applyAnimationToImage;
 window.applyAnimation = applyAnimation;
 window.renderParamControls = renderParamControls;
 window.updateAnimationParamsFromElement = updateAnimationParamsFromElement;
+window.scaleAnimationIntensityForClipPath = scaleAnimationIntensityForClipPath;
