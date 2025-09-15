@@ -1,6 +1,18 @@
 // SVG manipulation, handles, selection, and bounding box functionality
 // SVG Animator Pro - SVG Handlers Module
 
+// Helper function to check if an element is inside a clipPath
+function isInsideClipPath(element) {
+    let current = element.parentNode;
+    while (current && current !== svgRoot) {
+        if (current.tagName === 'clipPath') {
+            return true;
+        }
+        current = current.parentNode;
+    }
+    return false;
+}
+
 // Remove handles to move and scale the selected elements
 function removeHandles() {
     const existingHandles = document.querySelector(".handles");
@@ -50,7 +62,25 @@ function getTransformedBBox(element) {
 function createHandlesForElement(svgElement) {
     removeHandles();
 
-    const bbox = getTransformedBBox(svgElement);
+    // ✅ NEW: Special handling for clipPath shapes
+    let bbox;
+    if (isInsideClipPath(svgElement)) {
+        // For clipPath shapes, use direct attribute values for bounding box
+        if (svgElement.tagName === 'rect') {
+            const x = parseFloat(svgElement.getAttribute('x')) || 0;
+            const y = parseFloat(svgElement.getAttribute('y')) || 0;
+            const width = parseFloat(svgElement.getAttribute('width')) || 0;
+            const height = parseFloat(svgElement.getAttribute('height')) || 0;
+            
+            bbox = { x, y, width, height };
+        } else {
+            // For other shapes, try the normal method
+            bbox = getTransformedBBox(svgElement);
+        }
+    } else {
+        bbox = getTransformedBBox(svgElement);
+    }
+    
     const scale = getRootScreenScale(); // ✅ root, not element
 
     // Screen-consistent handle sizes
@@ -231,12 +261,78 @@ function attachResizeListeners() {
 
 
 
+// Special resize handling for clipPath rect elements - update attributes directly
+function startResizingClipPathRect(event, svgElement, selectedHandle) {
+    let startX = event.clientX;
+    let startY = event.clientY;
+    
+    // Get initial attributes
+    let initialX = parseFloat(svgElement.getAttribute('x')) || 0;
+    let initialY = parseFloat(svgElement.getAttribute('y')) || 0;
+    let initialWidth = parseFloat(svgElement.getAttribute('width')) || 0;
+    let initialHeight = parseFloat(svgElement.getAttribute('height')) || 0;
+    
+    const onMouseMove = (moveEvent) => {
+        let dx = moveEvent.clientX - startX;
+        let dy = moveEvent.clientY - startY;
+        
+        let newX = initialX;
+        let newY = initialY;
+        let newWidth = initialWidth;
+        let newHeight = initialHeight;
+        
+        // Determine which handle is being dragged and update accordingly
+        if (selectedHandle.classList.contains("top-left-handle")) {
+            newX = initialX + dx;
+            newY = initialY + dy;
+            newWidth = initialWidth - dx;
+            newHeight = initialHeight - dy;
+        } else if (selectedHandle.classList.contains("top-right-handle")) {
+            newY = initialY + dy;
+            newWidth = initialWidth + dx;
+            newHeight = initialHeight - dy;
+        } else if (selectedHandle.classList.contains("bottom-left-handle")) {
+            newX = initialX + dx;
+            newWidth = initialWidth - dx;
+            newHeight = initialHeight + dy;
+        } else if (selectedHandle.classList.contains("bottom-right-handle")) {
+            newWidth = initialWidth + dx;
+            newHeight = initialHeight + dy;
+        }
+        
+        // Ensure minimum dimensions
+        newWidth = Math.max(1, newWidth);
+        newHeight = Math.max(1, newHeight);
+        
+        // Update the rect attributes directly
+        svgElement.setAttribute('x', newX);
+        svgElement.setAttribute('y', newY);
+        svgElement.setAttribute('width', newWidth);
+        svgElement.setAttribute('height', newHeight);
+        
+        UpdateSelectionBoxesAndHandle(svgElement);
+    };
+    
+    const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+    };
+    
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
 function startResizing(event) {
     event.preventDefault();
 
     const selectedHandle = event.target;
     const svgElement = document.querySelector(".selected-element");
     if (!svgElement) return;
+
+    // ✅ NEW: Special handling for clipPath shapes
+    if (isInsideClipPath(svgElement) && svgElement.tagName === 'rect') {
+        return startResizingClipPathRect(event, svgElement, selectedHandle);
+    }
 
     const bbox = svgElement.getBBox();
     let startX = event.clientX;
@@ -329,12 +425,49 @@ function UpdateSelectionBoxesAndHandle(element) {
 }
 
 
+// Special move handling for clipPath rect elements - update attributes directly
+function startMovingClipPathRect(event, svgElement) {
+    let startX = event.clientX;
+    let startY = event.clientY;
+    
+    // Get initial attributes
+    let initialX = parseFloat(svgElement.getAttribute('x')) || 0;
+    let initialY = parseFloat(svgElement.getAttribute('y')) || 0;
+    
+    const onMouseMove = (moveEvent) => {
+        let dx = moveEvent.clientX - startX;
+        let dy = moveEvent.clientY - startY;
+        
+        // Update the rect position directly
+        let newX = initialX + dx;
+        let newY = initialY + dy;
+        
+        svgElement.setAttribute('x', newX);
+        svgElement.setAttribute('y', newY);
+        
+        UpdateSelectionBoxesAndHandle(svgElement);
+    };
+    
+    const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mouseup", onMouseUp);
+    };
+    
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+}
+
 function startMoving(event) {
     if (!event.target.classList.contains('middle-handle')) return;
     event.preventDefault();
 
     const svgElement = document.querySelector(".selected-element");
     if (!svgElement) return;
+    
+    // ✅ NEW: Special handling for clipPath shapes
+    if (isInsideClipPath(svgElement) && svgElement.tagName === 'rect') {
+        return startMovingClipPathRect(event, svgElement);
+    }
     
     // Don't allow movement of root SVG element
     if (isRootSVGElement && isRootSVGElement(svgElement)) {
@@ -382,8 +515,60 @@ function applyTransform(element, newMatrix) {
 }
 
 function drawBoundingBox(element) {
-    const bbox = getTransformedBBox(element);
-    const scale = getElementScreenScale(element);
+    // Remove any existing selection box first
+    const existingBox = document.getElementById('selection-box');
+    if (existingBox) {
+        existingBox.remove();
+    }
+    
+    // ✅ NEW: Special handling for clipPath shapes
+    let bbox;
+    let wasTemporarilyVisible = false;
+    
+    if (isInsideClipPath(element)) {
+        // ✅ NEW: For clipPath shapes, use direct attribute values for bounding box
+        if (element.tagName === 'rect') {
+            const x = parseFloat(element.getAttribute('x')) || 0;
+            const y = parseFloat(element.getAttribute('y')) || 0;
+            const width = parseFloat(element.getAttribute('width')) || 0;
+            const height = parseFloat(element.getAttribute('height')) || 0;
+            
+            bbox = { x, y, width, height };
+        } else {
+            // For other shapes, try the normal method
+            const originalStyle = element.getAttribute('style') || '';
+            const tempStyle = originalStyle.replace(/fill\s*:\s*none\s*;?/g, '') + ' fill: rgba(99, 102, 241, 0.1);';
+            element.setAttribute('style', tempStyle);
+            wasTemporarilyVisible = true;
+            
+            // Force a reflow to ensure the element is rendered
+            element.offsetHeight;
+            
+            bbox = getTransformedBBox(element);
+        }
+    } else {
+        bbox = getTransformedBBox(element);
+    }
+    
+    // Restore original style if we made it temporarily visible
+    if (wasTemporarilyVisible) {
+        const originalStyle = element.getAttribute('data-original-style') || element.getAttribute('style') || '';
+        element.setAttribute('style', originalStyle);
+    }
+    
+    // ✅ NEW: For clipPath shapes, use a simpler bounding box calculation
+    let scale = 1;
+    if (isInsideClipPath(element)) {
+        // For clipPath shapes, use the root scale instead of element scale
+        scale = getRootScreenScale();
+    } else {
+        try {
+            scale = getElementScreenScale(element);
+        } catch (e) {
+            console.log('Error getting element scale, using root scale:', e);
+            scale = getRootScreenScale();
+        }
+    }
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', bbox.x);
@@ -398,8 +583,24 @@ function drawBoundingBox(element) {
     rect.setAttribute('id', 'selection-box');
     rect.setAttribute('vector-effect', 'non-scaling-stroke');
 
-    // Add a class to the rect to indicate it's a selection box
-    svgRoot.appendChild(rect);
+    // ✅ NEW: For clipPath shapes, append selection box outside the clipped area
+    if (isInsideClipPath(element)) {
+        // Find the parent group that has the clip-path applied
+        let parentGroup = element.parentNode;
+        while (parentGroup && parentGroup !== svgRoot) {
+            if (parentGroup.getAttribute('style') && parentGroup.getAttribute('style').includes('clip-path')) {
+                // Append after the clipped group
+                parentGroup.parentNode.insertBefore(rect, parentGroup.nextSibling);
+                break;
+            }
+            parentGroup = parentGroup.parentNode;
+        }
+        if (!parentGroup || parentGroup === svgRoot) {
+            svgRoot.appendChild(rect);
+        }
+    } else {
+        svgRoot.appendChild(rect);
+    }
 }
 
 
