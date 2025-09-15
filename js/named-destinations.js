@@ -1,18 +1,46 @@
 // Named Destinations functionality for SVG Animator Pro
 // SVG Animator Pro - Named Destinations Module
 
-// Storage key for named destinations
-const NAMED_DESTINATIONS_KEY = 'svg-named-destinations';
-
-// Get saved named destinations from localStorage
+// Get saved named destinations from localStorage (integrated with svg-animations)
 function getNamedDestinations() {
-    const savedData = localStorage.getItem(NAMED_DESTINATIONS_KEY);
-    return savedData ? JSON.parse(savedData) : { destinations: {} };
+    const savedData = localStorage.getItem('svg-animations');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            return data.namedDestinations || { destinations: {} };
+        } catch (error) {
+            console.warn('Error parsing named destinations data:', error);
+            return { destinations: {} };
+        }
+    }
+    
+    // Migration: Check for old separate localStorage key and migrate if found
+    const oldData = localStorage.getItem('svg-named-destinations');
+    if (oldData) {
+        try {
+            const oldNamedDestinations = JSON.parse(oldData);
+            // Migrate to integrated structure
+            const animationsData = getSavedAnimations();
+            animationsData.namedDestinations = oldNamedDestinations;
+            localStorage.setItem('svg-animations', JSON.stringify(animationsData));
+            // Remove old key
+            localStorage.removeItem('svg-named-destinations');
+            console.log('Migrated named destinations to integrated structure');
+            return oldNamedDestinations;
+        } catch (error) {
+            console.warn('Error migrating named destinations data:', error);
+            localStorage.removeItem('svg-named-destinations'); // Clean up corrupted data
+        }
+    }
+    
+    return { destinations: {} };
 }
 
-// Save named destinations to localStorage
-function saveNamedDestinations(data) {
-    localStorage.setItem(NAMED_DESTINATIONS_KEY, JSON.stringify(data));
+// Save named destinations to localStorage (integrated with svg-animations)
+function saveNamedDestinations(namedDestinationsData) {
+    const data = getSavedAnimations();
+    data.namedDestinations = namedDestinationsData;
+    localStorage.setItem('svg-animations', JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when saving named destinations
 }
 
@@ -318,7 +346,10 @@ function removeNamedDestinationForElement(elementId) {
 
 // Clear all named destinations (useful when clearing all animations)
 function clearAllNamedDestinations() {
-    localStorage.setItem(NAMED_DESTINATIONS_KEY, JSON.stringify({ destinations: {} }));
+    const data = getSavedAnimations();
+    data.namedDestinations = { destinations: {} };
+    localStorage.setItem('svg-animations', JSON.stringify(data));
+    markAsUnsaved();
     updateNamedDestinationsUI();
 }
 

@@ -95,17 +95,28 @@ function removeAnimation(elementId, animationId) {
             delete data.animations[elementId];
             
             // Remove named destination for this element since it has no more animations
-            if (typeof removeNamedDestinationForElement === 'function') {
-                removeNamedDestinationForElement(elementId);
+            if (data.namedDestinations && data.namedDestinations.destinations && data.namedDestinations.destinations[elementId]) {
+                delete data.namedDestinations.destinations[elementId];
             }
         }
     }
+    
+    // Ensure named destinations are included in the data structure
+    if (!data.namedDestinations) {
+        data.namedDestinations = { destinations: {} };
+    }
+    
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when removing animation
     updateAnimationListUI(elementId);
 
     // Update the animation count message
     updateAnimationCountMessage(elementId);
+    
+    // Update named destinations UI if a named destination was removed
+    if (typeof updateNamedDestinationsUI === 'function') {
+        updateNamedDestinationsUI();
+    }
     
     // Update dropdown states
     if (typeof updateDropdownStates === 'function') {
@@ -186,8 +197,11 @@ function cleanupInvalidAnimations() {
 
 // Clear all animations from localStorage and reset to clean state
 function clearAllAnimations() {
-    // Clear animations from localStorage, and reset to a clean state
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ animations: {} }));
+    // Clear animations and named destinations from localStorage, and reset to a clean state
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ 
+        animations: {},
+        namedDestinations: { destinations: {} }
+    }));
     markAsUnsaved(); // Mark as unsaved when clearing animations
     // resetToCleanState()
 
@@ -260,3 +274,4 @@ window.markAsUnsaved = markAsUnsaved;
 window.getHasUnsavedChanges = getHasUnsavedChanges;
 window.checkForUnsavedChanges = checkForUnsavedChanges;
 window.cleanupInvalidAnimations = cleanupInvalidAnimations;
+

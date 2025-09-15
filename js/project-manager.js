@@ -13,10 +13,12 @@ async function exportProject() {
         }
         
         // Get current localStorage data
+        const animationsData = getSavedAnimations();
         const projectData = {
             version: '1.0',
             exportDate: new Date().toISOString(),
-            animations: getSavedAnimations(),
+            animations: animationsData.animations,
+            namedDestinations: animationsData.namedDestinations || { destinations: {} },
             svgBackup: SVG_BACKUP || ''
         };
         
@@ -116,11 +118,13 @@ async function importProject(file) {
             throw new Error('Invalid SVG content in project file');
         }
         
-        // Restore localStorage data
-        if (project.metadata.animations) {
-            localStorage.setItem('svg-animations', JSON.stringify(project.metadata.animations));
-            markAsUnsaved(); // Mark as unsaved when importing project
-        }
+        // Restore localStorage data (integrated structure)
+        const animationsData = {
+            animations: project.metadata.animations || {},
+            namedDestinations: project.metadata.namedDestinations || { destinations: {} }
+        };
+        localStorage.setItem('svg-animations', JSON.stringify(animationsData));
+        markAsUnsaved(); // Mark as unsaved when importing project
         
         // Rebuild UI
         prepopulateLocalStorage(svgRoot);
@@ -143,6 +147,15 @@ async function importProject(file) {
         // Show bounds control now that SVG is loaded
         if (typeof showBoundsControl === 'function') {
             showBoundsControl();
+        }
+        
+        // Show named destinations section and update UI
+        if (typeof updateNamedDestinationsUI === 'function') {
+            const namedDestinationsSection = document.getElementById('named-destinations-section');
+            if (namedDestinationsSection) {
+                namedDestinationsSection.classList.remove('hidden');
+            }
+            updateNamedDestinationsUI();
         }
         
         // Hide upload section after successful project import
