@@ -387,16 +387,8 @@ function initializeRecipeUI() {
     }
     
     // Enable/disable recipe selector based on element selection
-    const originalShowControlsSection = window.showControlsSection;
-    if (originalShowControlsSection) {
-        window.showControlsSection = function() {
-            originalShowControlsSection();
-            const recipeSelector = document.getElementById('recipe-selector');
-            if (recipeSelector) {
-                recipeSelector.disabled = false;
-            }
-        };
-    }
+    // Note: showControlsSection override removed - now handled in ui-manager.js
+    // to properly check for SVG root selection
     
     const originalHideControlsSection = window.hideControlsSection;
     if (originalHideControlsSection) {

@@ -701,6 +701,19 @@ function createTreeViewItem(parent, element, depth = 0) {
             hideRootElementMessage(); // Clear any existing message first
             showRootElementMessage();
             
+            // Clear any existing handles and selection box from previous selection
+            removeHandles();
+            const existingSelectionBox = document.getElementById('selection-box');
+            if (existingSelectionBox) {
+                existingSelectionBox.remove();
+            }
+            
+            // Remove selected-element class from any previously selected element
+            const previouslySelected = document.querySelector('.selected-element');
+            if (previouslySelected) {
+                previouslySelected.classList.remove('selected-element');
+            }
+            
             // Don't create handles or bounding box for root element
             // Don't add selected-element class to prevent manipulation
             
@@ -873,6 +886,13 @@ function showControlsSection() {
     }
     if (controlsPlaceholder) {
         controlsPlaceholder.classList.add('hidden');
+    }
+    
+    // Check if the selected element is the SVG root and disable recipe controls accordingly
+    if (selectedElement && isRootSVGElement(selectedElement)) {
+        hideRecipeControls();
+    } else {
+        showRecipeControls();
     }
 }
 
