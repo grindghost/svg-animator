@@ -519,7 +519,7 @@ function createTreeViewItem(parent, element, depth = 0) {
             parent.appendChild(summary);
         }
 
-        // Add click handler for clipPath elements
+        // Add click handler for clipPath elements - just clear selection, don't select clipPath itself
         summary.addEventListener('click', function(e) {
             e.stopPropagation();
             removeStyleTag();
@@ -528,6 +528,9 @@ function createTreeViewItem(parent, element, depth = 0) {
             if (selectedElement && document.getElementById('selection-box')) {
                 document.getElementById('selection-box').remove();
             }
+
+            // ✅ NEW: Remove any existing handles
+            removeHandles();
 
             // Clear highlighted treeview item
             const previouslyHighlighted = document.querySelector('.selected');
@@ -538,48 +541,25 @@ function createTreeViewItem(parent, element, depth = 0) {
             // Hide clipPath warning when clearing selection
             hideClipPathWarning();
 
-            // Highlight the current treeview item
+            // Highlight the current treeview item (visual feedback only)
             summary.classList.add('selected');
-
-            // Set the selected element in SVG and add the 'selected-element' class
-            selectedElement = element;
 
             // Clear any existing element with 'selected-element' class
             const existingElementWithClass = document.querySelector('.selected-element');
             if (existingElementWithClass) {
                 existingElementWithClass.classList.remove('selected-element');
             }
-            selectedElement.classList.add('selected-element');
 
-            // Draw the bounding box around the selected element in SVG
-            drawBoundingBox(selectedElement);
+            // Don't select the clipPath element itself - just clear selection
+            selectedElement = null;
 
-            // Reset the animation controls
-            resetControls();
-
-            // Update the animation details UI for the selected element
-            updateAnimationListUI(selectedElement.id);
-
-            // Update the animation count message
-            updateAnimationCountMessage(selectedElement.id);
-
-            // Enable the dropdown for animation types
-            document.getElementById('animation-type').disabled = false;
-            
-            // Show and update shape styling controls
-            showShapeStylingControls();
-            updateStylingControlsFromElement(selectedElement);
-            
-            // Show controls section
-            showControlsSection();
-            
-            // Show clipPath warning if element is inside clipPath
-            showClipPathWarning(element);
+            // Hide controls section since no element is selected
+            hideControlsSection();
             
             // Hide root element message if it was showing
             hideRootElementMessage();
             
-            updateStatusBar(`Selected: ${label} ✂️`);
+            updateStatusBar(`ClipPath: ${label} ✂️ (Not selectable)`);
         });
 
         // Process clipPath children
@@ -656,6 +636,11 @@ function createTreeViewItem(parent, element, depth = 0) {
     summary.addEventListener('click', function(e) {
         e.stopPropagation();
         removeStyleTag();
+
+        // ✅ NEW: Skip regular selection for clipPath elements
+        if (element.tagName === 'clipPath') {
+            return; // Let the clipPath-specific handler take care of this
+        }
 
         // Clear selection for previously selected element in SVG
         if (selectedElement && document.getElementById('selection-box')) {

@@ -300,6 +300,12 @@ function applyTempAnimation(element, speed, animName = undefined) {
         document.getElementById("selection-box").remove();
     }
 
+    // ✅ NEW: Prevent temp animations on clipPath elements themselves (they have no geometry)
+    if (element.tagName === 'clipPath') {
+        console.warn("Cannot apply temp animations to clipPath elements - they have no geometry to animate.");
+        return;
+    }
+
     // ✅ NEW: Special handling for clipPath shapes - no temp wrapper
     if (isInsideClipPath(element)) {
         return applyTempAnimationToClipPathShape(element, speed, animName);
@@ -477,6 +483,11 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
 function applyAnimation(element, speed, animName = undefined, save = true) {
     try {
         removeStyleTag("temp-generic");
+
+        // ✅ NEW: Prevent animations on clipPath elements themselves (they have no geometry)
+        if (element.tagName === 'clipPath') {
+            throw new Error("Cannot apply animations to clipPath elements - they have no geometry to animate.");
+        }
 
         // ✅ NEW: Special handling for clipPath shapes - no anim-wrapper groups
         if (isInsideClipPath(element)) {
