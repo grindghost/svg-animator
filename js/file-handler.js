@@ -140,7 +140,37 @@ function downloadAnimatedSVG() {
         svgRoot.prepend(metadata);
     }
 
-    const blob = new Blob([svgRoot.outerHTML], {type: 'image/svg+xml;charset=utf-8'});
+    // Get SVG content and minify it
+    let svgContent = svgRoot.outerHTML;
+    
+    // Apply SVG minification if the library is available
+    if (typeof SVGO !== 'undefined') {
+        updateStatusBar('Optimizing SVG for smaller file size... ⚡');
+        
+        try {
+            const originalSize = new Blob([svgContent]).size;
+            
+            // Use svg-minifier to optimize the SVG
+            const minifiedContent = SVGO.optimize(svgContent);
+            svgContent = minifiedContent;
+            
+            const optimizedSize = new Blob([svgContent]).size;
+            const reduction = originalSize - optimizedSize;
+            const reductionPercent = ((reduction / originalSize) * 100).toFixed(1);
+            
+            if (reduction > 0) {
+                updateStatusBar(`SVG optimized! Size reduced by ${reductionPercent}% (${(reduction / 1024).toFixed(1)}KB saved) 🎯`);
+                showNotification(`SVG optimized! Size reduced by ${reductionPercent}%`, 'success');
+            } else {
+                updateStatusBar('SVG already optimized! 📦');
+            }
+        } catch (error) {
+            console.warn('SVG optimization failed, using original content:', error);
+            updateStatusBar('Using original SVG (optimization failed) ⚠️');
+        }
+    }
+
+    const blob = new Blob([svgContent], {type: 'image/svg+xml;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

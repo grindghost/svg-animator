@@ -35,10 +35,24 @@ async function exportProject() {
         const tempStyles = exportSvg.querySelectorAll('style[id^="temp-"]');
         tempStyles.forEach(style => style.remove());
         
+        // Get SVG content and minify it
+        let svgContent = exportSvg.outerHTML;
+        
+        // Apply SVG minification if the library is available
+        if (typeof SVGO !== 'undefined') {
+            try {
+                // Use svg-minifier to optimize the SVG
+                const minifiedContent = SVGO.optimize(svgContent);
+                svgContent = minifiedContent;
+            } catch (error) {
+                console.warn('SVG optimization failed during project export, using original content:', error);
+            }
+        }
+
         // Create project object
         const project = {
             metadata: projectData,
-            svg: exportSvg.outerHTML
+            svg: svgContent
         };
         
         // Convert to JSON
