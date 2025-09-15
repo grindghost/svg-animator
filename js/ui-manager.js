@@ -530,6 +530,12 @@ function createTreeViewItem(parent, element, depth = 0) {
         summary.addEventListener('click', function(e) {
             e.stopPropagation();
             removeStyleTag();
+            
+            // ✅ NEW: Also clean up any clipPath shapes with temp animations
+            const clipPathShapes = document.querySelectorAll('clipPath *[style*="temp-generic"]');
+            clipPathShapes.forEach(shape => {
+                removeTempPreviewFromClipPathShape(shape);
+            });
 
             // Clear selection for previously selected element in SVG
             if (selectedElement && document.getElementById('selection-box')) {
@@ -669,6 +675,12 @@ function createTreeViewItem(parent, element, depth = 0) {
         if (oldTempWrapper) {
             removeTempPreview(oldTempWrapper);
         }
+        
+        // ✅ NEW: Also clean up any clipPath shapes with temp animations
+        const clipPathShapes = document.querySelectorAll('clipPath *[style*="temp-generic"]');
+        clipPathShapes.forEach(shape => {
+            removeTempPreviewFromClipPathShape(shape);
+        });
 
         // Check if the clicked element is a leaf node
         const isLeafElement = element.children.length === 0;

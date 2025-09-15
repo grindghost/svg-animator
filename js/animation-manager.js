@@ -75,6 +75,22 @@ function removeTempPreview(wrapper) {
     }
 }
 
+// ✅ NEW: Remove temporary preview for clipPath shapes (no wrapper)
+function removeTempPreviewFromClipPathShape(element) {
+    if (!element || !isInsideClipPath(element)) return;
+    
+    // Remove animation from the element
+    if (element.style.animation && element.style.animation.includes("temp-generic")) {
+        element.style.animation = "";
+    }
+    
+    // Remove the temp-generic style tag
+    removeStyleTag("temp-generic");
+    
+    // Restore original appearance
+    restoreClipPathShapeAppearance(element);
+}
+
 
 // Remove style tag by ID
 function removeStyleTag(styleId=undefined) {
@@ -264,14 +280,22 @@ function applyTempAnimationToClipPathShape(element, speed, animName = undefined)
         keyframesString += `${percentage} { ${propsString} } `;
     }
 
-    const embeddedStyle = `
-        <style id="${animationName}" data-anikit="">
-            @keyframes ${animationName} {
-                ${keyframesString}
-            }
-        </style>
-    `;
-    svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+    // ✅ FIX: Check if temp-generic style tag already exists and update it, or create new one
+    let existingStyleTag = document.querySelector(`style#${animationName}`);
+    if (existingStyleTag) {
+        // Update existing style tag content
+        existingStyleTag.innerHTML = `@keyframes ${animationName} { ${keyframesString} }`;
+    } else {
+        // Create new style tag
+        const embeddedStyle = `
+            <style id="${animationName}" data-anikit="">
+                @keyframes ${animationName} {
+                    ${keyframesString}
+                }
+            </style>
+        `;
+        svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+    }
 
         // Apply animation directly to the element (no wrapper)
         const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
@@ -374,14 +398,22 @@ function applyTempAnimation(element, speed, animName = undefined) {
         keyframesString += `${percentage} { ${propsString} } `;
     }
 
-    const embeddedStyle = `
-        <style id="${animationName}" data-anikit="">
-            @keyframes ${animationName} {
-                ${keyframesString}
-            }
-        </style>
-    `;
-    svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+    // ✅ FIX: Check if temp-generic style tag already exists and update it, or create new one
+    let existingStyleTag = document.querySelector(`style#${animationName}`);
+    if (existingStyleTag) {
+        // Update existing style tag content
+        existingStyleTag.innerHTML = `@keyframes ${animationName} { ${keyframesString} }`;
+    } else {
+        // Create new style tag
+        const embeddedStyle = `
+            <style id="${animationName}" data-anikit="">
+                @keyframes ${animationName} {
+                    ${keyframesString}
+                }
+            </style>
+        `;
+        svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+    }
 
     // Apply animation only to temp wrapper
     const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
@@ -967,6 +999,7 @@ function scaleAnimationIntensityForClipPath(keyframes, animationType) {
 // Export functions for use in other modules
 window.removeStyleTag = removeStyleTag;
 window.removeTempPreview = removeTempPreview;
+window.removeTempPreviewFromClipPathShape = removeTempPreviewFromClipPathShape;
 window.CleanAnimationStyle = CleanAnimationStyle;
 window.stopAnimation = stopAnimation;
 window.applyTempAnimation = applyTempAnimation;

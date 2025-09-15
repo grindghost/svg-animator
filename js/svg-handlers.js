@@ -1064,6 +1064,12 @@ function clearSelectionOnOutsideClick(event) {
             removeTempPreview(oldTempWrapper);
         }
         
+        // ✅ NEW: Also clean up any clipPath shapes with temp animations
+        const clipPathShapes = document.querySelectorAll('clipPath *[style*="temp-generic"]');
+        clipPathShapes.forEach(shape => {
+            removeTempPreviewFromClipPathShape(shape);
+        });
+        
         // Update status
         updateStatusBar('Selection cleared! 🚫');
     }
