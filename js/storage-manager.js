@@ -197,6 +197,11 @@ function clearAllAnimations() {
     // Hide the animation count message when all animations are cleared
     updateAnimationCountMessage(null);
     
+    // Clear named destinations when clearing all animations
+    if (typeof clearAllNamedDestinations === 'function') {
+        clearAllNamedDestinations();
+    }
+    
     // Update dropdown states
     if (typeof updateDropdownStates === 'function') {
         updateDropdownStates();

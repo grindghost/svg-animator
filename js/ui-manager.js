@@ -1067,6 +1067,12 @@ function showUploadSection() {
     if (uploadSection) {
         uploadSection.style.display = 'block';
     }
+    
+    // Hide named destinations section when showing upload section
+    const namedDestinationsSection = document.getElementById('named-destinations-section');
+    if (namedDestinationsSection) {
+        namedDestinationsSection.classList.add('hidden');
+    }
 }
 
 // Function to show root element message and hide controls

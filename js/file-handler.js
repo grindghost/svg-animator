@@ -42,6 +42,15 @@ function handleSVGUpload(event) {
             initializeHoverAndSelect();
             setupSVGViewerTooltip();
             
+            // Show named destinations section and update UI
+            if (typeof updateNamedDestinationsUI === 'function') {
+                const namedDestinationsSection = document.getElementById('named-destinations-section');
+                if (namedDestinationsSection) {
+                    namedDestinationsSection.classList.remove('hidden');
+                }
+                updateNamedDestinationsUI();
+            }
+            
             updateStatusBar(`SVG loaded: ${file.name} ✨`);
             
             // Enable controls

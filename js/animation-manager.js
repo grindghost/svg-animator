@@ -638,6 +638,13 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
             }
             const animationId = saveAnimation(elementId, selectedAnimation, propertiesToSave);
 
+            // Create named destination for this clipPath element
+            if (typeof createNamedDestination === 'function') {
+                // Use the original element's ID, not any wrapper's ID
+                const originalElementId = element.getAttribute("id") || element.tagName;
+                createNamedDestination(originalElementId, element, selectedAnimation);
+            }
+
             resetControls();
             updateStatusBar(`Animation "${selectedAnimation}" applied to clipPath shape! ✨`);
             showNotification(`Animation "${selectedAnimation}" applied successfully to clipPath shape!`, "success");
@@ -737,6 +744,13 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
                 propertiesToSave.params = { ...animationData.params };
             }
             const animationId = saveAnimation(elementId, selectedAnimation, propertiesToSave);
+
+            // Create named destination for this element
+            if (typeof createNamedDestination === 'function') {
+                // Use the original element's ID, not the wrapper's ID
+                const originalElementId = element.getAttribute("id") || element.tagName;
+                createNamedDestination(originalElementId, element, selectedAnimation);
+            }
 
             resetControls();
             updateStatusBar(`Animation "${selectedAnimation}" applied! ✨`);
