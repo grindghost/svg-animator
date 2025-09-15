@@ -1283,7 +1283,19 @@ function hideClipPathWarning() {
     showRecipeControls();
     showShapeStylingControls();
     enableStylingControls(); // Re-enable styling controls
-    clearUnsupportedFillMessage();
+    
+    // Only clear unsupported fill message if we're not dealing with group/image elements
+    // This prevents clearing group/image messages when hiding clipPath warnings
+    const currentMessage = document.getElementById('unsupported-fill-message');
+    if (currentMessage) {
+        const messageText = currentMessage.textContent;
+        if (!messageText.includes('Group elements cannot be styled') && 
+            !messageText.includes('Image elements cannot be styled')) {
+            clearUnsupportedFillMessage();
+        }
+    } else {
+        clearUnsupportedFillMessage(); // Safe to clear if no message exists
+    }
 }
 
 // Function to show recipe controls
