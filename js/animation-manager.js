@@ -345,6 +345,21 @@ function stopAnimation(element, animName = undefined) {
 
 // helper: unwrap a wrapper group and return parent
 function unwrapWrapper(wrapper) {
+    // Clean up boiled filter if present
+    if (wrapper.hasAttribute("filter")) {
+        const filterUrl = wrapper.getAttribute("filter");
+        if (filterUrl && filterUrl.startsWith("url(")) {
+            const idMatch = filterUrl.match(/#([^)]*)/);
+            if (idMatch) {
+                const filterId = idMatch[1];
+                const filterElem = document.getElementById(filterId);
+                if (filterElem && filterElem.tagName.toLowerCase() === "filter") {
+                    filterElem.remove();
+                }
+            }
+        }
+    }
+    
     const parent = wrapper.parentNode;
     while (wrapper.firstChild) {
         parent.insertBefore(wrapper.firstChild, wrapper);
@@ -354,14 +369,6 @@ function unwrapWrapper(wrapper) {
 }
 
 
-function unwrapWrapper(wrapper) {
-    const parent = wrapper.parentNode;
-    while (wrapper.firstChild) {
-        parent.insertBefore(wrapper.firstChild, wrapper);
-    }
-    parent.removeChild(wrapper);
-    return parent;
-}
 
 
 // Special temp animation handling for clipPath shapes - no temp wrapper

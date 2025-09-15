@@ -603,8 +603,14 @@ let animationsData =
       document.querySelector("svg").prepend(defs);
     }
 
-    // Unique filter per element
-    const filterId = "boilEffect-" + element.id;
+    // Check if element already has a boiled filter
+    let filterId = element.getAttribute("data-boiled-filter-id");
+    if (!filterId) {
+      // Generate unique filter ID for new application
+      filterId = "boilEffect-" + Math.random().toString(36).substr(2, 9);
+      element.setAttribute("data-boiled-filter-id", filterId);
+    }
+    
     let filter = document.getElementById(filterId);
     if (filter) filter.remove();
 
