@@ -217,6 +217,12 @@ function unwrapWrapper(wrapper) {
 
 // Special temp animation handling for clipPath shapes - no temp wrapper
 function applyTempAnimationToClipPathShape(element, speed, animName = undefined) {
+    // Hide selection box and handles for temp animation preview
+    if (document.getElementById("selection-box")) {
+        document.getElementById("selection-box").remove();
+    }
+    removeHandles();
+    
     // Clean up any existing temp animation on the element
     if (element.style.animation && element.style.animation.includes("temp-generic")) {
         element.style.animation = "";
@@ -296,9 +302,11 @@ function applyTempAnimationToClipPathShape(element, speed, animName = undefined)
 }
 
 function applyTempAnimation(element, speed, animName = undefined) {
+    // Hide selection box and handles for temp animation preview
     if (document.getElementById("selection-box")) {
         document.getElementById("selection-box").remove();
     }
+    removeHandles();
 
     // ✅ NEW: Prevent temp animations on clipPath elements themselves (they have no geometry)
     if (element.tagName === 'clipPath') {
