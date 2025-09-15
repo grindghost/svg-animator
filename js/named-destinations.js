@@ -60,12 +60,29 @@ function createNamedDestination(elementId, element, animationType) {
     const elementTag = element.tagName.toLowerCase();
     let defaultName;
     
-    // If element has an ID, use it in the name
-    if (elementId && elementId !== elementTag) {
-        defaultName = `${elementId} (${animationType})`;
+    // Check if element has a previously saved custom name
+    // Try to find the original element (not wrapped in animation wrapper) to check for saved name
+    let originalElement = document.querySelector(`#${elementId}`);
+    if (!originalElement) {
+        // If not found by ID, try to find by tag name (for elements without IDs)
+        const elements = document.querySelectorAll(elementId);
+        if (elements.length > 0) {
+            originalElement = elements[0]; // Take the first one
+        }
+    }
+    
+    const savedName = originalElement ? originalElement.getAttribute('data-animation-name') : null;
+    if (savedName) {
+        // Use the saved custom name
+        defaultName = savedName;
     } else {
-        // For elements without IDs, use tag name
-        defaultName = `${elementTag} (${animationType})`;
+        // If element has an ID, use it in the name
+        if (elementId && elementId !== elementTag) {
+            defaultName = `${elementId} (${animationType})`;
+        } else {
+            // For elements without IDs, use tag name
+            defaultName = `${elementTag} (${animationType})`;
+        }
     }
     
     // Store destination data
@@ -91,7 +108,24 @@ function updateNamedDestinationName(destinationId, newName) {
     for (const elementId in data.destinations) {
         if (data.destinations[elementId].id === destinationId) {
             // Trim to 50 characters as requested
-            data.destinations[elementId].name = newName.trim().substring(0, 50);
+            const trimmedName = newName.trim().substring(0, 50);
+            data.destinations[elementId].name = trimmedName;
+            
+            // Save the custom name to the element's attribute for persistence
+            // Try to find the original element (not wrapped in animation wrapper)
+            let element = document.querySelector(`#${elementId}`);
+            if (!element) {
+                // If not found by ID, try to find by tag name (for elements without IDs)
+                const elements = document.querySelectorAll(elementId);
+                if (elements.length > 0) {
+                    element = elements[0]; // Take the first one
+                }
+            }
+            
+            if (element) {
+                element.setAttribute('data-animation-name', trimmedName);
+            }
+            
             saveNamedDestinations(data);
             updateNamedDestinationsUI();
             return true;
@@ -108,6 +142,21 @@ function deleteNamedDestination(destinationId) {
     // Find and remove the destination by ID
     for (const elementId in data.destinations) {
         if (data.destinations[elementId].id === destinationId) {
+            // Remove the custom name attribute from the element when explicitly deleting
+            // Try to find the original element (not wrapped in animation wrapper)
+            let element = document.querySelector(`#${elementId}`);
+            if (!element) {
+                // If not found by ID, try to find by tag name (for elements without IDs)
+                const elements = document.querySelectorAll(elementId);
+                if (elements.length > 0) {
+                    element = elements[0]; // Take the first one
+                }
+            }
+            
+            if (element) {
+                element.removeAttribute('data-animation-name');
+            }
+            
             delete data.destinations[elementId];
             saveNamedDestinations(data);
             updateNamedDestinationsUI();
@@ -346,6 +395,12 @@ function removeNamedDestinationForElement(elementId) {
 
 // Clear all named destinations (useful when clearing all animations)
 function clearAllNamedDestinations() {
+    // Remove all data-animation-name attributes from elements
+    const elementsWithNames = document.querySelectorAll('[data-animation-name]');
+    elementsWithNames.forEach(element => {
+        element.removeAttribute('data-animation-name');
+    });
+    
     const data = getSavedAnimations();
     data.namedDestinations = { destinations: {} };
     localStorage.setItem('svg-animations', JSON.stringify(data));
