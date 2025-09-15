@@ -1,6 +1,12 @@
 {
   "articles": [
     {
+      "title": "Interactive SVGs in Online Learning",
+      "author": "Madelayne DeGrace",
+      "url": "https://linkedin.com/pulse/interactive-svgs-online-learning-madelayne-degrace/",
+      "description": "When developing content for online courses, interactive SVGs can be used to connect related information together"
+    },
+    {
       "title": "The Complete Guide to SVG Animation",
       "author": "Sarah Chen",
       "url": "https://css-tricks.com/guide-svg-animations/",
