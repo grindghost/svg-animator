@@ -824,8 +824,20 @@ function selectElement(elementId, element) {
         hideAppliedAnimationEditor();
     }
 
-    // Add the handles
-    createHandlesForElement(element)
+    // Set the global selected element reference
+    window.selectedElement = element;
+    
+    // Add the 'selected-element' class for UI consistency
+    element.classList.add('selected-element');
+    
+    // Add the handles and draw selection box
+    createHandlesForElement(element);
+    drawBoundingBox(element);
+    
+    // Update the animation list UI for the selected element
+    if (typeof updateAnimationListUI === 'function') {
+        updateAnimationListUI(elementId);
+    }
 
     // Find the corresponding "summary" element in the tree view
     let summaryElement = document.querySelector(`summary[data-element-id="${elementId}"]`);
