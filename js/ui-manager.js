@@ -2,11 +2,18 @@
 // SVG Animator Pro - UI Manager Module
 
 // Populate animation dropdown
-function populateAnimationDropdown() {
+function populateAnimationDropdown(filterForClipPath = false) {
     const animationDropdown = document.getElementById('animation-type');
     animationDropdown.innerHTML = '<option value="none">Select animation...</option>';
     
     Object.keys(animationsData).forEach(animationName => {
+        const animationData = animationsData[animationName];
+        
+        // ✅ NEW: Filter out filter-based animations for clipPath shapes
+        if (filterForClipPath && animationData.type === 'filter') {
+            return; // Skip filter-based animations
+        }
+        
         const option = document.createElement('option');
         option.value = animationName;
         option.textContent = animationName.charAt(0).toUpperCase() + animationName.slice(1).replace(/-/g, ' ');
@@ -1130,7 +1137,7 @@ function showClipPathWarning(element) {
             <div class="warning-text">
                 ${hasAnimation ? 
                     'This clipPath shape already has an animation. Only one animation per clipPath shape is supported.' : 
-                    'ClipPath shapes have limited animation support. Only keyframe-based animations are available, and only one animation per shape.'
+                    'ClipPath shapes have limited animation support. Only geometry-based animations are available (no filter-based animations), and only one animation per shape.'
                 }
             </div>
         </div>
@@ -1155,7 +1162,23 @@ function showClipPathWarning(element) {
             animationDropdown.disabled = true;
             animationDropdown.title = 'ClipPath shapes with existing animations cannot have additional animations applied';
         }
+    } else {
+        // ✅ NEW: Repopulate dropdown with only geometry-based animations
+        populateAnimationDropdown(true); // Filter for clipPath
+        
+        // Enable animation dropdown for clipPath shapes
+        const animationDropdown = document.getElementById('animation-type');
+        if (animationDropdown) {
+            animationDropdown.disabled = false;
+            animationDropdown.title = 'Only geometry-based animations are available for clipPath shapes';
+        }
     }
+    
+    // ✅ NEW: Disable recipe and styling controls for clipPath shapes
+    hideRecipeControls();
+    showShapeStylingControls(); // Show styling controls
+    disableStylingControls(); // But disable them
+    showUnsupportedFillMessage('ClipPath shapes cannot be styled');
 }
 
 // Function to hide clipPath warning
@@ -1165,11 +1188,56 @@ function hideClipPathWarning() {
         warningDiv.remove();
     }
     
+    // ✅ NEW: Repopulate dropdown with all animations (no filter)
+    populateAnimationDropdown(false); // Show all animations
+    
     // Re-enable animation dropdown
     const animationDropdown = document.getElementById('animation-type');
     if (animationDropdown) {
         animationDropdown.disabled = false;
         animationDropdown.title = '';
+    }
+    
+    // ✅ NEW: Show recipe and styling controls again for regular elements
+    showRecipeControls();
+    showShapeStylingControls();
+    enableStylingControls(); // Re-enable styling controls
+    clearUnsupportedFillMessage();
+}
+
+// Function to show recipe controls
+function showRecipeControls() {
+    const recipeSelector = document.getElementById('recipe-selector');
+    const createRecipeBtn = document.getElementById('create-recipe-btn');
+    const manageRecipesLink = document.getElementById('manage-recipes-link');
+    
+    if (recipeSelector) {
+        recipeSelector.disabled = false;
+    }
+    if (createRecipeBtn) {
+        createRecipeBtn.disabled = false;
+    }
+    if (manageRecipesLink) {
+        manageRecipesLink.style.pointerEvents = 'auto';
+        manageRecipesLink.style.opacity = '1';
+    }
+}
+
+// Function to hide recipe controls
+function hideRecipeControls() {
+    const recipeSelector = document.getElementById('recipe-selector');
+    const createRecipeBtn = document.getElementById('create-recipe-btn');
+    const manageRecipesLink = document.getElementById('manage-recipes-link');
+    
+    if (recipeSelector) {
+        recipeSelector.disabled = true;
+    }
+    if (createRecipeBtn) {
+        createRecipeBtn.disabled = true;
+    }
+    if (manageRecipesLink) {
+        manageRecipesLink.style.pointerEvents = 'none';
+        manageRecipesLink.style.opacity = '0.5';
     }
 }
 
@@ -1177,6 +1245,8 @@ window.showRootElementMessage = showRootElementMessage;
 window.hideRootElementMessage = hideRootElementMessage;
 window.hideAnimationControls = hideAnimationControls;
 window.hideAppliedAnimationEditor = hideAppliedAnimationEditor;
+window.showRecipeControls = showRecipeControls;
+window.hideRecipeControls = hideRecipeControls;
 window.showAppliedAnimationEditor = showAppliedAnimationEditor;
 window.selectAnimationForEditing = selectAnimationForEditing;
 window.showClipPathWarning = showClipPathWarning;

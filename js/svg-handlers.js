@@ -65,14 +65,22 @@ function createHandlesForElement(svgElement) {
     // ✅ NEW: Special handling for clipPath shapes
     let bbox;
     if (isInsideClipPath(svgElement)) {
-        // For clipPath shapes, use direct attribute values for bounding box
+        // For clipPath shapes, calculate global coordinates accounting for parent transforms
         if (svgElement.tagName === 'rect') {
             const x = parseFloat(svgElement.getAttribute('x')) || 0;
             const y = parseFloat(svgElement.getAttribute('y')) || 0;
             const width = parseFloat(svgElement.getAttribute('width')) || 0;
             const height = parseFloat(svgElement.getAttribute('height')) || 0;
             
-            bbox = { x, y, width, height };
+            // Calculate global position by accounting for parent transforms
+            const globalPos = getGlobalPosition(svgElement, x, y);
+            
+            bbox = { 
+                x: globalPos.x, 
+                y: globalPos.y, 
+                width: width, 
+                height: height 
+            };
         } else {
             // For other shapes, try the normal method
             bbox = getTransformedBBox(svgElement);
@@ -514,6 +522,47 @@ function applyTransform(element, newMatrix) {
     transformList.initialize(transform);
 }
 
+// Calculate global position of a clipPath shape accounting for all parent transforms
+function getGlobalPosition(element, localX, localY) {
+    // Start with the local coordinates
+    let globalX = localX;
+    let globalY = localY;
+    
+    // Walk up the DOM tree to the SVG root, applying transforms
+    let current = element.parentNode;
+    while (current && current !== svgRoot) {
+        // Check if this element has a transform
+        const transform = current.getAttribute('transform');
+        if (transform) {
+            // Parse the transform matrix
+            const matrixMatch = transform.match(/matrix\(([^)]+)\)/);
+            if (matrixMatch) {
+                const values = matrixMatch[1].split(/\s+/).map(parseFloat);
+                if (values.length === 6) {
+                    const [a, b, c, d, e, f] = values;
+                    // Apply matrix transformation: [x', y'] = [x, y, 1] * [[a, c, e], [b, d, f], [0, 0, 1]]
+                    const newX = a * globalX + c * globalY + e;
+                    const newY = b * globalX + d * globalY + f;
+                    globalX = newX;
+                    globalY = newY;
+                }
+            } else {
+                // Handle translate transforms
+                const translateMatch = transform.match(/translate\(([^,)]+),\s*([^)]+)\)/);
+                if (translateMatch) {
+                    const tx = parseFloat(translateMatch[1]) || 0;
+                    const ty = parseFloat(translateMatch[2]) || 0;
+                    globalX += tx;
+                    globalY += ty;
+                }
+            }
+        }
+        current = current.parentNode;
+    }
+    
+    return { x: globalX, y: globalY };
+}
+
 function drawBoundingBox(element) {
     // Remove any existing selection box first
     const existingBox = document.getElementById('selection-box');
@@ -526,14 +575,22 @@ function drawBoundingBox(element) {
     let wasTemporarilyVisible = false;
     
     if (isInsideClipPath(element)) {
-        // ✅ NEW: For clipPath shapes, use direct attribute values for bounding box
+        // ✅ NEW: For clipPath shapes, calculate global coordinates accounting for parent transforms
         if (element.tagName === 'rect') {
             const x = parseFloat(element.getAttribute('x')) || 0;
             const y = parseFloat(element.getAttribute('y')) || 0;
             const width = parseFloat(element.getAttribute('width')) || 0;
             const height = parseFloat(element.getAttribute('height')) || 0;
             
-            bbox = { x, y, width, height };
+            // Calculate global position by accounting for parent transforms
+            const globalPos = getGlobalPosition(element, x, y);
+            
+            bbox = { 
+                x: globalPos.x, 
+                y: globalPos.y, 
+                width: width, 
+                height: height 
+            };
         } else {
             // For other shapes, try the normal method
             const originalStyle = element.getAttribute('style') || '';

@@ -2,6 +2,7 @@ let animationsData =
 
 {
   "beating": {
+    "type": "geometry",
     "params": { 
       "amplitude": 1.2 
     },
@@ -40,6 +41,7 @@ let animationsData =
     }
   },
   "fade": {
+    "type": "filter",
     "keyframes": {
         "0%": {
             "animation-timing-function": "cubic-bezier(0.2057,0.573,0.3723,0.9184)",
@@ -54,6 +56,7 @@ let animationsData =
   },
 
   "tremble": {
+    "type": "geometry",
     "params": { 
       "intensity": 1.5 
     },
@@ -105,6 +108,7 @@ let animationsData =
     }
   },
   "blink": {
+    "type": "filter",
     "keyframes": {
         "0%": { "opacity": "1" },
         "49.75%": { "opacity": "1" },
@@ -117,6 +121,7 @@ let animationsData =
   },
 
   "bounce": {
+    "type": "geometry",
     "keyframes": {
     "0%": {
             "animation-timing-function": "cubic-bezier(0.1361,0.2514,0.2175,0.8786)",
@@ -144,6 +149,7 @@ let animationsData =
 
 
   "breath": {
+    "type": "geometry",
     "keyframes": {
         "0%": {
             "animation-timing-function": "cubic-bezier(0.9647,0.2413,-0.0705,0.7911)",
@@ -162,6 +168,7 @@ let animationsData =
   },
 
   "spin": {
+    "type": "geometry",
     "params": { 
       "direction": 1 
     },
@@ -191,6 +198,7 @@ let animationsData =
   },
 
   "flip-horizontal" : {
+    "type": "geometry",
     "keyframes":  {
         "0%": {
             "animation-timing-function": "cubic-bezier(0.1909,0.4373,0.4509,0.7454)",
@@ -217,6 +225,7 @@ let animationsData =
   },
 
   "blur" : {
+    "type": "filter",
     "params": { 
       "blurAmount": 10 
     },
@@ -240,6 +249,7 @@ let animationsData =
   },
 
   "bounce-alt" : {
+    "type": "geometry",
     "keyframes":  {
         "0%": {
             "animation-timing-function": "cubic-bezier(0.1348,0.3256,0.2495,0.8687)",
@@ -335,6 +345,7 @@ let animationsData =
   },
 
     "metronome" : {
+    "type": "geometry",
     "keyframes": {
       "0%": {
         "animation-timing-function": "cubic-bezier(0.7806,0.0715,0.8998,0.731)",
@@ -369,6 +380,7 @@ let animationsData =
   },
 
     "swim" : {
+    "type": "geometry",
     "keyframes": {
       "0%": { "transform": "translate(0px,0px) rotate(0deg) scale(1)" },
       "8.33333%": { "transform": "translate(-5.96462px,4.90845px) rotate(-13.66821deg) scale(1)" },
@@ -389,6 +401,7 @@ let animationsData =
   },
 
     "squeeze" : {
+    "type": "geometry",
     "keyframes": {
           "0%": {
             "animation-timing-function": "cubic-bezier(0.1685,0.4459,0.3641,0.7833)",
@@ -415,6 +428,7 @@ let animationsData =
   },
 
   "pulse" : {
+    "type": "geometry",
     "keyframes": {
           "0%": {
             "animation-timing-function": "cubic-bezier(0.3333,0.3333,0.3124,0.6668)",
@@ -461,6 +475,7 @@ let animationsData =
   },
 
     "skew" : {
+    "type": "geometry",
     "params": { 
       "skewAmount": 20 
     },
@@ -502,6 +517,7 @@ let animationsData =
   },
 
   "stroke-dash": {
+    "type": "filter",
     "params": { 
       "dashLength": 10,
       "gapLength": 5
@@ -545,11 +561,12 @@ let animationsData =
   },
 
 "boiled": {
-  params: { 
-    intensity: 4, 
-    frequency: 0.02, 
-    speed: 5, 
-    to: 60 
+  "type": "filter",
+  "params": { 
+    "intensity": 4, 
+    "frequency": 0.02, 
+    "speed": 5, 
+    "to": 60 
   },
   paramConfig: {
     intensity: {
@@ -628,6 +645,7 @@ let animationsData =
 },
 
 "scroll-vertical": {
+  "type": "geometry",
   "params": {
     "distance": 100 // pixels
   },
