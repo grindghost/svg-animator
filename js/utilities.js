@@ -481,7 +481,32 @@ function updateAnimationPreview(element, speed, editingAnimation) {
     const isClipPathElement = isInsideClipPath(element);
     
     // Find the existing animation wrapper (only for non-clipPath elements)
-    const wrapper = isClipPathElement ? element : element.closest('.anim-wrapper');
+    let wrapper = null;
+    if (isClipPathElement) {
+        wrapper = element;
+    } else {
+        // Get the original animation name from the saved data to find the correct wrapper
+        const data = getSavedAnimations();
+        const savedAnimationData = data.animations[editingAnimation.elementId] && data.animations[editingAnimation.elementId][editingAnimation.animationId];
+        const originalAnimationName = savedAnimationData ? savedAnimationData.animationName : null;
+        
+        if (originalAnimationName) {
+            // Find the wrapper that has this specific animation
+            const allWrappers = document.querySelectorAll('.anim-wrapper');
+            for (let w of allWrappers) {
+                if (w.style.animation && w.style.animation.includes(originalAnimationName)) {
+                    wrapper = w;
+                    break;
+                }
+            }
+        }
+        
+        // Fallback to closest wrapper if specific one not found
+        if (!wrapper) {
+            wrapper = element.closest('.anim-wrapper');
+        }
+    }
+    
     if (!wrapper) return;
     
     const animationType = editingAnimation.animationType;

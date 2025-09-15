@@ -652,7 +652,7 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
             if (typeof createNamedDestination === 'function') {
                 // Use the original element's ID, not any wrapper's ID
                 const originalElementId = element.getAttribute("id") || element.tagName;
-                createNamedDestination(originalElementId, element, selectedAnimation);
+                createNamedDestination(originalElementId, element, selectedAnimation, elementId, animationId);
             }
 
             resetControls();
@@ -759,7 +759,7 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
             if (typeof createNamedDestination === 'function') {
                 // Use the original element's ID, not the wrapper's ID
                 const originalElementId = element.getAttribute("id") || element.tagName;
-                createNamedDestination(originalElementId, element, selectedAnimation);
+                createNamedDestination(originalElementId, element, selectedAnimation, elementId, animationId);
             }
 
             resetControls();

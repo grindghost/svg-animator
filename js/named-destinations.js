@@ -45,7 +45,7 @@ function saveNamedDestinations(namedDestinationsData) {
 }
 
 // Create a named destination for an element
-function createNamedDestination(elementId, element, animationType) {
+function createNamedDestination(elementId, element, animationType, animationElementId = null, specificAnimationId = null) {
     const data = getNamedDestinations();
     
     // If the element is a wrapper (anim-wrapper or wrapping-group), find the original element inside it
@@ -102,6 +102,8 @@ function createNamedDestination(elementId, element, animationType) {
         elementId: actualElementId,
         name: defaultName,
         animationType: animationType,
+        animationElementId: animationElementId,  // Store the elementId where animations are stored
+        specificAnimationId: specificAnimationId,  // Store the specific animation ID
         createdAt: new Date().toISOString()
     };
     
@@ -262,6 +264,55 @@ function createDestinationTag(destination) {
         }
         
         selectElementByDestination(destination.id);
+        
+        // Try to trigger the animation editor if we have animation data
+        if (typeof selectAnimationForEditing === 'function') {
+            const animationsData = getSavedAnimations();
+            
+            // Determine which element ID to use for finding animations
+            const searchElementId = destination.animationElementId || destination.elementId;
+            
+            console.log('Named destination clicked:', destination);
+            console.log('Searching for animations under elementId:', searchElementId);
+            
+            const elementAnimations = animationsData.animations[searchElementId];
+            
+            if (elementAnimations) {
+                let animationId = null;
+                let animationData = null;
+                
+                // If we have a specific animation ID, use that
+                if (destination.specificAnimationId && elementAnimations[destination.specificAnimationId]) {
+                    animationId = destination.specificAnimationId;
+                    animationData = elementAnimations[destination.specificAnimationId];
+                    console.log('Found specific animation:', animationId, animationData);
+                } else {
+                    // Fallback: Find animation with matching type (for backward compatibility)
+                    for (const [animId, animData] of Object.entries(elementAnimations)) {
+                        if (animData.type === destination.animationType) {
+                            animationId = animId;
+                            animationData = animData;
+                            console.log('Found matching animation by type:', animationId, animationData);
+                            break;
+                        }
+                    }
+                }
+                
+                if (animationId && animationData) {
+                    // Trigger the animation editor panel
+                    selectAnimationForEditing(
+                        searchElementId,
+                        animationId,
+                        destination.animationType,
+                        animationData
+                    );
+                } else {
+                    console.log('No matching animation found');
+                }
+            } else {
+                console.log('No animations found for elementId:', searchElementId);
+            }
+        }
     });
     
     // Add edit button handler

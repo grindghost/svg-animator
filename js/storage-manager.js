@@ -87,17 +87,34 @@ function removeAnimation(elementId, animationId) {
             stopAnimation(element, animationData.animationName);
         }
 
+        // Check if we're currently editing this animation - if so, hide the editor panel
+        if (typeof currentlyEditingAnimation !== 'undefined' && currentlyEditingAnimation && 
+            currentlyEditingAnimation.elementId === elementId && 
+            currentlyEditingAnimation.animationId === animationId) {
+            if (typeof hideAppliedAnimationEditor === 'function') {
+                hideAppliedAnimationEditor();
+            }
+        }
+
         // Delete from the localStorage
         delete data.animations[elementId][animationId];
+
+        // Remove the specific named destination that corresponds to this animation
+        if (data.namedDestinations && data.namedDestinations.destinations) {
+            // Look for named destinations that reference this specific animation
+            for (const [destinationElementId, destinationData] of Object.entries(data.namedDestinations.destinations)) {
+                if (destinationData.specificAnimationId === animationId || 
+                    (destinationData.animationElementId === elementId && destinationData.animationType === animationData.type)) {
+                    delete data.namedDestinations.destinations[destinationElementId];
+                    console.log('Removed named destination for deleted animation:', destinationElementId);
+                    break;
+                }
+            }
+        }
 
         // Remove the element entry if it has no more animations
         if (Object.keys(data.animations[elementId]).length === 0) {
             delete data.animations[elementId];
-            
-            // Remove named destination for this element since it has no more animations
-            if (data.namedDestinations && data.namedDestinations.destinations && data.namedDestinations.destinations[elementId]) {
-                delete data.namedDestinations.destinations[elementId];
-            }
         }
     }
     
