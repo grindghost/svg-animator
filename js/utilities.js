@@ -477,8 +477,11 @@ function saveParameterChange(editingAnimation, paramName, value) {
 
 // Helper function to update animation preview in real-time
 function updateAnimationPreview(element, speed, editingAnimation) {
-    // Find the existing animation wrapper
-    const wrapper = element.closest('.anim-wrapper');
+    // ✅ NEW: Handle clipPath elements differently - they don't use anim-wrapper groups
+    const isClipPathElement = isInsideClipPath(element);
+    
+    // Find the existing animation wrapper (only for non-clipPath elements)
+    const wrapper = isClipPathElement ? element : element.closest('.anim-wrapper');
     if (!wrapper) return;
     
     const animationType = editingAnimation.animationType;
@@ -493,8 +496,12 @@ function updateAnimationPreview(element, speed, editingAnimation) {
     
     if (!originalAnimationName) return;
     
-    // Handle apply-based animations (like "boiled")
+    // Handle apply-based animations (like "boiled") - not supported for clipPath elements
     if (animationData.apply) {
+        if (isClipPathElement) {
+            console.warn("Apply-based animations not supported for clipPath elements during parameter editing");
+            return;
+        }
         // Re-apply the animation with current parameters
         animationData.apply(wrapper, animationData.params);
     } else {
@@ -504,13 +511,18 @@ function updateAnimationPreview(element, speed, editingAnimation) {
             : animationData.keyframes;
             
         if (keyframes) {
+            // ✅ NEW: Scale down animation intensity for clipPath elements
+            const scaledKeyframes = isClipPathElement ? 
+                scaleAnimationIntensityForClipPath(keyframes, animationData.type) : 
+                keyframes;
+            
             // Update the existing animation style instead of creating a new one
             let existingStyle = document.getElementById(originalAnimationName);
             
             // Build keyframes string
             let keyframesString = "";
-            for (let percentage in keyframes) {
-                let properties = keyframes[percentage];
+            for (let percentage in scaledKeyframes) {
+                let properties = scaledKeyframes[percentage];
                 let propsString = Object.keys(properties)
                     .map(prop => `${prop}: ${properties[prop]};`)
                     .join(" ");
@@ -533,7 +545,7 @@ function updateAnimationPreview(element, speed, editingAnimation) {
                 svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
             }
             
-            // Update the animation timing (speed) on the wrapper
+            // Update the animation timing (speed) on the wrapper or element
             const currentAnimation = wrapper.style.animation;
             const newAnimation = currentAnimation.replace(/\d+\.?\d*s/, `${speed}s`);
             wrapper.style.animation = newAnimation;

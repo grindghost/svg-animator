@@ -1201,6 +1201,7 @@ function setupSVGViewerTooltip() {
 }
 
 // Export functions for use in other modules
+window.isInsideClipPath = isInsideClipPath;
 window.removeHandles = removeHandles;
 window.createHandlesForElement = createHandlesForElement;
 window.attachResizeListeners = attachResizeListeners;
