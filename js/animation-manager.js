@@ -171,6 +171,7 @@ function removeTempPreview(wrapper) {
     if (wrapper.hasAttribute("filter")) {
         const filterUrl = wrapper.getAttribute("filter"); // e.g. url(#boilEffect-abc123)
         wrapper.removeAttribute("filter");
+        wrapper.removeAttribute("data-boiled-filter-id");
 
         // Try to remove the filter definition itself
         if (filterUrl && filterUrl.startsWith("url(")) {
@@ -254,8 +255,9 @@ function CleanAnimationStyle(element, animation_name) {
     });
 }
 
-function stopAnimation(element, animName = undefined) {
+function stopAnimation(element, animName = undefined, elementId = undefined) {
     if (!element) return;
+    
 
     // ✅ NEW: Handle clipPath elements specially - they don't use anim-wrapper groups
     if (isInsideClipPath(element)) {
@@ -265,9 +267,17 @@ function stopAnimation(element, animName = undefined) {
     // ✅ normalize: work on wrapper if shape is inside one
     let wrapper = element;
     if (!(wrapper.classList && wrapper.classList.contains("anim-wrapper"))) {
-        if (wrapper.parentNode && wrapper.parentNode.classList.contains("anim-wrapper")) {
-            wrapper = wrapper.parentNode;
-        } else {
+        // Look for the anim-wrapper that contains this element
+        let current = wrapper;
+        while (current && current.parentNode) {
+            if (current.classList && current.classList.contains("anim-wrapper")) {
+                wrapper = current;
+                break;
+            }
+            current = current.parentNode;
+        }
+        
+        if (!wrapper.classList || !wrapper.classList.contains("anim-wrapper")) {
             return; // nothing to stop
         }
     }
@@ -281,24 +291,26 @@ function stopAnimation(element, animName = undefined) {
     // ✅ Case 2: stopping permanent animation(s)
     if (animName) {
         // Check if this is an animation ID (UUID format) or animation type name
-        const isAnimationId = animName.includes('-') && animName.length > 20; // UUIDs are longer
+        const isAnimationId = animName.includes('-') && animName.length > 10; // Animation names like "boiled-abc123def"
         
         if (isAnimationId) {
             // animName is actually an animation ID - find the animation type
-            const elementId = wrapper.getAttribute("id") || wrapper.querySelector('[id]')?.getAttribute("id");
-            if (elementId) {
+            const targetElementId = elementId || wrapper.getAttribute("id") || wrapper.querySelector('[id]')?.getAttribute("id");
+            if (targetElementId) {
                 const savedAnimations = getSavedAnimations();
-                const elementAnimations = savedAnimations.animations[elementId];
+                const elementAnimations = savedAnimations.animations[targetElementId];
                 if (elementAnimations && elementAnimations[animName]) {
                     const animationData = elementAnimations[animName];
                     // Handle both old format (no type property) and new format (with type property)
                     const animationType = animationData.type || animName;
                     const animationName = animationData.animationName;
                     
-                    if (
-                        wrapper.style.animation.includes(animationName) ||
-                        wrapper.classList.contains(`${animationType}-animation-class`)
-                    ) {
+                    // Check if this wrapper has the animation we want to stop
+                    const hasStyleAnimation = wrapper.style.animation && wrapper.style.animation.includes(animationName);
+                    const hasAnimationClass = wrapper.classList.contains(`${animationType}-animation-class`);
+                    const hasApplyBasedAnimation = animationData.apply && wrapper.hasAttribute("filter");
+                    
+                    if (hasStyleAnimation || hasAnimationClass || hasApplyBasedAnimation) {
                         unwrapWrapper(wrapper);
                     } else {
                         // might be nested: recurse upwards
@@ -309,10 +321,11 @@ function stopAnimation(element, animName = undefined) {
             }
         } else {
             // animName is an animation type - use old logic for backward compatibility
-            if (
-                wrapper.style.animation.includes(animName) ||
-                wrapper.classList.contains(`${animName}-animation-class`)
-            ) {
+            const hasStyleAnimation = wrapper.style.animation && wrapper.style.animation.includes(animName);
+            const hasAnimationClass = wrapper.classList.contains(`${animName}-animation-class`);
+            const hasApplyBasedAnimation = wrapper.hasAttribute("filter") && wrapper.classList.contains(`${animName}-animation-class`);
+            
+            if (hasStyleAnimation || hasAnimationClass || hasApplyBasedAnimation) {
                 unwrapWrapper(wrapper);
             } else {
                 // might be nested: recurse upwards
@@ -358,6 +371,9 @@ function unwrapWrapper(wrapper) {
                 }
             }
         }
+        // Remove the filter attribute from the wrapper
+        wrapper.removeAttribute("filter");
+        wrapper.removeAttribute("data-boiled-filter-id");
     }
     
     const parent = wrapper.parentNode;

@@ -84,7 +84,7 @@ function removeAnimation(elementId, animationId) {
         // Stop the animation and remove the wrapper
         const element = document.querySelector(`#${elementId}`);
         if (element) {
-            stopAnimation(element, animationData.animationName);
+            stopAnimation(element, animationId, elementId);
         }
 
         // Check if we're currently editing this animation - if so, hide the editor panel
