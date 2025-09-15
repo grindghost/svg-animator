@@ -110,6 +110,10 @@ async function importProject(file) {
         
         // Rebuild UI
         prepopulateLocalStorage(svgRoot);
+        
+        // Process clipPath elements first - move them from defs to consuming elements
+        processClipPathElements(svgRoot);
+        
         populateTreeView(svgRoot);
         saveCurrentStateAsClean();
         initializeHoverAndSelect();

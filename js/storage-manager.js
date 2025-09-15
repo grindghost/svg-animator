@@ -218,6 +218,10 @@ function resetSvgFromBackup() {
     
     svgRoot = document.querySelector('#svg-viewer svg');
     prepopulateLocalStorage(svgRoot);
+    
+    // Process clipPath elements first - move them from defs to consuming elements
+    processClipPathElements(svgRoot);
+    
     populateTreeView(svgRoot);
     saveCurrentStateAsClean(); // This will reset hasUnsavedChanges to false
     

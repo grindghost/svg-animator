@@ -390,6 +390,69 @@ function getElementIcon(tagName, hasChildren) {
     }
 }
 
+// Helper function to check if an element is inside a clipPath
+function isInsideClipPath(element) {
+    let current = element.parentNode;
+    while (current && current !== svgRoot) {
+        if (current.tagName === 'clipPath') {
+            return true;
+        }
+        current = current.parentNode;
+    }
+    return false;
+}
+
+// Process clipPath elements - move them from defs to consuming elements
+function processClipPathElements(rootElement) {
+    const defs = rootElement.querySelector('defs');
+    if (!defs) return;
+    
+    const clipPaths = defs.querySelectorAll('clipPath');
+    
+    clipPaths.forEach(clipPath => {
+        const clipPathId = clipPath.getAttribute('id');
+        if (!clipPathId) return;
+        
+        // Find all elements that use this clipPath
+        // We need to check both attributes and CSS styles
+        let consumingElements = [];
+        
+        // Check all elements for clip-path in attributes
+        const allElements = rootElement.querySelectorAll('*');
+        allElements.forEach(element => {
+            // Check clip-path attribute
+            const clipPathAttr = element.getAttribute('clip-path') || element.getAttribute('clipPath');
+            if (clipPathAttr && clipPathAttr.includes(clipPathId)) {
+                consumingElements.push(element);
+                return;
+            }
+            
+            // Check clip-path in style attribute
+            const styleAttr = element.getAttribute('style');
+            if (styleAttr && styleAttr.includes('clip-path') && styleAttr.includes(clipPathId)) {
+                consumingElements.push(element);
+                return;
+            }
+            
+            // Check computed style (for elements with CSS classes)
+            const computedStyle = window.getComputedStyle(element);
+            const clipPathStyle = computedStyle.clipPath;
+            if (clipPathStyle && clipPathStyle.includes(clipPathId)) {
+                consumingElements.push(element);
+            }
+        });
+        
+        consumingElements.forEach(consumingElement => {
+            // Clone the clipPath and move it as the first child of the consuming element
+            const clonedClipPath = clipPath.cloneNode(true);
+            consumingElement.insertBefore(clonedClipPath, consumingElement.firstChild);
+        });
+        
+        // Remove the original clipPath from defs after moving it
+        clipPath.remove();
+    });
+}
+
 // Populate tree view
 function populateTreeView(rootElement) {
     const treeDiv = document.getElementById('element-tree');
@@ -409,6 +472,122 @@ function createTreeViewItem(parent, element, depth = 0) {
     // Skip over <linearGradient> and <use> elements
     if (element.tagName === 'linearGradient' || 
         element.tagName === 'use') {
+        return;
+    }
+
+    // ✅ NEW: Handle clipPath elements specially - show them in treeview with special styling
+    if (element.tagName === 'clipPath') {
+        // Create a tree item for the clipPath element itself
+        const hasChildren = element.children.length > 0;
+        const container = hasChildren ? document.createElement('details') : document.createElement('div');
+        const summary = hasChildren ? document.createElement('summary') : container;
+
+        // Set the data-element-id attribute to match the SVG element's ID
+        summary.setAttribute('data-element-id', element.id);
+        summary.setAttribute('data-depth', depth);
+        summary.classList.add('clippath-element'); // Add special class for styling
+
+        // Create icon for clipPath
+        const icon = '✂️'; // Scissors icon for clipPath
+        
+        // Create a more descriptive label with icon
+        let label = `clipPath${element.id ? ` (${element.id})` : ''}`;
+        
+        // Create the label container with icon and text
+        const labelContainer = document.createElement('span');
+        labelContainer.className = 'tree-item-label';
+        
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'tree-item-icon';
+        iconSpan.innerHTML = icon;
+        
+        const textSpan = document.createElement('span');
+        textSpan.className = 'tree-item-text';
+        textSpan.textContent = label;
+        
+        labelContainer.appendChild(iconSpan);
+        labelContainer.appendChild(textSpan);
+        
+        // Clear any existing content and append the new structure
+        summary.innerHTML = '';
+        summary.appendChild(labelContainer);
+
+        if (hasChildren) {
+            container.appendChild(summary);
+            parent.appendChild(container);
+        } else {
+            parent.appendChild(summary);
+        }
+
+        // Add click handler for clipPath elements
+        summary.addEventListener('click', function(e) {
+            e.stopPropagation();
+            removeStyleTag();
+
+            // Clear selection for previously selected element in SVG
+            if (selectedElement && document.getElementById('selection-box')) {
+                document.getElementById('selection-box').remove();
+            }
+
+            // Clear highlighted treeview item
+            const previouslyHighlighted = document.querySelector('.selected');
+            if (previouslyHighlighted) {
+                previouslyHighlighted.classList.remove('selected');
+            }
+            
+            // Hide clipPath warning when clearing selection
+            hideClipPathWarning();
+
+            // Highlight the current treeview item
+            summary.classList.add('selected');
+
+            // Set the selected element in SVG and add the 'selected-element' class
+            selectedElement = element;
+
+            // Clear any existing element with 'selected-element' class
+            const existingElementWithClass = document.querySelector('.selected-element');
+            if (existingElementWithClass) {
+                existingElementWithClass.classList.remove('selected-element');
+            }
+            selectedElement.classList.add('selected-element');
+
+            // Draw the bounding box around the selected element in SVG
+            drawBoundingBox(selectedElement);
+
+            // Reset the animation controls
+            resetControls();
+
+            // Update the animation details UI for the selected element
+            updateAnimationListUI(selectedElement.id);
+
+            // Update the animation count message
+            updateAnimationCountMessage(selectedElement.id);
+
+            // Enable the dropdown for animation types
+            document.getElementById('animation-type').disabled = false;
+            
+            // Show and update shape styling controls
+            showShapeStylingControls();
+            updateStylingControlsFromElement(selectedElement);
+            
+            // Show controls section
+            showControlsSection();
+            
+            // Show clipPath warning if element is inside clipPath
+            showClipPathWarning(element);
+            
+            // Hide root element message if it was showing
+            hideRootElementMessage();
+            
+            updateStatusBar(`Selected: ${label} ✂️`);
+        });
+
+        // Process clipPath children
+        if (hasChildren) {
+            for (let child of element.children) {
+                createTreeViewItem(container, child, depth + 1);
+            }
+        }
         return;
     }
 
@@ -488,6 +667,9 @@ function createTreeViewItem(parent, element, depth = 0) {
         if (previouslyHighlighted) {
             previouslyHighlighted.classList.remove('selected');
         }
+        
+        // ✅ NEW: Hide clipPath warning when clearing selection
+        hideClipPathWarning();
 
         // 🔥 New: also remove any temporary preview wrapper
         const oldTempWrapper = document.querySelector(".anim-wrapper.temp-anim");
@@ -500,7 +682,8 @@ function createTreeViewItem(parent, element, depth = 0) {
         let targetElement = element;
 
         // If it's a leaf element and the parent is not a 'wrapping-group', wrap it
-        if (isLeafElement) {
+        // ✅ NEW: Skip wrapping-group creation for clipPath shapes
+        if (isLeafElement && !isInsideClipPath(element)) {
             if (!element.parentNode.classList || !element.parentNode.classList.contains('wrapping-group')) {
                 const gWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 gWrapper.classList.add('wrapping-group');
@@ -568,6 +751,9 @@ function createTreeViewItem(parent, element, depth = 0) {
             
             // Show controls section
             showControlsSection();
+            
+            // ✅ NEW: Show clipPath warning if element is inside clipPath
+            showClipPathWarning(element);
             
             // Hide root element message if it was showing
             hideRootElementMessage();
@@ -936,9 +1122,79 @@ window.hideUploadSection = hideUploadSection;
 window.showUploadSection = showUploadSection;
 window.initializeUploadButton = initializeUploadButton;
 window.isRootSVGElement = isRootSVGElement;
+// Function to show clipPath warning
+function showClipPathWarning(element) {
+    // Remove any existing clipPath warning
+    hideClipPathWarning();
+    
+    if (!isInsideClipPath(element)) {
+        return; // Not inside clipPath, no warning needed
+    }
+    
+    // Check if element already has an animation
+    const hasAnimation = element.style.animation && element.style.animation.trim() !== '';
+    
+    // Create warning message
+    const warningDiv = document.createElement('div');
+    warningDiv.id = 'clippath-warning';
+    warningDiv.className = 'clippath-warning';
+    warningDiv.innerHTML = `
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+            <div class="warning-title">ClipPath Shape Selected</div>
+            <div class="warning-text">
+                ${hasAnimation ? 
+                    'This clipPath shape already has an animation. Only one animation per clipPath shape is supported.' : 
+                    'ClipPath shapes have limited animation support. Only keyframe-based animations are available, and only one animation per shape.'
+                }
+            </div>
+        </div>
+    `;
+    
+    // Insert warning after animation count message
+    const animationCountMessage = document.getElementById('animation-count-message');
+    if (animationCountMessage) {
+        animationCountMessage.parentNode.insertBefore(warningDiv, animationCountMessage.nextSibling);
+    } else {
+        // Insert at the beginning of controls section
+        const controlsSection = document.querySelector('.controls-section');
+        if (controlsSection) {
+            controlsSection.insertBefore(warningDiv, controlsSection.firstChild);
+        }
+    }
+    
+    // Disable animation dropdown if already has animation
+    if (hasAnimation) {
+        const animationDropdown = document.getElementById('animation-type');
+        if (animationDropdown) {
+            animationDropdown.disabled = true;
+            animationDropdown.title = 'ClipPath shapes with existing animations cannot have additional animations applied';
+        }
+    }
+}
+
+// Function to hide clipPath warning
+function hideClipPathWarning() {
+    const warningDiv = document.getElementById('clippath-warning');
+    if (warningDiv) {
+        warningDiv.remove();
+    }
+    
+    // Re-enable animation dropdown
+    const animationDropdown = document.getElementById('animation-type');
+    if (animationDropdown) {
+        animationDropdown.disabled = false;
+        animationDropdown.title = '';
+    }
+}
+
 window.showRootElementMessage = showRootElementMessage;
 window.hideRootElementMessage = hideRootElementMessage;
 window.hideAnimationControls = hideAnimationControls;
 window.hideAppliedAnimationEditor = hideAppliedAnimationEditor;
 window.showAppliedAnimationEditor = showAppliedAnimationEditor;
 window.selectAnimationForEditing = selectAnimationForEditing;
+window.showClipPathWarning = showClipPathWarning;
+window.hideClipPathWarning = hideClipPathWarning;
+window.isInsideClipPath = isInsideClipPath;
+window.processClipPathElements = processClipPathElements;

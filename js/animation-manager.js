@@ -1,9 +1,42 @@
 // Animation application, management, and parameter control functionality
 // SVG Animator Pro - Animation Manager Module
 
+// Helper function to check if an element is inside a clipPath
+function isInsideClipPath(element) {
+    let current = element.parentNode;
+    while (current && current !== svgRoot) {
+        if (current.tagName === 'clipPath') {
+            return true;
+        }
+        current = current.parentNode;
+    }
+    return false;
+}
+
+// Helper function to restore original appearance of clipPath shapes
+function restoreClipPathShapeAppearance(element) {
+    if (!isInsideClipPath(element)) return;
+    
+    // Restore original style
+    const originalStyle = element.getAttribute('data-original-style');
+    if (originalStyle !== null) {
+        element.setAttribute('style', originalStyle);
+        element.removeAttribute('data-original-style');
+    }
+}
+
 // Remove any temporary preview (keyframe or filter-based)
 function removeTempPreview(wrapper) {
     if (!wrapper || !wrapper.classList.contains("temp-anim")) return;
+
+    // ✅ NEW: Handle clipPath shapes specially
+    if (isInsideClipPath(wrapper)) {
+        // For clipPath shapes, remove animation and restore appearance
+        wrapper.style.animation = "";
+        removeStyleTag("temp-generic");
+        restoreClipPathShapeAppearance(wrapper);
+        return;
+    }
 
     // 1. Remove temp keyframe animation
     if (wrapper.style.animation && wrapper.style.animation.includes("temp-generic")) {
@@ -155,6 +188,9 @@ function stopAnimation(element, animName = undefined) {
     try {
         document.getElementById("selection-box").remove();
     } catch (e) {}
+    
+    // ✅ NEW: Restore original appearance for clipPath shapes
+    restoreClipPathShapeAppearance(element);
 }
 
 
@@ -179,9 +215,94 @@ function unwrapWrapper(wrapper) {
 }
 
 
+// Special temp animation handling for clipPath shapes - no temp wrapper
+function applyTempAnimationToClipPathShape(element, speed, animName = undefined) {
+    // Clean up any existing temp animation on the element
+    if (element.style.animation && element.style.animation.includes("temp-generic")) {
+        element.style.animation = "";
+    }
+
+    const animationName = "temp-generic";
+    const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
+    const animationData = animationsData[current_selected_anim_in_dropdown];
+    if (!animationData) {
+        console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
+        return;
+    }
+
+    // Handle apply-based animations (like "boiled") - not supported for clipPath shapes
+    if (animationData.apply) {
+        updateStatusBar("Apply-based animations not supported for clipPath shapes! ❌");
+        return;
+    }
+
+    // Build keyframes
+    const keyframes = animationData.generateKeyframes
+        ? animationData.generateKeyframes(animationData.params)
+        : animationData.keyframes;
+
+    if (!keyframes) {
+        console.error(`No keyframes found for animation "${current_selected_anim_in_dropdown}"`);
+        return;
+    }
+
+    let keyframesString = "";
+    for (let percentage in keyframes) {
+        let properties = keyframes[percentage];
+        let propsString = Object.keys(properties)
+            .map(prop => `${prop}: ${properties[prop]};`)
+            .join(" ");
+        keyframesString += `${percentage} { ${propsString} } `;
+    }
+
+    const embeddedStyle = `
+        <style id="${animationName}" data-anikit="">
+            @keyframes ${animationName} {
+                ${keyframesString}
+            }
+        </style>
+    `;
+    svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+
+        // Apply animation directly to the element (no wrapper)
+        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+        element.style.animation = newAnimation;
+
+        // ✅ NEW: For clipPath shapes, make them temporarily visible during animation
+        if (isInsideClipPath(element)) {
+            // Store original style values
+            const originalStyle = element.getAttribute('style') || '';
+            element.setAttribute('data-original-style', originalStyle);
+            
+            // Make the element visible for animation preview by modifying the style attribute
+            let newStyle = originalStyle;
+            
+            // Remove fill: none if present
+            newStyle = newStyle.replace(/fill\s*:\s*none\s*;?/g, '');
+            
+            // Add visible fill and stroke
+            if (!newStyle.includes('fill:')) {
+                newStyle += ' fill: rgba(99, 102, 241, 0.3);';
+            }
+            if (!newStyle.includes('stroke:')) {
+                newStyle += ' stroke: #6366f1; stroke-width: 2px;';
+            }
+            
+            element.setAttribute('style', newStyle);
+        }
+
+        setCorrectTransformOrigin(element);
+        element.classList.add("application-animation-class");
+}
+
 function applyTempAnimation(element, speed, animName = undefined) {
     if (document.getElementById("selection-box")) {
         document.getElementById("selection-box").remove();
+    }
+
+    // ✅ NEW: Special handling for clipPath shapes - no temp wrapper
+    if (isInsideClipPath(element)) {
+        return applyTempAnimationToClipPathShape(element, speed, animName);
     }
 
     // removeStyleTag("temp-generic");
@@ -251,9 +372,116 @@ function applyTempAnimation(element, speed, animName = undefined) {
 }
 
 
+// Special animation handling for clipPath shapes - no anim-wrapper groups
+function applyAnimationToClipPathShape(element, speed, animName = undefined, save = true) {
+    try {
+        const elementId = element.getAttribute("id") || element.tagName;
+        const selectedAnimation = animName || document.getElementById("animation-type").value;
+        const animationName = uniqueID();
+
+        const animationData = animationsData[selectedAnimation];
+        if (!animationData) {
+            throw new Error(`Animation "${selectedAnimation}" not found.`);
+        }
+
+        removeStyleTag(animationName);
+
+        // Handle apply-based animations (like "boiled") - not supported for clipPath shapes
+        if (animationData.apply) {
+            updateStatusBar("Apply-based animations not supported for clipPath shapes! ❌");
+            showNotification("Apply-based animations are not supported for clipPath shapes. Please use keyframe-based animations.", "warning");
+            return;
+        }
+
+        // Build keyframes for keyframe-based animations
+        const keyframes = animationData.generateKeyframes
+            ? animationData.generateKeyframes(animationData.params)
+            : animationData.keyframes;
+
+        if (!keyframes) {
+            throw new Error(`No keyframes found for animation "${selectedAnimation}"`);
+        }
+
+        let keyframesString = "";
+        for (let percentage in keyframes) {
+            let properties = keyframes[percentage];
+            let propsString = Object.keys(properties)
+                .map(prop => `${prop}: ${properties[prop]};`)
+                .join(" ");
+            keyframesString += `${percentage} { ${propsString} } `;
+        }
+
+        const embeddedStyle = `
+            <style id="${animationName}" data-anikit="">
+                @keyframes ${animationName} {
+                    ${keyframesString}
+                }
+            </style>
+        `;
+        svgRoot.insertAdjacentHTML("beforeend", embeddedStyle);
+
+        // Apply animation directly to the element (no wrapper)
+        const newAnimation = `${speed}s linear 0s infinite normal forwards running ${animationName}`;
+        element.style.animation = newAnimation;
+
+        // ✅ NEW: For clipPath shapes, make them temporarily visible during animation
+        // Store original style values
+        const originalStyle = element.getAttribute('style') || '';
+        element.setAttribute('data-original-style', originalStyle);
+        
+        // Make the element visible for animation preview by modifying the style attribute
+        let newStyle = originalStyle;
+        
+        // Remove fill: none if present
+        newStyle = newStyle.replace(/fill\s*:\s*none\s*;?/g, '');
+        
+        // Add visible fill and stroke
+        if (!newStyle.includes('fill:')) {
+            newStyle += ' fill: rgba(99, 102, 241, 0.3);';
+        }
+        if (!newStyle.includes('stroke:')) {
+            newStyle += ' stroke: #6366f1; stroke-width: 2px;';
+        }
+        
+        element.setAttribute('style', newStyle);
+
+        // Set transform origin on the element itself
+        setCorrectTransformOrigin(element);
+
+        if (save === true) {
+            const propertiesToSave = {
+                speed: `${speed}`,
+                animationName: animationName,
+                isClipPathShape: true // Mark as clipPath shape for special handling
+            };
+            // Save parameters for generateKeyframes animations
+            if (animationData.params) {
+                propertiesToSave.params = { ...animationData.params };
+            }
+            const animationId = saveAnimation(elementId, selectedAnimation, propertiesToSave);
+
+            resetControls();
+            updateStatusBar(`Animation "${selectedAnimation}" applied to clipPath shape! ✨`);
+            showNotification(`Animation "${selectedAnimation}" applied successfully to clipPath shape!`, "success");
+            
+            // Update the animation count message
+            updateAnimationCountMessage(elementId);
+        }
+    } catch (error) {
+        console.error("Error applying animation to clipPath shape:", error);
+        updateStatusBar("Error applying animation to clipPath shape! ❌");
+        showNotification("Error applying animation to clipPath shape!", "error");
+    }
+}
+
 function applyAnimation(element, speed, animName = undefined, save = true) {
     try {
         removeStyleTag("temp-generic");
+
+        // ✅ NEW: Special handling for clipPath shapes - no anim-wrapper groups
+        if (isInsideClipPath(element)) {
+            return applyAnimationToClipPathShape(element, speed, animName, save);
+        }
 
         // ✅ If a temp wrapper exists, promote it
         let wrapper = element.closest
@@ -350,7 +578,8 @@ function applyAnimationToImage(element, speed, animName) {
     let gWrapper;
 
     // If it's a leaf element, check if it's already wrapped by a 'wrapping-group'
-    if (isLeafElement) {
+    // ✅ NEW: Skip wrapping-group creation for clipPath shapes
+    if (isLeafElement && !isInsideClipPath(element)) {
         if (element.parentNode.tagName.toLowerCase() === 'g' && element.parentNode.classList.contains('wrapping-group')) {
             // It's already wrapped by the correct <g> element, so use the existing wrapper
             gWrapper = element.parentNode;
