@@ -54,72 +54,62 @@ function stopClipPathAnimation(element, animName = undefined) {
     
     // Case 2: stopping permanent animation(s)
     if (animName) {
-        // Check if this is an animation ID (UUID format), animation type name, or animation name
-        const isAnimationId = animName.includes('-') && animName.length > 20; // UUIDs are longer
-        const isAnimationName = animName.includes('-') && animName.length < 20; // Animation names like "bounce-0lcrujogh"
-        
-        if (isAnimationId) {
-            // animName is actually an animation ID - find the animation type
-            const elementId = element.getAttribute("id");
-            if (elementId) {
-                const savedAnimations = getSavedAnimations();
-                const elementAnimations = savedAnimations.animations[elementId];
-                if (elementAnimations && elementAnimations[animName]) {
-                    const animationData = elementAnimations[animName];
-                    const animationName = animationData.animationName;
+        // First, try to look up the animation ID in localStorage to get the actual animation name
+        const elementId = element.getAttribute("id");
+        if (elementId) {
+            const savedAnimations = getSavedAnimations();
+            const elementAnimations = savedAnimations.animations[elementId];
+            
+            // Check if animName is an animation ID (exists in localStorage)
+            if (elementAnimations && elementAnimations[animName]) {
+                const animationData = elementAnimations[animName];
+                const animationName = animationData.animationName;
+                
+                console.log('Found animation data:', {
+                    animName: animName,
+                    animationName: animationName,
+                    elementStyle: element.style.animation
+                });
+                
+                // Check if this element has the animation we want to stop
+                if (element.style.animation && element.style.animation.includes(animationName)) {
+                    // Remove the animation from the element's style
+                    element.style.animation = "";
                     
-                    // Check if this element has the animation we want to stop
-                    if (element.style.animation && element.style.animation.includes(animationName)) {
-                        // Remove the animation from the element's style
-                        element.style.animation = "";
-                        
-                        // Remove animation classes
-                        element.classList.remove("application-animation-class");
-                        element.classList.forEach(cls => {
-                            if (cls.endsWith("-animation-class")) {
-                                element.classList.remove(cls);
-                            }
-                        });
-                        
-                        // Restore original appearance
-                        restoreClipPathShapeAppearance(element);
-                    }
+                    // Remove animation classes
+                    element.classList.remove("application-animation-class");
+                    element.classList.forEach(cls => {
+                        if (cls.endsWith("-animation-class")) {
+                            element.classList.remove(cls);
+                        }
+                    });
+                    
+                    // Restore original appearance
+                    restoreClipPathShapeAppearance(element);
+                    
+                    console.log('Animation removed from clipPath element');
+                    return;
                 }
             }
-        } else if (isAnimationName) {
-            // animName is an animation name (like "bounce-0lcrujogh") - remove it directly
-            if (element.style.animation && element.style.animation.includes(animName)) {
-                // Remove the animation from the element's style
-                element.style.animation = "";
-                
-                // Remove animation classes
-                element.classList.remove("application-animation-class");
-                element.classList.forEach(cls => {
-                    if (cls.endsWith("-animation-class")) {
-                        element.classList.remove(cls);
-                    }
-                });
-                
-                // Restore original appearance
-                restoreClipPathShapeAppearance(element);
-            }
-        } else {
-            // animName is an animation type - use old logic for backward compatibility
-            if (element.style.animation && element.style.animation.includes(animName)) {
-                // Remove the animation from the element's style
-                element.style.animation = "";
-                
-                // Remove animation classes
-                element.classList.remove("application-animation-class");
-                element.classList.forEach(cls => {
-                    if (cls.endsWith("-animation-class")) {
-                        element.classList.remove(cls);
-                    }
-                });
-                
-                // Restore original appearance
-                restoreClipPathShapeAppearance(element);
-            }
+        }
+        
+        // Fallback: treat animName as a direct animation name (for backward compatibility)
+        if (element.style.animation && element.style.animation.includes(animName)) {
+            // Remove the animation from the element's style
+            element.style.animation = "";
+            
+            // Remove animation classes
+            element.classList.remove("application-animation-class");
+            element.classList.forEach(cls => {
+                if (cls.endsWith("-animation-class")) {
+                    element.classList.remove(cls);
+                }
+            });
+            
+            // Restore original appearance
+            restoreClipPathShapeAppearance(element);
+            
+            console.log('Animation removed from clipPath element (fallback)');
         }
     } else {
         // stop all animations on this clipPath element

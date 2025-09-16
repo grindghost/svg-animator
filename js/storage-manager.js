@@ -84,7 +84,18 @@ function removeAnimation(elementId, animationId) {
         // Stop the animation and remove the wrapper
         const element = document.querySelector(`#${elementId}`);
         if (element) {
-            stopAnimation(element, animationId, elementId);
+            // ✅ NEW: Special handling for clipPath elements
+            // For clipPath elements, the animation is applied directly to the shape element
+            // (not wrapped in an anim-wrapper group), so we need to ensure proper cleanup
+            if (typeof isInsideClipPath === 'function' && isInsideClipPath(element)) {
+                // For clipPath elements, call stopClipPathAnimation directly with the animation data
+                if (typeof stopClipPathAnimation === 'function') {
+                    stopClipPathAnimation(element, animationId);
+                }
+            } else {
+                // For regular elements, use the standard stopAnimation function
+                stopAnimation(element, animationId, elementId);
+            }
         }
 
         // Check if we're currently editing this animation - if so, hide the editor panel
