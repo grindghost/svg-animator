@@ -87,6 +87,18 @@ function stopClipPathAnimation(element, animName = undefined) {
                     // Restore original appearance
                     restoreClipPathShapeAppearance(element);
                     
+                    // ✅ NEW: Re-enable animation dropdown and hide warning for clipPath elements
+                    // Since the animation is removed, the dropdown can be enabled again
+                    const animationDropdown = document.getElementById('animation-type');
+                    if (animationDropdown) {
+                        animationDropdown.disabled = false;
+                    }
+                    
+                    // Hide the clipPath warning message
+                    if (typeof hideClipPathWarning === 'function') {
+                        hideClipPathWarning();
+                    }
+                    
                     console.log('Animation removed from clipPath element');
                     return;
                 }
@@ -109,6 +121,18 @@ function stopClipPathAnimation(element, animName = undefined) {
             // Restore original appearance
             restoreClipPathShapeAppearance(element);
             
+            // ✅ NEW: Re-enable animation dropdown and hide warning for clipPath elements
+            // Since the animation is removed, the dropdown can be enabled again
+            const animationDropdown = document.getElementById('animation-type');
+            if (animationDropdown) {
+                animationDropdown.disabled = false;
+            }
+            
+            // Hide the clipPath warning message
+            if (typeof hideClipPathWarning === 'function') {
+                hideClipPathWarning();
+            }
+            
             console.log('Animation removed from clipPath element (fallback)');
         }
     } else {
@@ -125,6 +149,18 @@ function stopClipPathAnimation(element, animName = undefined) {
         
         // Restore original appearance
         restoreClipPathShapeAppearance(element);
+        
+        // ✅ NEW: Re-enable animation dropdown and hide warning for clipPath elements
+        // Since all animations are removed, the dropdown can be enabled again
+        const animationDropdown = document.getElementById('animation-type');
+        if (animationDropdown) {
+            animationDropdown.disabled = false;
+        }
+        
+        // Hide the clipPath warning message
+        if (typeof hideClipPathWarning === 'function') {
+            hideClipPathWarning();
+        }
     }
     
     // Clean up selection box and handles
@@ -666,6 +702,18 @@ function applyAnimationToClipPathShape(element, speed, animName = undefined, sav
                 // Use the original element's ID, not any wrapper's ID
                 const originalElementId = element.getAttribute("id") || element.tagName;
                 createNamedDestination(originalElementId, element, selectedAnimation, elementId, animationId);
+            }
+
+            // ✅ NEW: Disable animation dropdown and show warning for clipPath elements
+            // Since clipPath elements only support one animation, disable the dropdown
+            const animationDropdown = document.getElementById('animation-type');
+            if (animationDropdown) {
+                animationDropdown.disabled = true;
+            }
+            
+            // Show the clipPath warning message
+            if (typeof showClipPathWarning === 'function') {
+                showClipPathWarning(element);
             }
 
             resetControls();

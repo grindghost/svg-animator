@@ -1012,6 +1012,16 @@ function updateAnimationCountMessage(elementId) {
     
     const count = getAnimationCount(elementId);
     
+    // ✅ NEW: Hide animation count message for clipPath elements
+    // Since clipPath elements only support one animation, don't show "You can add more!" message
+    if (elementId) {
+        const element = document.querySelector(`#${elementId}`);
+        if (element && typeof isInsideClipPath === 'function' && isInsideClipPath(element)) {
+            messageDiv.style.display = 'none';
+            return;
+        }
+    }
+    
     if (count > 0) {
         messageDiv.style.display = 'block';
         messageDiv.innerHTML = `
@@ -1213,6 +1223,12 @@ function showClipPathWarning(element) {
     // Check if element already has an animation
     const hasAnimation = element.style.animation && element.style.animation.trim() !== '';
     
+    // ✅ NEW: Disable animation dropdown if clipPath element already has an animation
+    const animationDropdown = document.getElementById('animation-type');
+    if (animationDropdown) {
+        animationDropdown.disabled = hasAnimation;
+    }
+    
     // Create warning message
     const warningDiv = document.createElement('div');
     warningDiv.id = 'clippath-warning';
@@ -1275,13 +1291,18 @@ function hideClipPathWarning() {
         warningDiv.remove();
     }
     
-    // ✅ NEW: Repopulate dropdown with all animations (no filter)
-    populateAnimationDropdown(false); // Show all animations
-    
-    // Re-enable animation dropdown
+    // ✅ NEW: Re-enable animation dropdown when hiding clipPath warning
+    // This ensures the dropdown is enabled when switching away from clipPath elements
     const animationDropdown = document.getElementById('animation-type');
     if (animationDropdown) {
         animationDropdown.disabled = false;
+    }
+    
+    // ✅ NEW: Repopulate dropdown with all animations (no filter)
+    populateAnimationDropdown(false); // Show all animations
+    
+    // Clear any tooltip
+    if (animationDropdown) {
         animationDropdown.title = '';
     }
     
