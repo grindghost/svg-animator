@@ -729,8 +729,6 @@ let animationsData =
   }
 },
 
-
-
 "bungee": {
   "params": {
     "distance": 80,
