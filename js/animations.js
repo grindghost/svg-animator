@@ -680,10 +680,10 @@ let animationsData =
   }
 },
 
-"yoyo horizontal": {
+"yoyo": {
   "params": {
-    "distance": 50, // default travel
-    "direction": 0  // 0 = left, 1 = right
+    "distance": 50,   // default travel
+    "direction": 0    // 0=left, 1=right, 2=up, 3=down
   },
   "paramConfig": {
     "distance": {
@@ -694,7 +694,7 @@ let animationsData =
     },
     "direction": {
       "min": 0,
-      "max": 1,
+      "max": 3,
       "step": 1,
       "default": 0
     }
@@ -704,59 +704,34 @@ let animationsData =
 
   "generateKeyframes": function(p) {
     const d = p.distance || 50;
-    const sign = (p.direction === 1) ? 1 : -1; // flip side
 
-    return {
-      "0%":   { transform: "translateX(0)" },
-      "30%":  { transform: `translateX(${sign * d}px)`, easing: "ease-out" },
-      "40%":  { transform: `translateX(${sign * (d + d*0.1)}px)` }, // overshoot
-      "50%":  { transform: `translateX(${sign * d}px)` },           // settle
-      "80%":  { transform: "translateX(0)", easing: "ease-in" },
-      "90%":  { transform: `translateX(${sign * (d*0.1)}px)` },     // bounce at origin
-      "100%": { transform: "translateX(0)" }
-    };
-  }
-},
-
-"yoyo-vertical": {
-  "params": {
-    "distance": 50, // default travel up/down
-    "direction": 0  // 0 = up, 1 = down
-  },
-  "paramConfig": {
-    "distance": {
-      "min": 10,
-      "max": 500,
-      "step": 10,
-      "default": 50
-    },
-    "direction": {
-      "min": 0,
-      "max": 1,
-      "step": 1,
-      "default": 0
+    // Determine axis and sign
+    let axis = "X";
+    let sign = -1;
+    switch (p.direction) {
+      case 0: axis = "X"; sign = -1; break; // left
+      case 1: axis = "X"; sign =  1; break; // right
+      case 2: axis = "Y"; sign = -1; break; // up
+      case 3: axis = "Y"; sign =  1; break; // down
     }
-  },
-  "defaultSpeed": "2.0",
-  "defaultSpeedSlider": true,
 
-  "generateKeyframes": function(p) {
-    const d = p.distance || 50;
-    const sign = (p.direction === 1) ? 1 : -1; // flip vertical direction
+    const move = (mult) => `translate${axis}(${sign * d * mult}px)`;
 
     return {
-      "0%":   { transform: "translateY(0)" },
-      "30%":  { transform: `translateY(${sign * d}px)`, easing: "ease-out" },
-      "40%":  { transform: `translateY(${sign * (d + d*0.1)}px)` }, // overshoot
-      "50%":  { transform: `translateY(${sign * d}px)` },           // settle
-      "80%":  { transform: "translateY(0)", easing: "ease-in" },
-      "90%":  { transform: `translateY(${sign * (d*0.1)}px)` },     // bounce past origin
-      "100%": { transform: "translateY(0)" }
+      "0%":   { transform: "translate(0,0)" },
+      "30%":  { transform: move(1), easing: "ease-out" },
+      "40%":  { transform: move(1.1) },  // overshoot
+      "50%":  { transform: move(1) },    // settle
+      "80%":  { transform: "translate(0,0)", easing: "ease-in" },
+      "90%":  { transform: move(0.1) },  // bounce at origin
+      "100%": { transform: "translate(0,0)" }
     };
   }
 },
 
-"yoyo-bungee": {
+
+
+"bungee": {
   "params": {
     "distance": 80,
     "direction": 4 // 1=top, 2=right, 3=bottom, 4=left
