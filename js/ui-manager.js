@@ -6,7 +6,10 @@ function populateAnimationDropdown(filterForClipPath = false) {
     const animationDropdown = document.getElementById('animation-type');
     animationDropdown.innerHTML = '<option value="none">Select animation...</option>';
     
-    Object.keys(animationsData).forEach(animationName => {
+    // Sort animation names alphabetically
+    const sortedAnimationNames = Object.keys(animationsData).sort();
+    
+    sortedAnimationNames.forEach(animationName => {
         const animationData = animationsData[animationName];
         
         // ✅ NEW: Filter out filter-based animations for clipPath shapes
