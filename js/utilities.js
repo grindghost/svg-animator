@@ -470,8 +470,12 @@ function saveParameterChange(editingAnimation, paramName, value) {
         localStorage.setItem('svg-animations', JSON.stringify(data));
         markAsUnsaved();
         
-        // Update the UI list to reflect the change
-        updateAnimationListUI(editingAnimation.elementId);
+        // ✅ NEW: Use centralized left panel refresh
+        if (typeof refreshLeftPanel === 'function') {
+            refreshLeftPanel(editingAnimation.elementId, document.getElementById(editingAnimation.elementId));
+        } else {
+            updateAnimationListUI(editingAnimation.elementId);
+        }
     }
 }
 
@@ -594,8 +598,12 @@ function updateAppliedAnimation(elementId, animationId, speed, params) {
         localStorage.setItem('svg-animations', JSON.stringify(data));
         markAsUnsaved();
         
-        // Update the UI
-        updateAnimationListUI(elementId);
+        // ✅ NEW: Use centralized left panel refresh
+        if (typeof refreshLeftPanel === 'function') {
+            refreshLeftPanel(elementId, document.getElementById(elementId));
+        } else {
+            updateAnimationListUI(elementId);
+        }
         
         // Reapply the animation with new parameters
         const element = document.getElementById(elementId);

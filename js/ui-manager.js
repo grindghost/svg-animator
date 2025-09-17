@@ -98,6 +98,37 @@ function updateAnimationListUI(selectedElementId) {
     }
 }
 
+/**
+ * Refreshes the entire left panel content for a selected element
+ * This centralizes all left panel updates in one place
+ * @param {string|null} selectedElementId - The ID of the selected element, or null to clear
+ * @param {Element|null} selectedElement - The actual DOM element (optional, for styling controls)
+ */
+function refreshLeftPanel(selectedElementId, selectedElement = null) {
+    // Update animation list and count
+    updateAnimationListUI(selectedElementId);
+    updateAnimationCountMessage(selectedElementId);
+    
+    if (selectedElementId && selectedElement) {
+        // Element is selected - show and update controls
+        document.getElementById('animation-type').disabled = false;
+        showShapeStylingControls();
+        updateStylingControlsFromElement(selectedElement);
+        showControlsSection();
+        
+        // Show appropriate warnings
+        showClipPathWarning(selectedElement);
+        hideRootElementMessage();
+        hideClipPathElementMessage();
+    } else {
+        // No element selected - hide controls
+        resetControls();
+        hideShapeStylingControls();
+        hideControlsSection();
+        hideAppliedAnimationEditor();
+    }
+}
+
 // Function to select an animation for editing
 function selectAnimationForEditing(elementId, animationId, animationType, animationData) {
     // Remove previous selection
@@ -752,33 +783,8 @@ function createTreeViewItem(parent, element, depth = 0) {
             // Draw the bounding box around the selected element in SVG
             drawBoundingBox(selectedElement);
 
-            // Reset the animation controls
-            resetControls();
-
-            // Update the animation details UI for the selected element
-            updateAnimationListUI(selectedElement.id);
-
-            // Update the animation count message
-            updateAnimationCountMessage(selectedElement.id);
-
-            // Enable the dropdown for animation types
-            document.getElementById('animation-type').disabled = false;
-            
-            // Show and update shape styling controls
-            showShapeStylingControls();
-            updateStylingControlsFromElement(selectedElement);
-            
-            // Show controls section
-            showControlsSection();
-            
-            // ✅ NEW: Show clipPath warning if element is inside clipPath
-            showClipPathWarning(element);
-            
-            // Hide root element message if it was showing
-            hideRootElementMessage();
-            
-            // Hide clipPath element message if it was showing
-            hideClipPathElementMessage();
+            // ✅ NEW: Use centralized left panel refresh
+            refreshLeftPanel(selectedElement.id, selectedElement);
             
             updateStatusBar(`Selected: ${label} 🎯`);
         }
@@ -1194,6 +1200,7 @@ function initializeUploadButton() {
 // Export functions for use in other modules
 window.populateAnimationDropdown = populateAnimationDropdown;
 window.updateAnimationListUI = updateAnimationListUI;
+window.refreshLeftPanel = refreshLeftPanel;
 window.populateTreeView = populateTreeView;
 window.createTreeViewItem = createTreeViewItem;
 window.prepopulateLocalStorage = prepopulateLocalStorage;

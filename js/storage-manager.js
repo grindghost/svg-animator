@@ -60,7 +60,13 @@ function saveAnimation(elementId, type, properties) {
 
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when saving animation
-    updateAnimationListUI(elementId);
+    
+    // ✅ NEW: Use centralized left panel refresh
+    if (typeof refreshLeftPanel === 'function') {
+        refreshLeftPanel(elementId, document.getElementById(elementId));
+    } else {
+        updateAnimationListUI(elementId);
+    }
     
     // Update dropdown states
     if (typeof updateDropdownStates === 'function') {
@@ -136,10 +142,14 @@ function removeAnimation(elementId, animationId) {
     
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved(); // Mark as unsaved when removing animation
-    updateAnimationListUI(elementId);
-
-    // Update the animation count message
-    updateAnimationCountMessage(elementId);
+    
+    // ✅ NEW: Use centralized left panel refresh
+    if (typeof refreshLeftPanel === 'function') {
+        refreshLeftPanel(elementId, document.getElementById(elementId));
+    } else {
+        updateAnimationListUI(elementId);
+        updateAnimationCountMessage(elementId);
+    }
     
     // Update named destinations UI if a named destination was removed
     if (typeof updateNamedDestinationsUI === 'function') {

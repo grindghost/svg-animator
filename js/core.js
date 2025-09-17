@@ -222,9 +222,15 @@ function initializeKeyboardShortcuts() {
                 if (treeItem) treeItem.classList.remove('selected');
                 
                 selectedElement = null;
-                resetControls();
-                updateAnimationListUI(null);
-                hideControlsSection();
+                
+                // ✅ NEW: Use centralized left panel refresh
+                if (typeof refreshLeftPanel === 'function') {
+                    refreshLeftPanel(null);
+                } else {
+                    resetControls();
+                    updateAnimationListUI(null);
+                    hideControlsSection();
+                }
                 updateStatusBar('Selection cleared! 🚫');
             }
         }

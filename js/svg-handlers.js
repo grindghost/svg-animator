@@ -834,8 +834,10 @@ function selectElement(elementId, element) {
     createHandlesForElement(element);
     drawBoundingBox(element);
     
-    // Update the animation list UI for the selected element
-    if (typeof updateAnimationListUI === 'function') {
+    // ✅ NEW: Use centralized left panel refresh
+    if (typeof refreshLeftPanel === 'function') {
+        refreshLeftPanel(elementId, element);
+    } else if (typeof updateAnimationListUI === 'function') {
         updateAnimationListUI(elementId);
     }
 
@@ -1079,15 +1081,20 @@ function clearSelectionOnOutsideClick(event) {
         // Reset global ref
         selectedElement = null;
 
-        // Reset animation UI
-        resetControls();
-        updateAnimationListUI(null);
-        
-        // Hide shape styling controls
-        hideShapeStylingControls();
-        
-        // Hide controls section
-        hideControlsSection();
+        // ✅ NEW: Use centralized left panel refresh
+        if (typeof refreshLeftPanel === 'function') {
+            refreshLeftPanel(null);
+        } else {
+            // Reset animation UI
+            resetControls();
+            updateAnimationListUI(null);
+            
+            // Hide shape styling controls
+            hideShapeStylingControls();
+            
+            // Hide controls section
+            hideControlsSection();
+        }
         
         // 🔥 New: also remove any temporary preview wrapper
         const oldTempWrapper = document.querySelector(".anim-wrapper.temp-anim");

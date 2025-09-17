@@ -137,9 +137,13 @@ function applyRecipeToElement(elementId, recipeName) {
             applyAnimationFromRecipe(elementId, tempAnimationData);
         });
         
-        // Update the UI
-        updateAnimationListUI(elementId);
-        updateAnimationCountMessage(elementId);
+        // ✅ NEW: Use centralized left panel refresh
+        if (typeof refreshLeftPanel === 'function') {
+            refreshLeftPanel(elementId, document.getElementById(elementId));
+        } else {
+            updateAnimationListUI(elementId);
+            updateAnimationCountMessage(elementId);
+        }
         
         return { success: true };
     } catch (error) {
@@ -238,7 +242,13 @@ function applyAnimationFromRecipe(elementId, animationData) {
     
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
     markAsUnsaved();
-    updateAnimationListUI(elementId);
+    
+    // ✅ NEW: Use centralized left panel refresh
+    if (typeof refreshLeftPanel === 'function') {
+        refreshLeftPanel(elementId, document.getElementById(elementId));
+    } else {
+        updateAnimationListUI(elementId);
+    }
 }
 
 // Update recipe dropdown
