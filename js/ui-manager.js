@@ -584,6 +584,7 @@ function createTreeViewItem(parent, element, depth = 0) {
         summary.addEventListener('click', function(e) {
             e.stopPropagation();
             removeStyleTag();
+            hidePreviewBadge();
             
             // ✅ NEW: Also clean up any clipPath shapes with temp animations
             const clipPathShapes = document.querySelectorAll('clipPath *[style*="temp-generic"]');
@@ -716,6 +717,7 @@ function createTreeViewItem(parent, element, depth = 0) {
     summary.addEventListener('click', function(e) {
         e.stopPropagation();
         removeStyleTag();
+        hidePreviewBadge();
 
         // ✅ NEW: Skip regular selection for clipPath elements
         if (element.tagName === 'clipPath') {
