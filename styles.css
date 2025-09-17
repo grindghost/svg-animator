@@ -2959,6 +2959,37 @@ input[type="range"]::-moz-range-thumb {
     line-height: 1.4;
 }
 
+/* Animation Names List */
+.animation-names-list {
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.animation-names-list .animation-name-link {
+    color: var(--text-primary);
+    text-decoration: underline;
+    text-decoration-color: rgba(99, 102, 241, 0.4);
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.animation-names-list .animation-name-link:hover {
+    color: var(--primary);
+    text-decoration-color: var(--primary);
+}
+
+/* Dark theme adjustments for animation names list */
+[data-theme="dark"] .animation-names-list .animation-name-link {
+    text-decoration-color: rgba(129, 140, 248, 0.4);
+}
+
+[data-theme="dark"] .animation-names-list .animation-name-link:hover {
+    color: var(--primary-light);
+    text-decoration-color: var(--primary-light);
+}
+
 /* Dark theme adjustments for animation count message */
 [data-theme="dark"] .animation-count-message {
     background: rgba(129, 140, 248, 0.08);

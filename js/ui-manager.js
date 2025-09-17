@@ -1071,7 +1071,8 @@ function getAnimationCount(elementId) {
 // Function to update the animation count message
 function updateAnimationCountMessage(elementId) {
     const messageDiv = document.getElementById('animation-count-message');
-    if (!messageDiv) return;
+    const namesListDiv = document.getElementById('animation-names-list');
+    if (!messageDiv || !namesListDiv) return;
     
     const count = getAnimationCount(elementId);
     
@@ -1081,6 +1082,7 @@ function updateAnimationCountMessage(elementId) {
         const element = document.querySelector(`#${elementId}`);
         if (element && typeof isInsideClipPath === 'function' && isInsideClipPath(element)) {
             messageDiv.style.display = 'none';
+            namesListDiv.style.display = 'none';
             return;
         }
     }
@@ -1101,9 +1103,68 @@ function updateAnimationCountMessage(elementId) {
         // Remove any existing event listeners to prevent duplicates
         messageDiv.removeEventListener('click', scrollToAnimationList);
         messageDiv.addEventListener('click', scrollToAnimationList);
+        
+        // Update animation names list
+        updateAnimationNamesList(elementId);
     } else {
         messageDiv.style.display = 'none';
+        namesListDiv.style.display = 'none';
     }
+}
+
+// Function to update the animation names list
+function updateAnimationNamesList(elementId) {
+    const namesListDiv = document.getElementById('animation-names-list');
+    if (!namesListDiv) return;
+    
+    const data = getSavedAnimations();
+    const elementAnimations = data.animations[elementId];
+    
+    if (!elementAnimations || Object.keys(elementAnimations).length === 0) {
+        namesListDiv.style.display = 'none';
+        return;
+    }
+    
+    namesListDiv.style.display = 'block';
+    
+    // Create a simple text node with comma-separated links
+    const fragment = document.createDocumentFragment();
+    
+    Object.entries(elementAnimations).forEach(([animationKey, animationData], index) => {
+        // Handle both old format (animationType as key) and new format (animationId as key)
+        const isOldFormat = !animationData.type;
+        const animationType = isOldFormat ? animationKey : animationData.type;
+        const animationId = isOldFormat ? animationKey : animationKey;
+        
+        const nameLink = document.createElement('a');
+        nameLink.className = 'animation-name-link';
+        nameLink.textContent = animationType.charAt(0).toUpperCase() + animationType.slice(1).replace(/-/g, ' ');
+        nameLink.href = '#';
+        
+        // Add click handler to trigger the animation editor
+        nameLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectAnimationForEditing(elementId, animationId, animationType, animationData);
+            
+            // Smooth scroll to the editor tab
+            const editorTab = document.getElementById('editor-tab');
+            if (editorTab) {
+                editorTab.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+            }
+        });
+        
+        fragment.appendChild(nameLink);
+        
+        // Add comma separator (except for the last item)
+        if (index < Object.keys(elementAnimations).length - 1) {
+            const comma = document.createTextNode(', ');
+            fragment.appendChild(comma);
+        }
+    });
+    
+    // Clear and populate the names list
+    namesListDiv.innerHTML = '';
+    namesListDiv.appendChild(fragment);
 }
 
 // Function to smoothly scroll to the animation list
@@ -1268,6 +1329,7 @@ window.hideControlsSection = hideControlsSection;
 window.updateAnimationSpeed = updateAnimationSpeed;
 window.getAnimationCount = getAnimationCount;
 window.updateAnimationCountMessage = updateAnimationCountMessage;
+window.updateAnimationNamesList = updateAnimationNamesList;
 window.hideUploadSection = hideUploadSection;
 window.showUploadSection = showUploadSection;
 window.initializeUploadButton = initializeUploadButton;

@@ -669,16 +669,9 @@ function switchToTab(tabName) {
             controlsSection.classList.remove('hidden');
         }
 
-        // display animation-count-message
-        const animationCountMessage = document.getElementById('animation-count-message');
-        if (animationCountMessage) {
-            animationCountMessage.style.display = 'block';
-        }
-
-        // display animation-list-div
-        const animationListDiv = document.getElementById('animation-list-div');
-        if (animationListDiv) {
-            animationListDiv.style.display = 'block';
+        // Refresh the left panel to ensure animation count message and names list are properly displayed
+        if (typeof refreshLeftPanel === 'function' && selectedElement) {
+            refreshLeftPanel(selectedElement.id, selectedElement);
         }
 
     } else if (tabName === 'editor') {
