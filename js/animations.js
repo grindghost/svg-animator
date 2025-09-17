@@ -676,7 +676,195 @@ let animationsData =
       }
     };
   }
+},
+
+"yoyo horizontal": {
+  "params": {
+    "distance": 50, // default travel
+    "direction": 0  // 0 = left, 1 = right
+  },
+  "paramConfig": {
+    "distance": {
+      "min": 10,
+      "max": 500,
+      "step": 10,
+      "default": 50
+    },
+    "direction": {
+      "min": 0,
+      "max": 1,
+      "step": 1,
+      "default": 0
+    }
+  },
+  "defaultSpeed": "2.0",
+  "defaultSpeedSlider": true,
+
+  "generateKeyframes": function(p) {
+    const d = p.distance || 50;
+    const sign = (p.direction === 1) ? 1 : -1; // flip side
+
+    return {
+      "0%":   { transform: "translateX(0)" },
+      "30%":  { transform: `translateX(${sign * d}px)`, easing: "ease-out" },
+      "40%":  { transform: `translateX(${sign * (d + d*0.1)}px)` }, // overshoot
+      "50%":  { transform: `translateX(${sign * d}px)` },           // settle
+      "80%":  { transform: "translateX(0)", easing: "ease-in" },
+      "90%":  { transform: `translateX(${sign * (d*0.1)}px)` },     // bounce at origin
+      "100%": { transform: "translateX(0)" }
+    };
+  }
+},
+
+"yoyo-vertical": {
+  "params": {
+    "distance": 50, // default travel up/down
+    "direction": 0  // 0 = up, 1 = down
+  },
+  "paramConfig": {
+    "distance": {
+      "min": 10,
+      "max": 500,
+      "step": 10,
+      "default": 50
+    },
+    "direction": {
+      "min": 0,
+      "max": 1,
+      "step": 1,
+      "default": 0
+    }
+  },
+  "defaultSpeed": "2.0",
+  "defaultSpeedSlider": true,
+
+  "generateKeyframes": function(p) {
+    const d = p.distance || 50;
+    const sign = (p.direction === 1) ? 1 : -1; // flip vertical direction
+
+    return {
+      "0%":   { transform: "translateY(0)" },
+      "30%":  { transform: `translateY(${sign * d}px)`, easing: "ease-out" },
+      "40%":  { transform: `translateY(${sign * (d + d*0.1)}px)` }, // overshoot
+      "50%":  { transform: `translateY(${sign * d}px)` },           // settle
+      "80%":  { transform: "translateY(0)", easing: "ease-in" },
+      "90%":  { transform: `translateY(${sign * (d*0.1)}px)` },     // bounce past origin
+      "100%": { transform: "translateY(0)" }
+    };
+  }
+},
+
+"yoyo-bungee": {
+  "params": {
+    "distance": 80,
+    "direction": 4 // 1=top, 2=right, 3=bottom, 4=left
+  },
+  "paramConfig": {
+    "distance": {
+      "min": 20,
+      "max": 500,
+      "step": 10,
+      "default": 80
+    },
+    "direction": {
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 4
+    }
+  },
+  "defaultSpeed": "3.5",
+  "defaultSpeedSlider": true,
+
+  "generateKeyframes": function(p) {
+    const d = p.distance || 80;
+    let axis = "X";
+    let dir = 1;
+
+    switch (p.direction) {
+      case 1: axis = "Y"; dir = -1; break; // top
+      case 2: axis = "X"; dir = 1;  break; // right
+      case 3: axis = "Y"; dir = 1;  break; // bottom
+      case 4: axis = "X"; dir = -1; break; // left
+    }
+
+    return {
+      "0%":   { transform: "translate(0,0)" },
+
+      // Stretch out like a bungee cord
+      "20%":  { transform: `translate${axis}(${dir * d}px)`, easing: "cubic-bezier(0.25, 1.5, 0.5, 1)" },
+      "30%":  { transform: `translate${axis}(${dir * (d * 1.15)}px)` }, // overshoot
+
+      // Recoil back toward center
+      "40%":  { transform: `translate${axis}(${dir * (d * 0.85)}px)` },
+      "50%":  { transform: "translate(0,0)", easing: "ease-in-out" },
+
+      // Opposite side stretch
+      "70%":  { transform: `translate${axis}(${-dir * d}px)`, easing: "cubic-bezier(0.25, 1.5, 0.5, 1)" },
+      "80%":  { transform: `translate${axis}(${-dir * (d * 1.15)}px)` }, // overshoot
+
+      // Recoil again
+      "90%":  { transform: `translate${axis}(${-dir * (d * 0.85)}px)` },
+      "100%": { transform: "translate(0,0)" }
+    };
+  }
+},
+
+"orbit": {
+  "type": "geometry",
+  "params": {
+    "diameter": 200,
+    "direction": 1,   // 1 = CCW, -1 = CW
+    "orient": 0       // 1 = rotate with path, 0 = stay upright
+  },
+  "paramConfig": {
+    "diameter": {
+      "min": 1,
+      "max": 1000,
+      "step": 10,
+      "default": 200
+    },
+    "direction": {
+      "min": -1,
+      "max": 1,
+      "step": 2,
+      "default": 1
+    },
+    "orient": {
+      "min": 0,
+      "max": 1,
+      "step": 1,
+      "default": 0
+    }
+  },
+  "defaultSpeed": "5.0",
+  "defaultSpeedSlider": true,
+  "generateKeyframes": function(p) {
+    const r = (p.diameter || 200) / 2;
+    const dir = p.direction || 1;
+    const orient = p.orient || 0;
+
+    function orbitAt(percent) {
+      const angle = (percent / 100) * 360 * dir;
+      const base = `rotate(${angle}deg) translate(${r}px)`;
+      if (orient) {
+        return `${base} rotate(${90 * dir}deg)`; // orient tangent
+      }
+      return base;
+    }
+
+    return {
+      "0%":   { transform: orbitAt(0),   "transform-origin": "center center", "transform-box": "fill-box" },
+      "25%":  { transform: orbitAt(25),  "transform-origin": "center center", "transform-box": "fill-box" },
+      "50%":  { transform: orbitAt(50),  "transform-origin": "center center", "transform-box": "fill-box" },
+      "75%":  { transform: orbitAt(75),  "transform-origin": "center center", "transform-box": "fill-box" },
+      "100%": { transform: orbitAt(100), "transform-origin": "center center", "transform-box": "fill-box" }
+    };
+  }
 }
+
+
+
 
 }
 
