@@ -63,7 +63,7 @@ let animationsData =
     "paramConfig": {
       "intensity": {
         "min": 0.1,
-        "max": 3.0,
+        "max": 20.0,
         "step": 0.1,
         "default": 1.5
       }
@@ -346,6 +346,8 @@ let animationsData =
 
     "metronome" : {
     "type": "geometry",
+    "defaultSpeed": "0.5",
+    "defaultSpeedSlider": true,
     "keyframes": {
       "0%": {
         "animation-timing-function": "cubic-bezier(0.7806,0.0715,0.8998,0.731)",
