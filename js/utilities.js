@@ -383,7 +383,12 @@ function setupAppliedAnimationEditorListeners() {
     });
 
     // Applied animation speed slider
-    document.getElementById('applied-speed-slider').addEventListener('input', function() {
+    document.getElementById('applied-speed-slider').addEventListener('input', function(e) {
+        console.log('Applied speed slider input event triggered');
+        
+        // Prevent event bubbling to avoid triggering parent click handlers
+        e.stopPropagation();
+        
         const speed = this.value;
         document.getElementById('applied-speed-display').textContent = `${speed}s`;
         
@@ -395,6 +400,13 @@ function setupAppliedAnimationEditorListeners() {
             // Auto-save the speed change to localStorage
             saveParameterChange(currentlyEditingAnimation, 'speed', speed);
         }
+    });
+
+    // Prevent click events on applied speed slider from bubbling up to parent elements
+    document.getElementById('applied-speed-slider').addEventListener('click', function(e) {
+        console.log('Applied speed slider click event triggered');
+        // Prevent event bubbling to avoid triggering parent click handlers
+        e.stopPropagation();
     });
 
     // Note: Apply Changes button removed - changes are now saved in real-time
@@ -414,6 +426,11 @@ function setupAppliedAnimationEditorListeners() {
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('param-slider') && 
             e.target.closest('#applied-param-controls')) {
+            
+            console.log('Parameter slider input event triggered');
+            
+            // Prevent event bubbling to avoid triggering parent click handlers
+            e.stopPropagation();
             
             const param = e.target.dataset.param;
             const value = parseFloat(e.target.value);
@@ -446,6 +463,16 @@ function setupAppliedAnimationEditorListeners() {
             }
         }
     });
+
+    // Prevent click events on parameter sliders from bubbling up to parent elements
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('param-slider') && 
+            e.target.closest('#applied-param-controls')) {
+            console.log('Parameter slider click event triggered');
+            // Prevent event bubbling to avoid triggering parent click handlers
+            e.stopPropagation();
+        }
+    });
 }
 
 // Helper function to save parameter changes in real-time
@@ -470,12 +497,8 @@ function saveParameterChange(editingAnimation, paramName, value) {
         localStorage.setItem('svg-animations', JSON.stringify(data));
         markAsUnsaved();
         
-        // ✅ NEW: Use centralized left panel refresh
-        if (typeof refreshLeftPanel === 'function') {
-            refreshLeftPanel(editingAnimation.elementId, document.getElementById(editingAnimation.elementId));
-        } else {
-            updateAnimationListUI(editingAnimation.elementId);
-        }
+        // Don't refresh the entire left panel on every parameter change to avoid interference
+        // The animation list UI will be updated when the user finishes editing
     }
 }
 

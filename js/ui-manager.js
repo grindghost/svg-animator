@@ -108,6 +108,11 @@ function updateAnimationListUI(selectedElementId) {
  * @param {Element|null} selectedElement - The actual DOM element (optional, for styling controls)
  */
 function refreshLeftPanel(selectedElementId, selectedElement = null) {
+    // Debug: Log when this function is called with null
+    if (selectedElementId === null) {
+        console.log('refreshLeftPanel called with null from:', new Error().stack);
+    }
+    
     // Update animation list and count
     updateAnimationListUI(selectedElementId);
     updateAnimationCountMessage(selectedElementId);
@@ -323,6 +328,9 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
 
 // Function to hide the applied animation editor
 function hideAppliedAnimationEditor() {
+    // Debug: Log the call stack to see what's calling this function
+    console.log('hideAppliedAnimationEditor called from:', new Error().stack);
+    
     const editor = document.getElementById('applied-animation-editor');
     const editorTab = document.getElementById('editor-tab');
     const controlsTab = document.getElementById('controls-tab');
