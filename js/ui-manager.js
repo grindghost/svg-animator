@@ -786,10 +786,15 @@ function createTreeViewItem(parent, element, depth = 0) {
             // Draw the bounding box around the selected element in SVG
             drawBoundingBox(selectedElement);
 
-            // Scroll to SVG Preview header as anchor point
+            // Scroll to SVG Preview header with offset
             const svgPreviewHeader = document.querySelector('.panel-header span');
             if (svgPreviewHeader) {
-                svgPreviewHeader.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const headerRect = svgPreviewHeader.getBoundingClientRect();
+                const offset = 100; // pixels above the header
+                window.scrollTo({
+                    top: window.scrollY + headerRect.top - offset,
+                    behavior: 'smooth'
+                });
             }
 
             // ✅ NEW: Use centralized left panel refresh
