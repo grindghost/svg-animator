@@ -13,6 +13,7 @@
     <link rel="manifest" href="assets/site.webmanifest">
 
     <script src="js/theme-manager.js"></script>
+    <script src="js/selection-global.js"></script>
     <title>SVG Animator Pro - Free Online SVG Animation Tool | Create Stunning Animations</title>
     
     <!-- SEO Meta Tags -->
@@ -588,6 +589,35 @@
     <script src="js/articles.js"></script>
     <script src="js/hamburger-menu.js"></script>
     <script src="js/main.js"></script>
+    
+    <!-- New Architecture: EventBus, App Store, and Selection System -->
+    <script type="module">
+        import { EventBus } from './js/eventBus.js';
+        import { App } from './js/app.js';
+        import { initViewer } from './js/viewer.js';
+        import { initTree } from './js/treeview.js';
+
+        // Debug subscriptions to observe the new architecture
+        EventBus.subscribe("app:selectionChanged", (selection) => {
+            console.log("[Debug] SelectionChanged:", selection);
+        });
+
+        EventBus.subscribe("app:selectionCleared", () => {
+            console.log("[Debug] SelectionCleared");
+        });
+
+        EventBus.subscribe("app:svgLoaded", ({ svg }) => {
+            console.log("[Debug] SVGLoaded:", svg);
+        });
+
+        // Initialize the new viewer and tree systems
+        initViewer('svg-viewer');
+        initTree('element-tree');
+        
+        // Make App available globally for debugging
+        window.App = App;
+        window.EventBus = EventBus;
+    </script>
 
     <!-- Recipe Creation Overlay -->
     <div id="recipe-overlay" class="recipe-overlay hidden">

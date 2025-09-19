@@ -117,6 +117,11 @@ async function importProject(file) {
         if (!svgRoot) {
             throw new Error('Invalid SVG content in project file');
         }
+
+        // ✅ NEW: Notify App store about SVG load
+        if (window.App) {
+            window.App.setSVG(svgRoot);
+        }
         
         // Restore localStorage data (integrated structure)
         const animationsData = {

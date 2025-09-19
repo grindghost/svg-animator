@@ -32,6 +32,11 @@ function handleSVGUpload(event) {
                 throw new Error('Invalid SVG content');
             }
 
+            // ✅ NEW: Notify App store about SVG load
+            if (window.App) {
+                window.App.setSVG(svgRoot);
+            }
+
             prepopulateLocalStorage(svgRoot);
             
             // Process clipPath elements first - move them from defs to consuming elements

@@ -829,6 +829,12 @@ function selectElement(elementId, element) {
     
     // Add the 'selected-element' class for UI consistency
     element.classList.add('selected-element');
+
+    // ✅ NEW: Notify App store about selection
+    if (window.App && window.Selection) {
+        const selection = new window.Selection(element);
+        window.App.setSelection(selection);
+    }
     
     // Add the handles and draw selection box
     createHandlesForElement(element);
@@ -1080,6 +1086,11 @@ function clearSelectionOnOutsideClick(event) {
 
         // Reset global ref
         selectedElement = null;
+
+        // ✅ NEW: Notify App store about selection clear
+        if (window.App) {
+            window.App.clearSelection();
+        }
 
         // ✅ NEW: Use centralized left panel refresh
         if (typeof refreshLeftPanel === 'function') {
