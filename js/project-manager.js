@@ -158,6 +158,11 @@ async function importProject(file) {
             updateNamedDestinationsUI();
         }
         
+        // Re-initialize context menu for new SVG content
+        if (typeof reinitializeContextMenu === 'function') {
+            reinitializeContextMenu();
+        }
+        
         // Hide upload section after successful project import
         hideUploadSection();
         

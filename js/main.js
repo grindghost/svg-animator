@@ -103,6 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeRecipeUI();
     }
     
+    // Initialize context menu
+    if (typeof initializeContextMenu === 'function') {
+        initializeContextMenu();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');

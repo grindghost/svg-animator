@@ -51,6 +51,11 @@ function handleSVGUpload(event) {
                 updateNamedDestinationsUI();
             }
             
+            // Re-initialize context menu for new SVG content
+            if (typeof reinitializeContextMenu === 'function') {
+                reinitializeContextMenu();
+            }
+            
             updateStatusBar(`SVG loaded: ${file.name} ✨`);
             
             // Enable controls
