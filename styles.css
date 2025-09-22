@@ -5269,7 +5269,7 @@ blockquote {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow-lg);
-    z-index: 1000;
+    z-index: 900;
     min-width: 180px;
     padding: 4px 0;
     font-size: 0.9rem;

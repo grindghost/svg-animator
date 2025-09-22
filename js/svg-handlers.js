@@ -1186,8 +1186,13 @@ function setupSVGViewerTooltip() {
         // Only show tooltip if there's an active selection and we're not over SVG
         if (!selectedElement || !document.getElementById('selection-box') || isOverSVG) return;
         
-        // Check if we're hovering over the svg-viewer container or its non-SVG children
+        // Check if we're hovering over the context menu
         const target = event.target;
+        if (target.closest('.context-menu')) {
+            return;
+        }
+        
+        // Check if we're hovering over the svg-viewer container or its non-SVG children
         const isSVGViewerHover = target === svgViewer || 
                                 target.classList.contains('placeholder-text') ||
                                 (target.closest('#svg-viewer') === svgViewer && 
