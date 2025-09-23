@@ -123,6 +123,15 @@ function setupContextMenuEventListeners() {
         applyRecipeItem.addEventListener('mouseleave', hideRecipeSubmenu);
     }
     
+    // Click on "New rail from shape"
+    const newRailItem = contextMenu.querySelector('[data-action="new-rail"]');
+    if (newRailItem) {
+        newRailItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleNewRailFromShape();
+        });
+    }
+    
     // Prevent context menu from closing when hovering over submenus
     animationSubmenu.addEventListener('mouseenter', () => {
         if (submenuTimeout) {
@@ -152,9 +161,38 @@ function handleRightClick(event) {
     }
     
     // Check if the click is on a selectable SVG element (not the root SVG)
-    const targetElement = event.target;
+    let targetElement = event.target;
     if (targetElement === svgElement || targetElement.tagName === 'svg') {
         return;
+    }
+    
+    // Check if we clicked on a selection handle - if so, find the actual element
+    if (targetElement.classList.contains('middle-handle') || 
+        targetElement.classList.contains('corner-handle') ||
+        targetElement.classList.contains('edge-handle') ||
+        targetElement.classList.contains('rotation-handle')) {
+        
+        // Try to get the currently selected element from the application
+        if (typeof selectedElement !== 'undefined' && selectedElement) {
+            console.log('Using selectedElement from application:', selectedElement);
+            targetElement = selectedElement;
+        } else {
+            // Fallback: try to find the original element by looking for elements with similar IDs
+            const elementId = targetElement.id;
+            if (elementId) {
+                // Try to find the original element by looking for elements with similar IDs
+                const possibleElements = svgElement.querySelectorAll('*[id*="' + elementId.split('-')[0] + '"]');
+                for (let elem of possibleElements) {
+                    if (!elem.classList.contains('middle-handle') && 
+                        !elem.classList.contains('corner-handle') &&
+                        !elem.classList.contains('edge-handle') &&
+                        !elem.classList.contains('rotation-handle')) {
+                        targetElement = elem;
+                        break;
+                    }
+                }
+            }
+        }
     }
     
     // Prevent default context menu
@@ -162,6 +200,11 @@ function handleRightClick(event) {
     
     // Store the target element
     currentTargetElement = targetElement;
+    console.log('Right-click on element:', targetElement);
+    console.log('currentTargetElement set to:', currentTargetElement);
+    
+    // Update context menu based on element type
+    updateContextMenuForElement(targetElement);
     
     // Show context menu
     showContextMenu(event.clientX, event.clientY);
@@ -412,7 +455,75 @@ function updateContextMenuRecipeSubmenu() {
     }
 }
 
+// Update context menu based on element type
+function updateContextMenuForElement(element) {
+    const newRailItem = document.getElementById('new-rail-item');
+    if (!newRailItem) return;
+    
+    // Check if element can be used as a rail (path or shape elements, not groups or clipPaths)
+    const canBeRail = canElementBeRail(element);
+    
+    if (canBeRail) {
+        newRailItem.classList.remove('context-menu-item-disabled');
+        newRailItem.style.opacity = '1';
+        newRailItem.style.cursor = 'pointer';
+    } else {
+        newRailItem.classList.add('context-menu-item-disabled');
+        newRailItem.style.opacity = '0.5';
+        newRailItem.style.cursor = 'not-allowed';
+    }
+}
+
+// Check if an element can be used as a rail
+function canElementBeRail(element) {
+    const tagName = element.tagName.toLowerCase();
+    
+    // Allow path and shape elements
+    const validElements = ['path', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'rect'];
+    
+    // Disallow groups and clipPaths
+    const invalidElements = ['g', 'clippath', 'defs', 'svg'];
+    
+    return validElements.includes(tagName) && !invalidElements.includes(tagName);
+}
+
+// Handle new rail from shape action
+function handleNewRailFromShape() {
+    console.log('handleNewRailFromShape called');
+    console.log('currentTargetElement:', currentTargetElement);
+    
+    if (!currentTargetElement) {
+        console.error('No target element for rail creation');
+        return;
+    }
+    
+    // Validate element can be used as rail
+    if (!canElementBeRail(currentTargetElement)) {
+        console.log('Element cannot be used as rail:', currentTargetElement);
+        showNotification('Selected element cannot be used as a rail. Please select a path or shape element.', 'error');
+        return;
+    }
+    
+    console.log('Element validated for rail creation:', currentTargetElement);
+    
+    // Store the element before hiding the context menu
+    const elementForRail = currentTargetElement;
+    
+    // Hide context menu
+    hideContextMenu();
+    
+    // Show rails overlay
+    if (typeof showRailsOverlay === 'function') {
+        console.log('Calling showRailsOverlay with element:', elementForRail);
+        showRailsOverlay(elementForRail);
+    } else {
+        console.error('showRailsOverlay function not available');
+        showNotification('Rails system not available', 'error');
+    }
+}
+
 // Export functions for global access
 window.initializeContextMenu = initializeContextMenu;
 window.reinitializeContextMenu = reinitializeContextMenu;
 window.updateContextMenuRecipeSubmenu = updateContextMenuRecipeSubmenu;
+window.handleNewRailFromShape = handleNewRailFromShape;

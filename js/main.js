@@ -108,6 +108,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeContextMenu();
     }
     
+    // Initialize rails functionality
+    if (typeof initializeRailsUI === 'function') {
+        initializeRailsUI();
+    }
+    
     // Add welcome message
     setTimeout(() => {
         showNotification('Welcome to SVG Animator Pro! 🎉', 'info');

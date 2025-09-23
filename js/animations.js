@@ -836,6 +836,73 @@ let animationsData =
       "100%": { transform: orbitAt(100), "transform-origin": "center center", "transform-box": "fill-box" }
     };
   }
+},
+
+"offset-path": {
+  "type": "geometry",
+  "params": {
+    "speed": 1.0,
+    "direction": 0,    // 0 = left to right, 1 = right to left
+    "rail": ""        // Selected rail name
+  },
+  "paramConfig": {
+    "speed": {
+      "min": 0.1,
+      "max": 5.0,
+      "step": 0.1,
+      "default": 1.0
+    },
+    "direction": {
+      "min": 0,
+      "max": 1,
+      "step": 1,
+      "default": 0
+    },
+    "rail": {
+      "type": "dropdown",
+      "options": [],  // Will be populated dynamically
+      "default": ""
+    }
+  },
+  "defaultSpeed": "2.0",
+  "defaultSpeedSlider": true,
+  "generateKeyframes": function(p) {
+    // Check if getSavedRails function is available
+    if (typeof getSavedRails !== 'function') {
+      console.warn('getSavedRails function not available for offset-path animation');
+      return {
+        "0%": { "offset-path": "path('M 0,0 L 100,0')", "offset-distance": "0%" },
+        "100%": { "offset-path": "path('M 0,0 L 100,0')", "offset-distance": "100%" }
+      };
+    }
+    
+    const rails = getSavedRails();
+    const selectedRail = p.rail;
+    
+    if (!selectedRail || !rails[selectedRail]) {
+      console.warn('No valid rail selected for offset-path animation');
+      return {
+        "0%": { "offset-path": "path('M 0,0 L 100,0')", "offset-distance": "0%" },
+        "100%": { "offset-path": "path('M 0,0 L 100,0')", "offset-distance": "100%" }
+      };
+    }
+    
+    const pathData = rails[selectedRail].pathData;
+    const direction = p.direction || 0;
+    const startDistance = direction === 0 ? "0%" : "100%";
+    const endDistance = direction === 0 ? "100%" : "0%";
+    
+    return {
+      "0%": {
+        "offset-path": `path('${pathData}')`,
+        "offset-distance": startDistance
+      },
+      "100%": {
+        "offset-path": `path('${pathData}')`,
+        "offset-distance": endDistance
+      }
+    };
+  }
 }
 
 

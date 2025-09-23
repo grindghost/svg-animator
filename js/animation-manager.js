@@ -944,74 +944,131 @@ function renderParamControls(animationName) {
         label.className = "param-label";
         label.textContent = `${param}: `;
         
-        const input = document.createElement("input");
-        input.type = "range";
-        input.className = "param-slider";
-        
-        // Use paramConfig if available, otherwise fall back to old logic
-        if (anim.paramConfig && anim.paramConfig[param]) {
+        // Check if this is a dropdown parameter
+        if (anim.paramConfig && anim.paramConfig[param] && anim.paramConfig[param].type === 'dropdown') {
             const config = anim.paramConfig[param];
-            input.min = config.min.toString();
-            input.max = config.max.toString();
-            input.step = config.step.toString();
-            // Reset param to default if it's not within the configured range
-            if (value < config.min || value > config.max) {
-                anim.params[param] = config.default;
-                input.value = config.default;
+            const select = document.createElement("select");
+            select.className = "param-dropdown";
+            
+            // Add default option
+            const defaultOption = document.createElement("option");
+            defaultOption.value = "";
+            defaultOption.textContent = "Select a rail...";
+            select.appendChild(defaultOption);
+            
+            // Populate options based on parameter type
+            if (param === 'rail') {
+                // Check if getSavedRails function is available
+                if (typeof getSavedRails !== 'function') {
+                    console.error('getSavedRails function not available');
+                    // Add a disabled option
+                    const disabledOption = document.createElement("option");
+                    disabledOption.value = "";
+                    disabledOption.textContent = "Rails not available";
+                    disabledOption.disabled = true;
+                    select.appendChild(disabledOption);
+                } else {
+                    // Get saved rails
+                    const rails = getSavedRails();
+                    const railNames = Object.keys(rails).sort();
+                
+                    railNames.forEach(railName => {
+                        const option = document.createElement("option");
+                        option.value = railName;
+                        option.textContent = railName;
+                        select.appendChild(option);
+                    });
+                }
+            }
+            
+            // Set current value
+            select.value = value || "";
+            
+            // Add event listener for real-time updates
+            select.addEventListener("change", () => {
+                const newValue = select.value;
+                anim.params[param] = newValue;
+                
+                // Apply temporary animation to preview changes
+                if (selectedElement) {
+                    applyTempAnimation(selectedElement, document.getElementById('speed-slider').value, undefined, false);
+                }
+            });
+            
+            controlWrapper.appendChild(label);
+            controlWrapper.appendChild(select);
+            controlsContainer.appendChild(controlWrapper);
+        } else {
+            // Regular slider input
+            const input = document.createElement("input");
+            input.type = "range";
+            input.className = "param-slider";
+            
+            // Use paramConfig if available, otherwise fall back to old logic
+            if (anim.paramConfig && anim.paramConfig[param]) {
+                const config = anim.paramConfig[param];
+                input.min = config.min.toString();
+                input.max = config.max.toString();
+                input.step = config.step.toString();
+                // Reset param to default if it's not within the configured range
+                if (value < config.min || value > config.max) {
+                    anim.params[param] = config.default;
+                    input.value = config.default;
+                } else {
+                    input.value = value;
+                }
             } else {
+                // Fallback to old logic for backward compatibility
+                if (param.includes("amplitude") || param.includes("intensity")) {
+                    input.min = "0.1";
+                    input.max = "3.0";
+                    input.step = "0.1";
+                } else if (param.includes("blur")) {
+                    input.min = "0";
+                    input.max = "20";
+                    input.step = "1";
+                } else if (param.includes("skew")) {
+                    input.min = "5";
+                    input.max = "45";
+                    input.step = "1";
+                } else if (param.includes("dash")) {
+                    input.min = "1";
+                    input.max = "50";
+                    input.step = "1";
+                } else if (param.includes("gap")) {
+                    input.min = "1";
+                    input.max = "30";
+                    input.step = "1";
+                } else {
+                    // Default range
+                    input.min = "0";
+                    input.max = value;
+                    input.step = "0.1";
+                }
                 input.value = value;
             }
-        } else {
-            // Fallback to old logic for backward compatibility
-            if (param.includes("amplitude") || param.includes("intensity")) {
-                input.min = "0.1";
-                input.max = "3.0";
-                input.step = "0.1";
-            } else if (param.includes("blur")) {
-                input.min = "0";
-                input.max = "20";
-                input.step = "1";
-            } else if (param.includes("skew")) {
-                input.min = "5";
-                input.max = "45";
-                input.step = "1";
-            } else if (param.includes("dash")) {
-                input.min = "1";
-                input.max = "50";
-                input.step = "1";
-            } else if (param.includes("gap")) {
-                input.min = "1";
-                input.max = "30";
-                input.step = "1";
-            } else {
-                // Default range
-                input.min = "0";
-                input.max = value;
-                input.step = "0.1";
-            }
-            input.value = value;
-        }
-        
-        const span = document.createElement("span");
-        span.className = "param-value";
-        span.textContent = value;
-        
-        // Add event listener for real-time updates
-        input.addEventListener("input", () => {
-            const newValue = parseFloat(input.value);
-            anim.params[param] = newValue;
-            span.textContent = newValue;
             
-            // Apply temporary animation to preview changes
-            if (selectedElement) {
-                applyTempAnimation(selectedElement, document.getElementById('speed-slider').value, undefined, false);
-            }
-        });
-        
-        controlWrapper.appendChild(label);
-        controlWrapper.appendChild(input);
-        controlWrapper.appendChild(span);
-        controlsContainer.appendChild(controlWrapper);
+            const span = document.createElement("span");
+            span.className = "param-value";
+            span.textContent = value;
+            
+            // Add event listener for real-time updates
+            input.addEventListener("input", () => {
+                const newValue = parseFloat(input.value);
+                anim.params[param] = newValue;
+                span.textContent = newValue;
+                
+                // Apply temporary animation to preview changes
+                if (selectedElement) {
+                    applyTempAnimation(selectedElement, document.getElementById('speed-slider').value, undefined, false);
+                }
+            });
+            
+            controlWrapper.appendChild(label);
+            controlWrapper.appendChild(input);
+            controlWrapper.appendChild(span);
+            controlsContainer.appendChild(controlWrapper);
+        }
     }
 }
 
