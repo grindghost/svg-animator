@@ -5336,6 +5336,16 @@ blockquote {
     background: var(--bg-tertiary);
 }
 
+.context-submenu-item-disabled {
+    color: var(--text-muted) !important;
+    cursor: not-allowed !important;
+    background: none !important;
+}
+
+.context-submenu-item-disabled:hover {
+    background: none !important;
+}
+
 /* Dark theme context menu */
 [data-theme="dark"] .context-menu {
     background: var(--card-bg);

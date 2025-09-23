@@ -3,6 +3,7 @@
 
 let contextMenu = null;
 let animationSubmenu = null;
+let recipeSubmenu = null;
 let currentTargetElement = null;
 let submenuTimeout = null;
 
@@ -10,14 +11,16 @@ let submenuTimeout = null;
 function initializeContextMenu() {
     contextMenu = document.getElementById('context-menu');
     animationSubmenu = document.getElementById('animation-submenu');
+    recipeSubmenu = document.getElementById('recipe-submenu');
     
-    if (!contextMenu || !animationSubmenu) {
+    if (!contextMenu || !animationSubmenu || !recipeSubmenu) {
         console.error('Context menu elements not found');
         return;
     }
     
-    // Populate animation submenu
+    // Populate animation and recipe submenus
     populateAnimationSubmenu();
+    populateRecipeSubmenu();
     
     // Add event listeners
     setupContextMenuEventListeners();
@@ -53,6 +56,45 @@ function populateAnimationSubmenu() {
     });
 }
 
+// Populate the recipe submenu with available recipes
+function populateRecipeSubmenu() {
+    if (!recipeSubmenu || !window.getSavedRecipes) {
+        return;
+    }
+    
+    // Clear existing items
+    recipeSubmenu.innerHTML = '';
+    
+    const recipes = window.getSavedRecipes();
+    const recipeNames = Object.keys(recipes).sort();
+    
+    if (recipeNames.length === 0) {
+        const item = document.createElement('div');
+        item.className = 'context-submenu-item context-submenu-item-disabled';
+        item.textContent = 'No recipes available';
+        recipeSubmenu.appendChild(item);
+        return;
+    }
+    
+    // Add recipe items
+    recipeNames.forEach(recipeName => {
+        const recipe = recipes[recipeName];
+        const item = document.createElement('div');
+        item.className = 'context-submenu-item';
+        item.textContent = recipeName;
+        item.dataset.recipe = recipeName;
+        
+        // Add click handler
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            applyRecipeFromContextMenu(recipeName);
+            hideContextMenu();
+        });
+        
+        recipeSubmenu.appendChild(item);
+    });
+}
+
 // Setup event listeners for context menu
 function setupContextMenuEventListeners() {
     // Right-click on SVG elements
@@ -74,7 +116,14 @@ function setupContextMenuEventListeners() {
         addAnimationItem.addEventListener('mouseleave', hideAnimationSubmenu);
     }
     
-    // Prevent context menu from closing when hovering over submenu
+    // Hover over "Apply a recipe" to show submenu
+    const applyRecipeItem = contextMenu.querySelector('[data-action="apply-recipe"]');
+    if (applyRecipeItem) {
+        applyRecipeItem.addEventListener('mouseenter', showRecipeSubmenu);
+        applyRecipeItem.addEventListener('mouseleave', hideRecipeSubmenu);
+    }
+    
+    // Prevent context menu from closing when hovering over submenus
     animationSubmenu.addEventListener('mouseenter', () => {
         if (submenuTimeout) {
             clearTimeout(submenuTimeout);
@@ -83,6 +132,15 @@ function setupContextMenuEventListeners() {
     });
     
     animationSubmenu.addEventListener('mouseleave', hideAnimationSubmenu);
+    
+    recipeSubmenu.addEventListener('mouseenter', () => {
+        if (submenuTimeout) {
+            clearTimeout(submenuTimeout);
+            submenuTimeout = null;
+        }
+    });
+    
+    recipeSubmenu.addEventListener('mouseleave', hideRecipeSubmenu);
 }
 
 // Handle right-click events
@@ -135,8 +193,9 @@ function showContextMenu(x, y) {
     // Show the menu
     contextMenu.classList.remove('hidden');
     
-    // Hide submenu initially
+    // Hide submenus initially
     animationSubmenu.classList.add('hidden');
+    recipeSubmenu.classList.add('hidden');
     
     // Adjust position if menu would go outside the SVG viewer
     const menuRect = contextMenu.getBoundingClientRect();
@@ -164,6 +223,7 @@ function hideContextMenu() {
     
     contextMenu.classList.add('hidden');
     animationSubmenu.classList.add('hidden');
+    recipeSubmenu.classList.add('hidden');
     currentTargetElement = null;
     
     // Clean up stored position data
@@ -198,15 +258,41 @@ function hideAnimationSubmenu() {
     }, 150); // Small delay to prevent flickering
 }
 
+// Show recipe submenu
+function showRecipeSubmenu() {
+    if (!recipeSubmenu) return;
+    
+    // Hide animation submenu when showing recipe submenu
+    animationSubmenu.classList.add('hidden');
+    
+    recipeSubmenu.classList.remove('hidden');
+    
+    // Clear any existing timeout
+    if (submenuTimeout) {
+        clearTimeout(submenuTimeout);
+        submenuTimeout = null;
+    }
+}
+
+// Hide recipe submenu with delay
+function hideRecipeSubmenu() {
+    if (!recipeSubmenu) return;
+    
+    submenuTimeout = setTimeout(() => {
+        recipeSubmenu.classList.add('hidden');
+    }, 150); // Small delay to prevent flickering
+}
+
 // Handle clicks outside the context menu
 function handleClickOutside(event) {
     if (!contextMenu || contextMenu.classList.contains('hidden')) {
         return;
     }
     
-    // Check if click is outside the context menu and submenu
+    // Check if click is outside the context menu and submenus
     const isClickInsideMenu = contextMenu.contains(event.target) || 
-                             animationSubmenu.contains(event.target);
+                             animationSubmenu.contains(event.target) ||
+                             recipeSubmenu.contains(event.target);
     
     if (!isClickInsideMenu) {
         hideContextMenu();
@@ -267,12 +353,66 @@ function applyAnimationFromContextMenu(animationName) {
     }
 }
 
+// Apply recipe from context menu
+function applyRecipeFromContextMenu(recipeName) {
+    if (!currentTargetElement) {
+        console.error('No target element for recipe application');
+        return;
+    }
+    
+    // Ensure the element has an ID - create one if it doesn't exist
+    let elementId = currentTargetElement.id;
+    if (!elementId) {
+        // Generate a unique ID for the element
+        elementId = `element-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        currentTargetElement.id = elementId;
+    }
+    
+    // Apply the recipe using the existing applyRecipeToElement function
+    if (typeof window.applyRecipeToElement === 'function') {
+        try {
+            const result = window.applyRecipeToElement(elementId, recipeName);
+            
+            if (result.success) {
+                console.log(`Applied recipe "${recipeName}" to element`);
+                if (typeof showNotification === 'function') {
+                    showNotification(`🧪 Recipe "${recipeName}" applied successfully!`, 'success');
+                }
+            } else {
+                console.error('Error applying recipe:', result.error);
+                if (typeof showNotification === 'function') {
+                    showNotification(`Error applying recipe: ${result.error}`, 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error applying recipe:', error);
+            if (typeof showNotification === 'function') {
+                showNotification(`Error applying recipe: ${error.message}`, 'error');
+            }
+        }
+    } else {
+        console.error('applyRecipeToElement function not available');
+        if (typeof showNotification === 'function') {
+            showNotification('Recipe system not available', 'error');
+        }
+    }
+}
+
 // Re-initialize context menu when SVG content changes
 function reinitializeContextMenu() {
-    // Re-populate animation submenu in case animations data changed
+    // Re-populate animation and recipe submenus in case data changed
     populateAnimationSubmenu();
+    populateRecipeSubmenu();
+}
+
+// Update context menu recipe submenu (called when recipes change)
+function updateContextMenuRecipeSubmenu() {
+    if (recipeSubmenu) {
+        populateRecipeSubmenu();
+    }
 }
 
 // Export functions for global access
 window.initializeContextMenu = initializeContextMenu;
 window.reinitializeContextMenu = reinitializeContextMenu;
+window.updateContextMenuRecipeSubmenu = updateContextMenuRecipeSubmenu;

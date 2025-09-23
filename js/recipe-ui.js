@@ -134,6 +134,10 @@ function renameRecipePrompt(recipeName) {
             showNotification(`Recipe renamed to "${trimmedName}"`, 'success');
             updateRecipeList();
             updateRecipeDropdown();
+            // Update context menu recipe submenu
+            if (typeof window.updateContextMenuRecipeSubmenu === 'function') {
+                window.updateContextMenuRecipeSubmenu();
+            }
         } else {
             showNotification(result.error, 'error');
         }
@@ -148,6 +152,10 @@ function deleteRecipePrompt(recipeName) {
             showNotification(`Recipe "${recipeName}" deleted`, 'success');
             updateRecipeList();
             updateRecipeDropdown();
+            // Update context menu recipe submenu
+            if (typeof window.updateContextMenuRecipeSubmenu === 'function') {
+                window.updateContextMenuRecipeSubmenu();
+            }
         } else {
             showNotification(result.error, 'error');
         }
@@ -250,6 +258,10 @@ function overrideExistingRecipe(event) {
         hideRecipeOverlay();
         updateRecipeList();
         updateRecipeDropdown();
+        // Update context menu recipe submenu
+        if (typeof window.updateContextMenuRecipeSubmenu === 'function') {
+            window.updateContextMenuRecipeSubmenu();
+        }
     } else {
         showNotification(result.error, 'error');
     }
@@ -287,6 +299,10 @@ function saveRecipeFromForm() {
         hideRecipeOverlay();
         updateRecipeList();
         updateRecipeDropdown();
+        // Update context menu recipe submenu
+        if (typeof window.updateContextMenuRecipeSubmenu === 'function') {
+            window.updateContextMenuRecipeSubmenu();
+        }
     } else {
         showNotification(result.error, 'error');
     }
