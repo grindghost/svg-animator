@@ -178,6 +178,12 @@ function stopClipPathAnimation(element, animName = undefined) {
 function removeTempPreview(wrapper) {
     if (!wrapper || !wrapper.classList.contains("temp-anim")) return;
 
+    // ✅ NEW: Handle offset-path animations specially
+    if (wrapper.classList.contains("temp-temp-offset-path")) {
+        removeTempOffsetPathAnimation(wrapper);
+        return;
+    }
+
     // ✅ NEW: Handle clipPath shapes specially
     if (isInsideClipPath(wrapper)) {
         // For clipPath shapes, remove animation and restore appearance
@@ -284,6 +290,10 @@ function CleanAnimationStyle(element, animation_name) {
 function stopAnimation(element, animName = undefined, elementId = undefined) {
     if (!element) return;
     
+    // ✅ NEW: Handle offset-path animations specially - they don't use anim-wrapper groups
+    if (element.hasAttribute('data-offset-path-animation')) {
+        return removeOffsetPathAnimation(element);
+    }
 
     // ✅ NEW: Handle clipPath elements specially - they don't use anim-wrapper groups
     if (isInsideClipPath(element)) {
@@ -526,6 +536,12 @@ function applyTempAnimation(element, speed, animName = undefined) {
         return;
     }
 
+    // ✅ NEW: Special handling for offset-path animations - no temp wrapper
+    const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
+    if (current_selected_anim_in_dropdown === 'offset-path') {
+        return applyTempOffsetPathAnimation(element, speed, animName);
+    }
+
     // ✅ NEW: Special handling for clipPath shapes - no temp wrapper
     if (isInsideClipPath(element)) {
         return applyTempAnimationToClipPathShape(element, speed, animName);
@@ -551,7 +567,6 @@ function applyTempAnimation(element, speed, animName = undefined) {
     }
 
     const animationName = "temp-generic";
-    const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
     const animationData = animationsData[current_selected_anim_in_dropdown];
     if (!animationData) {
         console.error(`Animation "${current_selected_anim_in_dropdown}" not found.`);
@@ -563,6 +578,12 @@ function applyTempAnimation(element, speed, animName = undefined) {
         animationData.apply(wrapper, animationData.params);
         wrapper.classList.add("application-animation-class");
         wrapper.classList.add(`${current_selected_anim_in_dropdown}-animation-class`);
+        return; // stop here, skip keyframe logic
+    }
+    
+    // ✅ NEW special case: offset-path animations
+    if (current_selected_anim_in_dropdown === 'offset-path') {
+        applyOffsetPathAnimation(element, animationData, wrapper);
         return; // stop here, skip keyframe logic
     }
 
@@ -765,6 +786,11 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
         const animationData = animationsData[selectedAnimation];
         if (!animationData) {
             throw new Error(`Animation "${selectedAnimation}" not found.`);
+        }
+
+        // ✅ NEW: Special handling for offset-path animations - no anim-wrapper groups
+        if (selectedAnimation === 'offset-path') {
+            return applyOffsetPathAnimation(element, animationData, wrapper);
         }
 
         removeStyleTag(animationName);
@@ -1261,6 +1287,341 @@ function scaleAnimationIntensityForClipPath(keyframes, animationType) {
     return scaledKeyframes;
 }
 
+// Apply offset-path animation with special handling
+function applyOffsetPathAnimation(element, animationData, wrapper) {
+    // Get the selected rail
+    const selectedRail = animationData.params.rail;
+    if (!selectedRail) {
+        console.error('No rail selected for offset-path animation');
+        return;
+    }
+    
+    // Get the rail data
+    if (typeof getSavedRails !== 'function') {
+        console.error('getSavedRails function not available');
+        return;
+    }
+    
+    const rails = getSavedRails();
+    const railData = rails[selectedRail];
+    if (!railData) {
+        console.error('Rail not found:', selectedRail);
+        return;
+    }
+    
+    // Create a unique animation ID
+    const animationId = uniqueID();
+    const animationName = `offset-path-${animationId}`;
+    
+    // Get the original element's position and attributes
+    const originalCx = element.getAttribute('cx') || 0;
+    const originalCy = element.getAttribute('cy') || 0;
+    const originalX = element.getAttribute('x') || 0;
+    const originalY = element.getAttribute('y') || 0;
+    
+    // Create a clone of the rail path
+    const railClone = createRailClone(railData.pathData, selectedRail);
+    
+    // Extract element from any existing wrapper structure
+    let actualElement = element;
+    if (element.classList.contains('wrapping-group')) {
+        // If element is a wrapping group, get the actual shape inside
+        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    }
+    
+    // Create a wrapper group for the element and rail
+    const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    
+    // Move the element to the wrapper and reset its position
+    const parent = actualElement.parentNode;
+    parent.insertBefore(offsetWrapper, actualElement);
+    offsetWrapper.appendChild(actualElement);
+    
+    // Add the rail clone to the wrapper
+    offsetWrapper.appendChild(railClone);
+    
+    // Reset element position to 0,0 for offset-path animation
+    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+        actualElement.setAttribute('cx', '0');
+        actualElement.setAttribute('cy', '0');
+    } else if (actualElement.tagName.toLowerCase() === 'rect') {
+        actualElement.setAttribute('x', '0');
+        actualElement.setAttribute('y', '0');
+    }
+    
+    // Add the animation class to the element itself
+    actualElement.classList.add(animationName);
+    actualElement.classList.add('application-animation-class');
+    
+    // Create the CSS animation
+    const direction = animationData.params.direction || 0;
+    const speed = animationData.params.speed || 1.0;
+    const duration = 8 / speed; // Base duration of 8 seconds adjusted by speed
+    
+    const startDistance = direction === 0 ? "0%" : "100%";
+    const endDistance = direction === 0 ? "100%" : "0%";
+    
+    const style = document.createElement('style');
+    style.id = animationName;
+    style.setAttribute('data-anikit', '');
+    style.textContent = `
+        .${animationName} {
+            offset-path: path("${railData.pathData}");
+            offset-rotate: auto;
+            animation: move-${animationId} ${duration}s linear infinite;
+        }
+        
+        @keyframes move-${animationId} {
+            to {
+                offset-distance: ${endDistance};
+            }
+        }
+    `;
+    
+    document.head.appendChild(style);
+    
+    // Store animation data for later removal
+    actualElement.setAttribute('data-offset-path-animation', animationId);
+    actualElement.setAttribute('data-original-cx', originalCx);
+    actualElement.setAttribute('data-original-cy', originalCy);
+    actualElement.setAttribute('data-original-x', originalX);
+    actualElement.setAttribute('data-original-y', originalY);
+    actualElement.setAttribute('data-rail-name', selectedRail);
+    
+    console.log('Applied offset-path animation:', animationName);
+}
+
+// Create a clone of the rail path
+function createRailClone(pathData, railName) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathData);
+    path.setAttribute('id', `${railName}-clone`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#000');
+    path.setAttribute('stroke-miterlimit', '10');
+    path.setAttribute('stroke-width', '5px');
+    return path;
+}
+
+// Apply temp offset-path animation for preview
+function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
+    // Get the selected rail
+    const railSelect = document.querySelector('.param-dropdown');
+    const selectedRail = railSelect ? railSelect.value : '';
+    
+    if (!selectedRail) {
+        console.warn('No rail selected for offset-path animation preview');
+        return;
+    }
+    
+    // Get the rail data
+    if (typeof getSavedRails !== 'function') {
+        console.error('getSavedRails function not available');
+        return;
+    }
+    
+    const rails = getSavedRails();
+    const railData = rails[selectedRail];
+    if (!railData) {
+        console.error('Rail not found:', selectedRail);
+        return;
+    }
+    
+    // Clean up any existing temp animation
+    removeTempPreview(element);
+    
+    // Create a unique temp animation ID
+    const tempAnimationId = 'temp-offset-path';
+    const animationName = `temp-${tempAnimationId}`;
+    
+    // Get the original element's position and attributes
+    const originalCx = element.getAttribute('cx') || 0;
+    const originalCy = element.getAttribute('cy') || 0;
+    const originalX = element.getAttribute('x') || 0;
+    const originalY = element.getAttribute('y') || 0;
+    
+    // Create a clone of the rail path
+    const railClone = createRailClone(railData.pathData, selectedRail);
+    
+    // Extract element from any existing wrapper structure
+    let actualElement = element;
+    if (element.classList.contains('wrapping-group')) {
+        // If element is a wrapping group, get the actual shape inside
+        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    }
+    
+    // Create a wrapper group for the element and rail
+    const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    offsetWrapper.classList.add('temp-offset-wrapper');
+    
+    // Move the element to the wrapper and reset its position
+    const parent = actualElement.parentNode;
+    parent.insertBefore(offsetWrapper, actualElement);
+    offsetWrapper.appendChild(actualElement);
+    
+    // Add the rail clone to the wrapper
+    offsetWrapper.appendChild(railClone);
+    
+    // Reset element position to 0,0 for offset-path animation
+    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+        actualElement.setAttribute('cx', '0');
+        actualElement.setAttribute('cy', '0');
+    } else if (actualElement.tagName.toLowerCase() === 'rect') {
+        actualElement.setAttribute('x', '0');
+        actualElement.setAttribute('y', '0');
+    }
+    
+    // Add the animation class to the element itself
+    actualElement.classList.add(animationName);
+    actualElement.classList.add('temp-anim');
+    
+    // Create the CSS animation
+    const direction = 0; // Default direction for temp preview
+    const duration = 8 / (speed || 1.0); // Base duration of 8 seconds adjusted by speed
+    
+    const startDistance = direction === 0 ? "0%" : "100%";
+    const endDistance = direction === 0 ? "100%" : "0%";
+    
+    const style = document.createElement('style');
+    style.id = animationName;
+    style.setAttribute('data-temp', 'true');
+    style.textContent = `
+        .${animationName} {
+            offset-path: path("${railData.pathData}");
+            offset-rotate: auto;
+            animation: temp-move-${tempAnimationId} ${duration}s linear infinite;
+        }
+        
+        @keyframes temp-move-${tempAnimationId} {
+            to {
+                offset-distance: ${endDistance};
+            }
+        }
+    `;
+    
+    document.head.appendChild(style);
+    
+    // Store original position for restoration
+    actualElement.setAttribute('data-temp-original-cx', originalCx);
+    actualElement.setAttribute('data-temp-original-cy', originalCy);
+    actualElement.setAttribute('data-temp-original-x', originalX);
+    actualElement.setAttribute('data-temp-original-y', originalY);
+    
+    console.log('Applied temp offset-path animation:', animationName);
+}
+
+// Remove offset-path animation and restore original state
+function removeOffsetPathAnimation(element) {
+    const animationId = element.getAttribute('data-offset-path-animation');
+    if (!animationId) return;
+    
+    // Remove the animation class
+    const animationName = `offset-path-${animationId}`;
+    element.classList.remove(animationName);
+    element.classList.remove('application-animation-class');
+    
+    // Remove the style tag
+    const styleTag = document.getElementById(animationName);
+    if (styleTag) {
+        styleTag.remove();
+    }
+    
+    // Restore original position
+    const originalCx = element.getAttribute('data-original-cx');
+    const originalCy = element.getAttribute('data-original-cy');
+    const originalX = element.getAttribute('data-original-x');
+    const originalY = element.getAttribute('data-original-y');
+    
+    if (element.tagName.toLowerCase() === 'circle' || element.tagName.toLowerCase() === 'ellipse') {
+        if (originalCx) element.setAttribute('cx', originalCx);
+        if (originalCy) element.setAttribute('cy', originalCy);
+    } else if (element.tagName.toLowerCase() === 'rect') {
+        if (originalX) element.setAttribute('x', originalX);
+        if (originalY) element.setAttribute('y', originalY);
+    }
+    
+    // Remove the rail clone
+    const railName = element.getAttribute('data-rail-name');
+    if (railName) {
+        const railClone = document.getElementById(`${railName}-clone`);
+        if (railClone) {
+            railClone.remove();
+        }
+    }
+    
+    // Move element back to its original parent if it's in an offset wrapper
+    const offsetWrapper = element.parentNode;
+    if (offsetWrapper && offsetWrapper.tagName === 'g' && offsetWrapper.children.length === 1) {
+        // Only the element is left in the wrapper, move it back
+        const grandParent = offsetWrapper.parentNode;
+        grandParent.insertBefore(element, offsetWrapper);
+        offsetWrapper.remove();
+    }
+    
+    // Clean up data attributes
+    element.removeAttribute('data-offset-path-animation');
+    element.removeAttribute('data-original-cx');
+    element.removeAttribute('data-original-cy');
+    element.removeAttribute('data-original-x');
+    element.removeAttribute('data-original-y');
+    element.removeAttribute('data-rail-name');
+    
+    console.log('Removed offset-path animation:', animationName);
+}
+
+// Remove temp offset-path animation and restore original state
+function removeTempOffsetPathAnimation(element) {
+    // Find the actual element (might be inside a wrapping group)
+    let actualElement = element;
+    if (element.classList.contains('wrapping-group')) {
+        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    }
+    
+    // Remove the animation class
+    actualElement.classList.remove('temp-temp-offset-path');
+    actualElement.classList.remove('temp-anim');
+    
+    // Remove the style tag
+    const styleTag = document.getElementById('temp-temp-offset-path');
+    if (styleTag) {
+        styleTag.remove();
+    }
+    
+    // Restore original position
+    const originalCx = actualElement.getAttribute('data-temp-original-cx');
+    const originalCy = actualElement.getAttribute('data-temp-original-cy');
+    const originalX = actualElement.getAttribute('data-temp-original-x');
+    const originalY = actualElement.getAttribute('data-temp-original-y');
+    
+    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+        if (originalCx) actualElement.setAttribute('cx', originalCx);
+        if (originalCy) actualElement.setAttribute('cy', originalCy);
+    } else if (actualElement.tagName.toLowerCase() === 'rect') {
+        if (originalX) actualElement.setAttribute('x', originalX);
+        if (originalY) actualElement.setAttribute('y', originalY);
+    }
+    
+    // Remove the rail clone
+    const tempWrapper = actualElement.parentNode;
+    if (tempWrapper && tempWrapper.classList.contains('temp-offset-wrapper')) {
+        const railClones = tempWrapper.querySelectorAll('[id$="-clone"]');
+        railClones.forEach(clone => clone.remove());
+        
+        // Move element back to its original parent
+        const grandParent = tempWrapper.parentNode;
+        grandParent.insertBefore(actualElement, tempWrapper);
+        tempWrapper.remove();
+    }
+    
+    // Clean up data attributes
+    actualElement.removeAttribute('data-temp-original-cx');
+    actualElement.removeAttribute('data-temp-original-cy');
+    actualElement.removeAttribute('data-temp-original-x');
+    actualElement.removeAttribute('data-temp-original-y');
+    
+    console.log('Removed temp offset-path animation');
+}
+
 // Export functions for use in other modules
 window.removeStyleTag = removeStyleTag;
 window.removeTempPreview = removeTempPreview;
@@ -1271,6 +1632,10 @@ window.stopAnimation = stopAnimation;
 window.applyTempAnimation = applyTempAnimation;
 window.applyAnimationToImage = applyAnimationToImage;
 window.applyAnimation = applyAnimation;
+window.applyOffsetPathAnimation = applyOffsetPathAnimation;
+window.removeOffsetPathAnimation = removeOffsetPathAnimation;
+window.applyTempOffsetPathAnimation = applyTempOffsetPathAnimation;
+window.removeTempOffsetPathAnimation = removeTempOffsetPathAnimation;
 window.renderParamControls = renderParamControls;
 window.updateAnimationParamsFromElement = updateAnimationParamsFromElement;
 window.scaleAnimationIntensityForClipPath = scaleAnimationIntensityForClipPath;

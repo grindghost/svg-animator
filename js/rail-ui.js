@@ -11,10 +11,6 @@ function showRailsOverlay(element = null) {
     // Store the element for rail creation
     currentRailElement = element;
     
-    // Debug logging
-    console.log('showRailsOverlay called with element:', element);
-    console.log('currentRailElement set to:', currentRailElement);
-    
     // Clear form
     document.getElementById('rail-name').value = '';
     document.getElementById('rail-name-error').classList.add('hidden');
@@ -54,27 +50,19 @@ function updateRailsFormState() {
     
     if (!nameInput || !saveBtn || !description) return;
     
-    // Debug logging
-    console.log('updateRailsFormState - currentRailElement:', currentRailElement);
-    console.log('updateRailsFormState - nameInput.disabled before:', nameInput.disabled);
-    
     if (currentRailElement) {
         // Element selected - enable form
         nameInput.disabled = false;
         saveBtn.disabled = true; // Will be enabled when name is entered
         description.textContent = 'Create an animation rail from the selected path or shape element.';
         description.style.color = 'var(--text-secondary)';
-        console.log('Form enabled for element:', currentRailElement);
     } else {
         // No element selected - disable form
         nameInput.disabled = true;
         saveBtn.disabled = true;
         description.textContent = '⚠️ Right-click on a path or shape element to create a rail.';
         description.style.color = 'var(--text-muted)';
-        console.log('Form disabled - no element selected');
     }
-    
-    console.log('updateRailsFormState - nameInput.disabled after:', nameInput.disabled);
 }
 
 // Update rails list in overlay

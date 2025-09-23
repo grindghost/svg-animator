@@ -104,24 +104,17 @@ function validateRailName(name) {
 function extractPathDataFromElement(element) {
     const tagName = element.tagName.toLowerCase();
     
-    console.log('extractPathDataFromElement called with:', element);
-    console.log('Element tagName:', tagName);
-    
     if (tagName === 'path') {
         const d = element.getAttribute('d') || '';
-        console.log('Path element d attribute:', d);
         return d;
     } else if (['circle', 'ellipse', 'line', 'polyline', 'polygon', 'rect'].includes(tagName)) {
         // For shape elements, we need to convert them to path data
         // This is a simplified approach - in a real implementation, you might want to use
         // a library like SVGPathData or similar to properly convert shapes to paths
-        console.log('Converting shape element to path data');
         const pathData = convertShapeToPath(element);
-        console.log('Converted path data:', pathData);
         return pathData;
     }
     
-    console.log('Element not supported for path extraction');
     return '';
 }
 
@@ -129,16 +122,12 @@ function extractPathDataFromElement(element) {
 function convertShapeToPath(element) {
     const tagName = element.tagName.toLowerCase();
     
-    console.log('convertShapeToPath called for:', tagName);
-    
     switch (tagName) {
         case 'circle':
             const cx = parseFloat(element.getAttribute('cx') || 0);
             const cy = parseFloat(element.getAttribute('cy') || 0);
             const r = parseFloat(element.getAttribute('r') || 0);
-            console.log('Circle attributes - cx:', cx, 'cy:', cy, 'r:', r);
             const circlePath = `M ${cx - r},${cy} A ${r},${r} 0 1,1 ${cx + r},${cy} A ${r},${r} 0 1,1 ${cx - r},${cy}`;
-            console.log('Generated circle path:', circlePath);
             return circlePath;
             
         case 'ellipse':

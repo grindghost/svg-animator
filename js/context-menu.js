@@ -200,8 +200,6 @@ function handleRightClick(event) {
     
     // Store the target element
     currentTargetElement = targetElement;
-    console.log('Right-click on element:', targetElement);
-    console.log('currentTargetElement set to:', currentTargetElement);
     
     // Update context menu based on element type
     updateContextMenuForElement(targetElement);
@@ -489,9 +487,6 @@ function canElementBeRail(element) {
 
 // Handle new rail from shape action
 function handleNewRailFromShape() {
-    console.log('handleNewRailFromShape called');
-    console.log('currentTargetElement:', currentTargetElement);
-    
     if (!currentTargetElement) {
         console.error('No target element for rail creation');
         return;
@@ -499,12 +494,9 @@ function handleNewRailFromShape() {
     
     // Validate element can be used as rail
     if (!canElementBeRail(currentTargetElement)) {
-        console.log('Element cannot be used as rail:', currentTargetElement);
         showNotification('Selected element cannot be used as a rail. Please select a path or shape element.', 'error');
         return;
     }
-    
-    console.log('Element validated for rail creation:', currentTargetElement);
     
     // Store the element before hiding the context menu
     const elementForRail = currentTargetElement;
@@ -514,7 +506,6 @@ function handleNewRailFromShape() {
     
     // Show rails overlay
     if (typeof showRailsOverlay === 'function') {
-        console.log('Calling showRailsOverlay with element:', elementForRail);
         showRailsOverlay(elementForRail);
     } else {
         console.error('showRailsOverlay function not available');
