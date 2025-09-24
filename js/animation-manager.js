@@ -563,7 +563,67 @@ function applyTempAnimation(element, speed, animName = undefined) {
     // 🧹 Clean up any old preview first
     const oldWrapper = document.querySelector(".anim-wrapper.temp-anim");
     if (oldWrapper) {
-        removeTempPreview(oldWrapper);
+        // ✅ NEW: Check if this temp wrapper contains offset-path animations
+        const offsetPathElement = oldWrapper.querySelector('[class*="temp-temp-offset-path"]');
+        if (offsetPathElement) {
+            // This is an offset-path temp animation nested inside a temp wrapper
+            // We need to remove the entire outer wrapper structure
+            console.log('Found offset-path animation inside temp wrapper, removing entire wrapper structure');
+            
+            // Find the actual shape element (circle, rect, etc.)
+            const actualElement = offsetPathElement;
+            
+            // Restore the element's original position
+            const originalCx = actualElement.getAttribute('data-temp-original-cx');
+            const originalCy = actualElement.getAttribute('data-temp-original-cy');
+            const originalX = actualElement.getAttribute('data-temp-original-x');
+            const originalY = actualElement.getAttribute('data-temp-original-y');
+            
+            if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+                if (originalCx) actualElement.setAttribute('cx', originalCx);
+                if (originalCy) actualElement.setAttribute('cy', originalCy);
+            } else if (actualElement.tagName.toLowerCase() === 'rect') {
+                if (originalX) actualElement.setAttribute('x', originalX);
+                if (originalY) actualElement.setAttribute('y', originalY);
+            }
+            
+            // Remove temp animation classes and data attributes
+            actualElement.classList.remove('temp-temp-offset-path', 'temp-anim');
+            actualElement.removeAttribute('data-temp-original-cx');
+            actualElement.removeAttribute('data-temp-original-cy');
+            actualElement.removeAttribute('data-temp-original-x');
+            actualElement.removeAttribute('data-temp-original-y');
+            
+            // Remove the temp offset-path style tag
+            const tempStyleTag = document.getElementById('temp-temp-offset-path');
+            if (tempStyleTag) {
+                tempStyleTag.remove();
+            }
+            
+            // Remove the temp-generic style tag
+            removeStyleTag("temp-generic");
+            
+            // Remove any rail clones
+            const railClones = oldWrapper.querySelectorAll('[id$="-clone"]');
+            railClones.forEach(clone => clone.remove());
+            
+            // Unwrap the entire wrapper structure
+            unwrapWrapper(oldWrapper);
+            
+        } else {
+            // This is a regular temp animation, use the standard cleanup
+            removeTempPreview(oldWrapper);
+        }
+    }
+    
+    // ✅ NEW: Also clean up any standalone offset-path temp animations
+    const oldOffsetPathWrapper = document.querySelector(".temp-offset-wrapper");
+    if (oldOffsetPathWrapper) {
+        // Find the actual element inside the offset wrapper
+        const actualElement = oldOffsetPathWrapper.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (actualElement) {
+            removeTempOffsetPathAnimation(actualElement);
+        }
     }
 
 
@@ -974,7 +1034,20 @@ function renderParamControls(animationName) {
         updateAnimationParamsFromElement(animationName, selectedElement);
     }
     
+    // ✅ NEW: Separate dropdown and slider parameters for better ordering
+    const dropdownParams = [];
+    const sliderParams = [];
+    
     for (const [param, value] of Object.entries(anim.params)) {
+        if (anim.paramConfig && anim.paramConfig[param] && anim.paramConfig[param].type === 'dropdown') {
+            dropdownParams.push([param, value]);
+        } else {
+            sliderParams.push([param, value]);
+        }
+    }
+    
+    // ✅ NEW: Create dropdown controls first (especially rail dropdown)
+    for (const [param, value] of dropdownParams) {
         const controlWrapper = document.createElement("div");
         controlWrapper.className = "param-control";
         
@@ -1016,11 +1089,19 @@ function renderParamControls(animationName) {
                         option.textContent = railName;
                         select.appendChild(option);
                     });
+                    
+                    // ✅ NEW: Auto-select the first rail if no value is set and rails are available
+                    if (!value && railNames.length > 0) {
+                        const firstRail = railNames[0];
+                        anim.params[param] = firstRail;
+                        select.value = firstRail;
+                        console.log(`Auto-selected first rail: ${firstRail}`);
+                    }
                 }
             }
             
-            // Set current value
-            select.value = value || "";
+            // Set current value (or use auto-selected value)
+            select.value = anim.params[param] || "";
             
             // Add event listener for real-time updates
             select.addEventListener("change", () => {
@@ -1036,77 +1117,87 @@ function renderParamControls(animationName) {
             controlWrapper.appendChild(label);
             controlWrapper.appendChild(select);
             controlsContainer.appendChild(controlWrapper);
-        } else {
-            // Regular slider input
-            const input = document.createElement("input");
-            input.type = "range";
-            input.className = "param-slider";
-            
-            // Use paramConfig if available, otherwise fall back to old logic
-            if (anim.paramConfig && anim.paramConfig[param]) {
-                const config = anim.paramConfig[param];
-                input.min = config.min.toString();
-                input.max = config.max.toString();
-                input.step = config.step.toString();
-                // Reset param to default if it's not within the configured range
-                if (value < config.min || value > config.max) {
-                    anim.params[param] = config.default;
-                    input.value = config.default;
-                } else {
-                    input.value = value;
-                }
+        }
+    }
+    
+    // ✅ NEW: Create slider controls after dropdown controls
+    for (const [param, value] of sliderParams) {
+        const controlWrapper = document.createElement("div");
+        controlWrapper.className = "param-control";
+        
+        const label = document.createElement("label");
+        label.className = "param-label";
+        label.textContent = `${param}: `;
+        
+        // Regular slider input
+        const input = document.createElement("input");
+        input.type = "range";
+        input.className = "param-slider";
+        
+        // Use paramConfig if available, otherwise fall back to old logic
+        if (anim.paramConfig && anim.paramConfig[param]) {
+            const config = anim.paramConfig[param];
+            input.min = config.min.toString();
+            input.max = config.max.toString();
+            input.step = config.step.toString();
+            // Reset param to default if it's not within the configured range
+            if (value < config.min || value > config.max) {
+                anim.params[param] = config.default;
+                input.value = config.default;
             } else {
-                // Fallback to old logic for backward compatibility
-                if (param.includes("amplitude") || param.includes("intensity")) {
-                    input.min = "0.1";
-                    input.max = "3.0";
-                    input.step = "0.1";
-                } else if (param.includes("blur")) {
-                    input.min = "0";
-                    input.max = "20";
-                    input.step = "1";
-                } else if (param.includes("skew")) {
-                    input.min = "5";
-                    input.max = "45";
-                    input.step = "1";
-                } else if (param.includes("dash")) {
-                    input.min = "1";
-                    input.max = "50";
-                    input.step = "1";
-                } else if (param.includes("gap")) {
-                    input.min = "1";
-                    input.max = "30";
-                    input.step = "1";
-                } else {
-                    // Default range
-                    input.min = "0";
-                    input.max = value;
-                    input.step = "0.1";
-                }
                 input.value = value;
             }
-            
-            const span = document.createElement("span");
-            span.className = "param-value";
-            span.textContent = value;
-            
-            // Add event listener for real-time updates
-            input.addEventListener("input", () => {
-                const newValue = parseFloat(input.value);
-                anim.params[param] = newValue;
-                span.textContent = newValue;
-                
-                // Apply temporary animation to preview changes
-                if (selectedElement) {
-                    applyTempAnimation(selectedElement, document.getElementById('speed-slider').value, undefined, false);
-                }
-            });
-            
-            controlWrapper.appendChild(label);
-            controlWrapper.appendChild(input);
-            controlWrapper.appendChild(span);
-            controlsContainer.appendChild(controlWrapper);
+        } else {
+            // Fallback to old logic for backward compatibility
+            if (param.includes("amplitude") || param.includes("intensity")) {
+                input.min = "0.1";
+                input.max = "3.0";
+                input.step = "0.1";
+            } else if (param.includes("blur")) {
+                input.min = "0";
+                input.max = "20";
+                input.step = "1";
+            } else if (param.includes("skew")) {
+                input.min = "5";
+                input.max = "45";
+                input.step = "1";
+            } else if (param.includes("dash")) {
+                input.min = "1";
+                input.max = "50";
+                input.step = "1";
+            } else if (param.includes("gap")) {
+                input.min = "1";
+                input.max = "30";
+                input.step = "1";
+            } else {
+                // Default range
+                input.min = "0";
+                input.max = value;
+                input.step = "0.1";
+            }
+            input.value = value;
         }
+        
+        const span = document.createElement("span");
+        span.className = "param-value";
+        span.textContent = value;
+        
+        // Add event listener for real-time updates
+        input.addEventListener("input", () => {
+            const newValue = parseFloat(input.value);
+            anim.params[param] = newValue;
+            span.textContent = newValue;
+            
+            // Apply temporary animation to preview changes
+            if (selectedElement) {
+                applyTempAnimation(selectedElement, document.getElementById('speed-slider').value, undefined, false);
+            }
+        });
+        
+        controlWrapper.appendChild(label);
+        controlWrapper.appendChild(input);
+        controlWrapper.appendChild(span);
+        controlsContainer.appendChild(controlWrapper);
     }
 }
 
@@ -1511,6 +1602,55 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     
     // Clean up any existing temp animation
     removeTempPreview(element);
+    
+    // ✅ NEW: Also clean up any existing temp wrapper with temp-generic animation
+    const oldWrapper = document.querySelector(".anim-wrapper.temp-anim");
+    if (oldWrapper) {
+        console.log('Found existing temp wrapper, removing it for offset-path animation');
+        
+        // Find the actual shape element inside the wrapper
+        const actualElement = oldWrapper.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (actualElement) {
+            // Restore the element's original position if it has temp offset-path data
+            const originalCx = actualElement.getAttribute('data-temp-original-cx');
+            const originalCy = actualElement.getAttribute('data-temp-original-cy');
+            const originalX = actualElement.getAttribute('data-temp-original-x');
+            const originalY = actualElement.getAttribute('data-temp-original-y');
+            
+            if (originalCx !== null && originalCy !== null) {
+                if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+                    actualElement.setAttribute('cx', originalCx);
+                    actualElement.setAttribute('cy', originalCy);
+                } else if (actualElement.tagName.toLowerCase() === 'rect') {
+                    actualElement.setAttribute('x', originalX || 0);
+                    actualElement.setAttribute('y', originalY || 0);
+                }
+            }
+            
+            // Remove temp animation classes and data attributes
+            actualElement.classList.remove('temp-temp-offset-path', 'temp-anim');
+            actualElement.removeAttribute('data-temp-original-cx');
+            actualElement.removeAttribute('data-temp-original-cy');
+            actualElement.removeAttribute('data-temp-original-x');
+            actualElement.removeAttribute('data-temp-original-y');
+        }
+        
+        // Remove the temp-generic style tag
+        removeStyleTag("temp-generic");
+        
+        // Remove any rail clones
+        const railClones = oldWrapper.querySelectorAll('[id$="-clone"]');
+        railClones.forEach(clone => clone.remove());
+        
+        // Remove the temp offset-path style tag if it exists
+        const tempStyleTag = document.getElementById('temp-temp-offset-path');
+        if (tempStyleTag) {
+            tempStyleTag.remove();
+        }
+        
+        // Unwrap the entire wrapper structure
+        unwrapWrapper(oldWrapper);
+    }
     
     // Create a unique temp animation ID
     const tempAnimationId = 'temp-offset-path';
