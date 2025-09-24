@@ -40,8 +40,25 @@ function updateAnimationListUI(selectedElementId) {
     const animationListDiv = document.getElementById('animation-list-div');
     animationListDiv.innerHTML = '';
 
-    if (data.animations[selectedElementId]) {
-        Object.entries(data.animations[selectedElementId]).forEach(([animationKey, animationData]) => {
+    // Check for animations on the selected element
+    let elementAnimations = data.animations[selectedElementId] || {};
+    
+    // ✅ NEW: Also check for offset-path animations in nested elements
+    const selectedElement = document.getElementById(selectedElementId);
+    if (selectedElement) {
+        // Look for elements with offset-path animations inside the selected element
+        const offsetPathElements = selectedElement.querySelectorAll('[data-offset-path-animation]');
+        offsetPathElements.forEach(offsetElement => {
+            const offsetElementId = offsetElement.getAttribute('id');
+            if (offsetElementId && data.animations[offsetElementId]) {
+                // Merge animations from the nested offset-path element
+                elementAnimations = { ...elementAnimations, ...data.animations[offsetElementId] };
+            }
+        });
+    }
+
+    if (Object.keys(elementAnimations).length > 0) {
+        Object.entries(elementAnimations).forEach(([animationKey, animationData]) => {
             // Handle both old format (animationType as key) and new format (animationId as key)
             const isOldFormat = !animationData.type;
             const animationType = isOldFormat ? animationKey : animationData.type;

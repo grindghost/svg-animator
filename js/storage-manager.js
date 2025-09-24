@@ -80,9 +80,31 @@ function saveAnimation(elementId, type, properties) {
 function removeAnimation(elementId, animationId) {
     const data = getSavedAnimations();
 
+    // Check if animation exists on the element
+    let animationData = null;
+    let targetElementId = elementId;
+    
     if (data.animations[elementId] && data.animations[elementId][animationId]) {
+        animationData = data.animations[elementId][animationId];
+    } else {
+        // ✅ NEW: For offset-path animations, the animation might be saved on a nested element
+        // Look for the animation in nested elements with offset-path animations
+        const element = document.querySelector(`#${elementId}`);
+        if (element) {
+            const offsetPathElements = element.querySelectorAll('[data-offset-path-animation]');
+            for (const offsetElement of offsetPathElements) {
+                const offsetElementId = offsetElement.getAttribute('id');
+                if (offsetElementId && data.animations[offsetElementId] && data.animations[offsetElementId][animationId]) {
+                    animationData = data.animations[offsetElementId][animationId];
+                    targetElementId = offsetElementId;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (animationData) {
         // Remove the corresponding style tag from the DOM
-        const animationData = data.animations[elementId][animationId];
         if (animationData.animationName) {
             removeStyleTag(animationData.animationName);
         }
@@ -100,7 +122,7 @@ function removeAnimation(elementId, animationId) {
                 }
             } else {
                 // For regular elements, use the standard stopAnimation function
-                stopAnimation(element, animationId, elementId);
+                stopAnimation(element, animationId, targetElementId);
             }
         }
 
@@ -114,14 +136,14 @@ function removeAnimation(elementId, animationId) {
         }
 
         // Delete from the localStorage
-        delete data.animations[elementId][animationId];
+        delete data.animations[targetElementId][animationId];
 
         // Remove the specific named destination that corresponds to this animation
         if (data.namedDestinations && data.namedDestinations.destinations) {
             // Look for named destinations that reference this specific animation
             for (const [destinationElementId, destinationData] of Object.entries(data.namedDestinations.destinations)) {
                 if (destinationData.specificAnimationId === animationId || 
-                    (destinationData.animationElementId === elementId && destinationData.animationType === animationData.type)) {
+                    (destinationData.animationElementId === targetElementId && destinationData.animationType === animationData.type)) {
                     delete data.namedDestinations.destinations[destinationElementId];
                     console.log('Removed named destination for deleted animation:', destinationElementId);
                     break;
@@ -130,8 +152,8 @@ function removeAnimation(elementId, animationId) {
         }
 
         // Remove the element entry if it has no more animations
-        if (Object.keys(data.animations[elementId]).length === 0) {
-            delete data.animations[elementId];
+        if (Object.keys(data.animations[targetElementId]).length === 0) {
+            delete data.animations[targetElementId];
         }
     }
     
