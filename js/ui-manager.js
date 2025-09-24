@@ -250,9 +250,10 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
                 // Use paramConfig if available, otherwise fall back to old logic
                 if (anim.paramConfig && anim.paramConfig[param]) {
                     const config = anim.paramConfig[param];
-                    input.min = config.min.toString();
-                    input.max = config.max.toString();
-                    input.step = config.step.toString();
+                    // Only set min/max/step for slider parameters, not dropdowns
+                    if (config.min !== undefined) input.min = config.min.toString();
+                    if (config.max !== undefined) input.max = config.max.toString();
+                    if (config.step !== undefined) input.step = config.step.toString();
                     input.value = paramValue;
                 } else {
                     // Fallback to old logic for backward compatibility
