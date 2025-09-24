@@ -1693,13 +1693,58 @@ function removeOffsetPathAnimation(element) {
         }
     }
     
-    // Move element back to its original parent if it's in an offset wrapper
-    const offsetWrapper = actualElement.parentNode;
-    if (offsetWrapper && offsetWrapper.tagName === 'g' && offsetWrapper.children.length === 1) {
-        // Only the element is left in the wrapper, move it back
-        const grandParent = offsetWrapper.parentNode;
-        grandParent.insertBefore(actualElement, offsetWrapper);
-        offsetWrapper.remove();
+    // ✅ IMPROVED: More robust cleanup of wrapper groups
+    // Find the topmost wrapper that contains this element and unwrap all the way to the original parent
+    let currentParent = actualElement.parentNode;
+    let topmostWrapper = null;
+    
+    // Walk up the DOM tree to find the topmost wrapper
+    while (currentParent && currentParent !== svgRoot) {
+        if (currentParent.tagName === 'g' && 
+            (currentParent.classList.contains('anim-wrapper') || 
+             currentParent.classList.contains('wrapping-group') ||
+             currentParent.classList.contains('temp-offset-wrapper'))) {
+            topmostWrapper = currentParent;
+        }
+        currentParent = currentParent.parentNode;
+    }
+    
+    // If we found a topmost wrapper, unwrap all the way to the original parent
+    if (topmostWrapper) {
+        console.log('Found topmost wrapper:', topmostWrapper);
+        
+        // Find the original parent (the one that's not a wrapper)
+        let originalParent = topmostWrapper.parentNode;
+        while (originalParent && originalParent !== svgRoot && 
+               originalParent.tagName === 'g' && 
+               (originalParent.classList.contains('anim-wrapper') || 
+                originalParent.classList.contains('wrapping-group') ||
+                originalParent.classList.contains('temp-offset-wrapper'))) {
+            originalParent = originalParent.parentNode;
+        }
+        
+        if (originalParent) {
+            console.log('Moving element to original parent:', originalParent);
+            // Move the actual element to the original parent
+            originalParent.insertBefore(actualElement, topmostWrapper);
+            
+            // Remove all wrapper groups from topmost down
+            let wrapperToRemove = topmostWrapper;
+            while (wrapperToRemove) {
+                const nextWrapper = wrapperToRemove.querySelector('g');
+                wrapperToRemove.remove();
+                wrapperToRemove = nextWrapper;
+            }
+        }
+    } else {
+        // Fallback to the old logic if no topmost wrapper found
+        const offsetWrapper = actualElement.parentNode;
+        if (offsetWrapper && offsetWrapper.tagName === 'g' && offsetWrapper.children.length === 1) {
+            // Only the element is left in the wrapper, move it back
+            const grandParent = offsetWrapper.parentNode;
+            grandParent.insertBefore(actualElement, offsetWrapper);
+            offsetWrapper.remove();
+        }
     }
     
     // Clean up data attributes
@@ -1760,16 +1805,61 @@ function removeTempOffsetPathAnimation(element) {
         if (originalY) actualElement.setAttribute('y', originalY);
     }
     
-    // Remove the rail clone
-    const tempWrapper = actualElement.parentNode;
-    if (tempWrapper && tempWrapper.classList.contains('temp-offset-wrapper')) {
-        const railClones = tempWrapper.querySelectorAll('[id$="-clone"]');
-        railClones.forEach(clone => clone.remove());
+    // ✅ IMPROVED: More robust cleanup of wrapper groups for temp animations
+    // Find the topmost wrapper that contains this element and unwrap all the way to the original parent
+    let currentParent = actualElement.parentNode;
+    let topmostWrapper = null;
+    
+    // Walk up the DOM tree to find the topmost wrapper
+    while (currentParent && currentParent !== svgRoot) {
+        if (currentParent.tagName === 'g' && 
+            (currentParent.classList.contains('anim-wrapper') || 
+             currentParent.classList.contains('wrapping-group') ||
+             currentParent.classList.contains('temp-offset-wrapper'))) {
+            topmostWrapper = currentParent;
+        }
+        currentParent = currentParent.parentNode;
+    }
+    
+    // If we found a topmost wrapper, unwrap all the way to the original parent
+    if (topmostWrapper) {
+        console.log('Found topmost wrapper for temp animation:', topmostWrapper);
         
-        // Move element back to its original parent
-        const grandParent = tempWrapper.parentNode;
-        grandParent.insertBefore(actualElement, tempWrapper);
-        tempWrapper.remove();
+        // Find the original parent (the one that's not a wrapper)
+        let originalParent = topmostWrapper.parentNode;
+        while (originalParent && originalParent !== svgRoot && 
+               originalParent.tagName === 'g' && 
+               (originalParent.classList.contains('anim-wrapper') || 
+                originalParent.classList.contains('wrapping-group') ||
+                originalParent.classList.contains('temp-offset-wrapper'))) {
+            originalParent = originalParent.parentNode;
+        }
+        
+        if (originalParent) {
+            console.log('Moving element to original parent for temp animation:', originalParent);
+            // Move the actual element to the original parent
+            originalParent.insertBefore(actualElement, topmostWrapper);
+            
+            // Remove all wrapper groups from topmost down
+            let wrapperToRemove = topmostWrapper;
+            while (wrapperToRemove) {
+                const nextWrapper = wrapperToRemove.querySelector('g');
+                wrapperToRemove.remove();
+                wrapperToRemove = nextWrapper;
+            }
+        }
+    } else {
+        // Fallback to the old logic if no topmost wrapper found
+        const tempWrapper = actualElement.parentNode;
+        if (tempWrapper && tempWrapper.classList.contains('temp-offset-wrapper')) {
+            const railClones = tempWrapper.querySelectorAll('[id$="-clone"]');
+            railClones.forEach(clone => clone.remove());
+            
+            // Move element back to its original parent
+            const grandParent = tempWrapper.parentNode;
+            grandParent.insertBefore(actualElement, tempWrapper);
+            tempWrapper.remove();
+        }
     }
     
     // Clean up data attributes
