@@ -404,8 +404,8 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
                 label.className = "param-label";
                 label.textContent = `${param}: `;
                 
-                // Skip rail parameter for offset-path animations since it's handled first
-                if (animationType === 'offset-path' && param === 'rail') {
+                // Skip rail and speed parameters for offset-path animations
+                if (animationType === 'offset-path' && (param === 'rail' || param === 'speed')) {
                     continue;
                 }
                 
