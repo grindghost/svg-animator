@@ -825,6 +825,17 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
             return applyAnimationToClipPathShape(element, speed, animName, save);
         }
 
+        const selectedAnimation = animName || document.getElementById("animation-type").value;
+        const animationData = animationsData[selectedAnimation];
+        if (!animationData) {
+            throw new Error(`Animation "${selectedAnimation}" not found.`);
+        }
+
+        // ✅ NEW: Special handling for offset-path animations - apply directly without wrapper
+        if (selectedAnimation === 'offset-path') {
+            return applyOffsetPathAnimation(element, animationData, null);
+        }
+
         // ✅ If a temp wrapper exists, promote it
         let wrapper = element.closest
             ? element.closest(".anim-wrapper.temp-anim")
@@ -840,18 +851,7 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
         }
 
         const elementId = wrapper.getAttribute("id") || element.getAttribute("id") || element.tagName;
-        const selectedAnimation = animName || document.getElementById("animation-type").value;
         const animationName = uniqueID();
-
-        const animationData = animationsData[selectedAnimation];
-        if (!animationData) {
-            throw new Error(`Animation "${selectedAnimation}" not found.`);
-        }
-
-        // ✅ NEW: Special handling for offset-path animations - apply directly without wrapper
-        if (selectedAnimation === 'offset-path') {
-            return applyOffsetPathAnimation(element, animationData, wrapper);
-        }
 
         removeStyleTag(animationName);
 
@@ -1379,7 +1379,7 @@ function scaleAnimationIntensityForClipPath(keyframes, animationType) {
 }
 
 // Apply offset-path animation with special handling - NO WRAPPER GROUPS
-function applyOffsetPathAnimation(element, animationData, wrapper) {
+function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     // Get the selected rail
     const selectedRail = animationData.params.rail;
     if (!selectedRail) {
