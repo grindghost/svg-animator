@@ -639,9 +639,9 @@ function applyTempAnimation(element, speed, animName = undefined) {
 
     // ✅ NEW special case: filter-based animations like "boiled"
     if (animationData.apply) {
-        // Call the apply function directly on the wrapper
+        // Call the apply function with the wrapper and parameters
         try {
-            animationData.apply(wrapper);
+            animationData.apply(wrapper, animationData.params);
             wrapper.classList.add("application-animation-class");
             updateStatusBar(`Preview: "${current_selected_anim_in_dropdown}" filter applied! 🎨`);
         } catch (error) {
