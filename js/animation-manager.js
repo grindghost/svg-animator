@@ -1432,15 +1432,19 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
         }
     }
     
-    // Check if this is a group element
-    const isGroup = actualElement.tagName.toLowerCase() === 'g';
+    // Check if this element needs getBBox() approach (groups and shapes without position attributes)
+    const needsGetBBox = actualElement.tagName.toLowerCase() === 'g' || 
+                        actualElement.tagName.toLowerCase() === 'polygon' ||
+                        actualElement.tagName.toLowerCase() === 'path' ||
+                        actualElement.tagName.toLowerCase() === 'line' ||
+                        actualElement.tagName.toLowerCase() === 'polyline';
     
     // Get the original element's position and attributes
     // First check if we have stored position from temp animation in data attributes
     let originalCx, originalCy, originalX, originalY, originalTransform;
     
-    if (isGroup) {
-        // For groups, we need to calculate the center using getBBox() and store the original transform
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, we need to calculate the center using getBBox() and store the original transform
         const storedTransform = actualElement.getAttribute('data-temp-original-transform');
         const storedCenterX = actualElement.getAttribute('data-temp-original-center-x');
         const storedCenterY = actualElement.getAttribute('data-temp-original-center-y');
@@ -1450,11 +1454,11 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
             originalTransform = storedTransform;
             originalCx = storedCenterX;
             originalCy = storedCenterY;
-            originalX = 0; // Groups don't have x/y attributes
+            originalX = 0; // These elements don't have x/y attributes
             originalY = 0;
         } else {
-            // This is the first time applying offset-path animation to a group
-            // Calculate the group's center using getBBox()
+            // This is the first time applying offset-path animation to this element
+            // Calculate the element's center using getBBox()
             try {
                 const bbox = actualElement.getBBox();
                 const centerX = bbox.x + bbox.width / 2;
@@ -1468,7 +1472,7 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
                 originalX = 0;
                 originalY = 0;
             } catch (error) {
-                console.error('Error calculating group bbox:', error);
+                console.error('Error calculating element bbox:', error);
                 // Fallback to 0,0 if getBBox fails
                 originalCx = 0;
                 originalCy = 0;
@@ -1517,12 +1521,12 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     }
     
     // Reset element position to 0,0 for offset-path animation
-    if (isGroup) {
-        // For groups, apply a transform to move the group to the origin
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, apply a transform to move the element to the origin
         const centerX = parseFloat(originalCx) || 0;
         const centerY = parseFloat(originalCy) || 0;
         
-        // Create a transform that moves the group so its center is at 0,0
+        // Create a transform that moves the element so its center is at 0,0
         const translateTransform = `translate(${-centerX}, ${-centerY})`;
         
         // Combine with existing transform if any
@@ -1583,8 +1587,8 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     actualElement.setAttribute('data-original-y', originalY);
     actualElement.setAttribute('data-rail-name', selectedRail);
     
-    // For groups, also store the original transform
-    if (isGroup) {
+    // For groups and shapes without position attributes, also store the original transform
+    if (needsGetBBox) {
         actualElement.setAttribute('data-original-transform', originalTransform);
     }
     
@@ -1619,7 +1623,7 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
                 cy: originalCy,
                 x: originalX,
                 y: originalY,
-                transform: isGroup ? originalTransform : undefined
+                transform: needsGetBBox ? originalTransform : undefined
             }
         };
         saveAnimation(elementId, 'offset-path', animationDataToSave);
@@ -1671,14 +1675,18 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     
     console.log('Temp animation - actual element found:', actualElement);
     
-    // Check if this is a group element
-    const isGroup = actualElement.tagName.toLowerCase() === 'g';
+    // Check if this element needs getBBox() approach (groups and shapes without position attributes)
+    const needsGetBBox = actualElement.tagName.toLowerCase() === 'g' || 
+                        actualElement.tagName.toLowerCase() === 'polygon' ||
+                        actualElement.tagName.toLowerCase() === 'path' ||
+                        actualElement.tagName.toLowerCase() === 'line' ||
+                        actualElement.tagName.toLowerCase() === 'polyline';
     
     // Get the original element's position and attributes from the actual element
     let originalCx, originalCy, originalX, originalY, originalTransform;
     
-    if (isGroup) {
-        // For groups, calculate the center using getBBox() and store the original transform
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, calculate the center using getBBox() and store the original transform
         try {
             const bbox = actualElement.getBBox();
             const centerX = bbox.x + bbox.width / 2;
@@ -1686,13 +1694,13 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
             
             originalCx = centerX;
             originalCy = centerY;
-            originalX = 0; // Groups don't have x/y attributes
+            originalX = 0; // These elements don't have x/y attributes
             originalY = 0;
             originalTransform = actualElement.getAttribute('transform') || '';
             
-            console.log('Temp animation - capturing group center:', { cx: originalCx, cy: originalCy, transform: originalTransform });
+            console.log('Temp animation - capturing element center:', { cx: originalCx, cy: originalCy, transform: originalTransform });
         } catch (error) {
-            console.error('Error calculating group bbox for temp animation:', error);
+            console.error('Error calculating element bbox for temp animation:', error);
             // Fallback to 0,0 if getBBox fails
             originalCx = 0;
             originalCy = 0;
@@ -1711,12 +1719,12 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     }
     
     // Reset element position to 0,0 for offset-path animation
-    if (isGroup) {
-        // For groups, apply a transform to move the group to the origin
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, apply a transform to move the element to the origin
         const centerX = parseFloat(originalCx) || 0;
         const centerY = parseFloat(originalCy) || 0;
         
-        // Create a transform that moves the group so its center is at 0,0
+        // Create a transform that moves the element so its center is at 0,0
         const translateTransform = `translate(${-centerX}, ${-centerY})`;
         
         // Combine with existing transform if any
@@ -1784,8 +1792,8 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     actualElement.setAttribute('data-temp-original-x', originalX);
     actualElement.setAttribute('data-temp-original-y', originalY);
     
-    // For groups, also store the original transform
-    if (isGroup) {
+    // For groups and shapes without position attributes, also store the original transform
+    if (needsGetBBox) {
         actualElement.setAttribute('data-temp-original-transform', originalTransform);
         actualElement.setAttribute('data-temp-original-center-x', originalCx);
         actualElement.setAttribute('data-temp-original-center-y', originalCy);
@@ -1834,8 +1842,12 @@ function removeOffsetPathAnimation(element) {
     console.log('animationId found:', animationId);
     if (!animationId) return;
     
-    // Check if this is a group element
-    const isGroup = actualElement.tagName.toLowerCase() === 'g';
+    // Check if this element needs getBBox() approach (groups and shapes without position attributes)
+    const needsGetBBox = actualElement.tagName.toLowerCase() === 'g' || 
+                        actualElement.tagName.toLowerCase() === 'polygon' ||
+                        actualElement.tagName.toLowerCase() === 'path' ||
+                        actualElement.tagName.toLowerCase() === 'line' ||
+                        actualElement.tagName.toLowerCase() === 'polyline';
     
     // Remove the animation class
     const animationName = `offset-path-${animationId}`;
@@ -1881,14 +1893,14 @@ function removeOffsetPathAnimation(element) {
     
     console.log('Restoring position - originalCx:', originalCx, 'originalCy:', originalCy, 'originalX:', originalX, 'originalY:', originalY, 'originalTransform:', originalTransform);
     
-    if (isGroup) {
-        // For groups, restore the original transform
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, restore the original transform
         if (originalTransform !== null && originalTransform !== undefined) {
             actualElement.setAttribute('transform', originalTransform);
         } else {
             actualElement.removeAttribute('transform');
         }
-        console.log('Group transform after restoration:', actualElement.getAttribute('transform'));
+        console.log('Element transform after restoration:', actualElement.getAttribute('transform'));
     } else if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
         if (originalCx) actualElement.setAttribute('cx', originalCx);
         if (originalCy) actualElement.setAttribute('cy', originalCy);
@@ -1937,8 +1949,12 @@ function removeTempOffsetPathAnimation(element) {
         }
     }
     
-    // Check if this is a group element
-    const isGroup = actualElement.tagName.toLowerCase() === 'g';
+    // Check if this element needs getBBox() approach (groups and shapes without position attributes)
+    const needsGetBBox = actualElement.tagName.toLowerCase() === 'g' || 
+                        actualElement.tagName.toLowerCase() === 'polygon' ||
+                        actualElement.tagName.toLowerCase() === 'path' ||
+                        actualElement.tagName.toLowerCase() === 'line' ||
+                        actualElement.tagName.toLowerCase() === 'polyline';
     
     // Remove the animation class
     actualElement.classList.remove('temp-temp-offset-path');
@@ -1957,8 +1973,8 @@ function removeTempOffsetPathAnimation(element) {
     const originalY = actualElement.getAttribute('data-temp-original-y');
     const originalTransform = actualElement.getAttribute('data-temp-original-transform');
     
-    if (isGroup) {
-        // For groups, restore the original transform
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, restore the original transform
         if (originalTransform !== null && originalTransform !== undefined) {
             actualElement.setAttribute('transform', originalTransform);
         } else {

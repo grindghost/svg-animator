@@ -366,8 +366,12 @@ function cleanupOrphanedOffsetPathAnimation(element) {
         styleTag.remove();
     }
     
-    // Check if this is a group element
-    const isGroup = element.tagName.toLowerCase() === 'g';
+    // Check if this element needs getBBox() approach (groups and shapes without position attributes)
+    const needsGetBBox = element.tagName.toLowerCase() === 'g' || 
+                        element.tagName.toLowerCase() === 'polygon' ||
+                        element.tagName.toLowerCase() === 'path' ||
+                        element.tagName.toLowerCase() === 'line' ||
+                        element.tagName.toLowerCase() === 'polyline';
     
     // Restore original position from data attributes
     const originalCx = element.getAttribute('data-original-cx');
@@ -376,8 +380,8 @@ function cleanupOrphanedOffsetPathAnimation(element) {
     const originalY = element.getAttribute('data-original-y');
     const originalTransform = element.getAttribute('data-original-transform');
     
-    if (isGroup) {
-        // For groups, restore the original transform
+    if (needsGetBBox) {
+        // For groups and shapes without position attributes, restore the original transform
         if (originalTransform !== null && originalTransform !== undefined) {
             element.setAttribute('transform', originalTransform);
         } else {
