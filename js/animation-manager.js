@@ -530,6 +530,8 @@ function applyTempAnimationToClipPathShape(element, speed, animName = undefined)
 }
 
 function applyTempAnimation(element, speed, animName = undefined) {
+    console.log('applyTempAnimation called with:', { element, speed, animName });
+    
     // Hide selection box and handles for temp animation preview
     if (document.getElementById("selection-box")) {
         document.getElementById("selection-box").remove();
@@ -543,6 +545,8 @@ function applyTempAnimation(element, speed, animName = undefined) {
     }
 
     // ✅ NEW: Special handling for offset-path animations - skip temp animation, apply directly
+    // Note: This check is only for when offset-path is selected in the dropdown
+    // Regular temp animations should still work for other animation types
     const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
     if (current_selected_anim_in_dropdown === 'offset-path') {
         console.log('Skipping temp animation for offset-path, will apply directly');
@@ -635,22 +639,27 @@ function applyTempAnimation(element, speed, animName = undefined) {
 
     // ✅ NEW special case: filter-based animations like "boiled"
     if (animationData.apply) {
-        animationData.apply(wrapper, animationData.params);
-        wrapper.classList.add("application-animation-class");
-        wrapper.classList.add(`${current_selected_anim_in_dropdown}-animation-class`);
-        return; // stop here, skip keyframe logic
-    }
-    
-    // ✅ NEW special case: offset-path animations - apply directly without temp wrapper
-    if (current_selected_anim_in_dropdown === 'offset-path') {
-        applyOffsetPathAnimation(element, animationData, wrapper);
-        return; // stop here, skip keyframe logic
+        // Call the apply function directly on the wrapper
+        try {
+            animationData.apply(wrapper);
+            wrapper.classList.add("application-animation-class");
+            updateStatusBar(`Preview: "${current_selected_anim_in_dropdown}" filter applied! 🎨`);
+        } catch (error) {
+            console.error(`Error applying filter animation: ${error.message}`);
+            updateStatusBar("Error applying filter animation! ❌");
+        }
+        return;
     }
 
-    // Build keyframes
+    // Build keyframes for keyframe-based animations
     const keyframes = animationData.generateKeyframes
         ? animationData.generateKeyframes(animationData.params)
         : animationData.keyframes;
+
+    if (!keyframes) {
+        console.error(`No keyframes found for animation "${current_selected_anim_in_dropdown}"`);
+        return;
+    }
 
     let keyframesString = "";
     for (let percentage in keyframes) {
@@ -684,6 +693,10 @@ function applyTempAnimation(element, speed, animName = undefined) {
 
     setCorrectTransformOrigin(wrapper);
     wrapper.classList.add("application-animation-class");
+    
+    console.log('applyTempAnimation completed successfully');
+    console.log('Wrapper animation:', wrapper.style.animation);
+    console.log('Wrapper classes:', wrapper.classList.toString());
 }
 
 

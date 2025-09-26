@@ -287,13 +287,17 @@ function showOffsetPathRailSelection(element, speed, animationName) {
                 }
             } else {
                 // Regular animations - show preview and apply button
-                applyTempAnimation(selectedElement, speed, animationName, false);
+                console.log('Applying temp animation for:', animationName);
+                console.log('selectedElement:', selectedElement);
+                applyTempAnimation(selectedElement, speed, animationName);
                 document.getElementById('speed-slider').removeAttribute('disabled');
                 document.getElementById('speed-slider').value = "1.5";
                 document.getElementById('speedDisplay').textContent = "1.5s";
                 document.getElementById('apply-animation').removeAttribute('disabled');
                 updateStatusBar(`Previewing "${animationName}" animation 🎬`);
+                console.log('Showing preview badge...');
                 showPreviewBadge();
+                console.log('Preview badge should be visible now');
             }
         } else {
             // Hide parameter panel when no animation is selected
@@ -319,140 +323,92 @@ function showOffsetPathRailSelection(element, speed, animationName) {
     initializeDropdowns();
     
     // Project import file input
-    document.getElementById('project-import').addEventListener('change', handleProjectImport);
+    document.getElementById('project-import').addEventListener('change', function(e) {
+        console.log('Project import file selected:', e.target.files[0]);
+        // TODO: Implement project import functionality
+        showNotification('Project import feature coming soon!', 'info');
+    });
     
     // Preview apply button
-    document.getElementById('preview-apply-btn').addEventListener('click', function() {
-        if (selectedElement) {
-            const animationType = document.getElementById('animation-type').value;
-            if (animationType != 'none') {
-                let speedValue = document.getElementById('speed-slider').value;
-                applyAnimation(selectedElement, speedValue);
-                hidePreviewBadge();
+    const previewApplyBtn = document.getElementById('preview-apply-btn');
+    if (previewApplyBtn) {
+        console.log('Preview apply button found, attaching event listener');
+        previewApplyBtn.addEventListener('click', function() {
+            console.log('Preview apply button clicked!');
+            console.log('selectedElement:', selectedElement);
+            if (selectedElement) {
+                const animationType = document.getElementById('animation-type').value;
+                console.log('animationType:', animationType);
+                if (animationType != 'none') {
+                    let speedValue = document.getElementById('speed-slider').value;
+                    console.log('speedValue:', speedValue);
+                    console.log('Calling applyAnimation...');
+                    applyAnimation(selectedElement, speedValue);
+                    console.log('Calling hidePreviewBadge...');
+                    hidePreviewBadge();
+                    console.log('Preview apply completed!');
+                } else {
+                    console.log('No animation selected');
+                }
+            } else {
+                console.log('No selected element');
             }
-        }
-    });
+        });
+    } else {
+        console.error('Preview apply button not found!');
+    }
 
 // ✅ NEW: Rail management modal
 function openRailManager() {
-    // Create rail management modal
+    // Create rail management modal using existing rail modal styling
     const overlay = document.createElement('div');
-    overlay.className = 'rail-manager-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    `;
+    overlay.id = 'rails-overlay';
+    overlay.className = 'rails-overlay';
     
     const modal = document.createElement('div');
-    modal.className = 'rail-manager-modal';
-    modal.style.cssText = `
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 24px;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: var(--shadow);
-    `;
+    modal.className = 'rails-modal';
     
     // Get current rails
     const rails = getSavedRails();
     const railNames = Object.keys(rails).sort();
     
     modal.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; color: var(--text);">🛤️ Manage Rails</h3>
-            <button id="close-rail-manager" style="
-                background: none;
-                border: none;
-                font-size: 24px;
-                color: var(--text-muted);
-                cursor: pointer;
-                padding: 4px;
-            ">×</button>
+        <div class="rails-modal-header">
+            <h3>🛤️ Manage Rails</h3>
+            <button id="close-rail-manager" class="rails-close-btn" title="Close">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: 14px;">
-                Rails are paths that define the movement for offset-path animations. Create, edit, or delete rails here.
-            </p>
-            <button id="create-new-rail" style="
-                padding: 8px 16px;
-                border: 1px solid var(--primary);
-                border-radius: 4px;
-                background: var(--primary);
-                color: white;
-                cursor: pointer;
-                font-size: 14px;
-            ">+ Create New Rail</button>
-        </div>
-        
-        <div id="rails-list" style="
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-        ">
-            ${railNames.length === 0 ? 
-                '<div style="padding: 20px; text-align: center; color: var(--text-muted);">No rails created yet</div>' :
-                railNames.map(railName => `
-                    <div class="rail-item" style="
-                        padding: 12px 16px;
-                        border-bottom: 1px solid var(--border);
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                    ">
-                        <div>
-                            <div style="font-weight: 500; color: var(--text);">${railName}</div>
-                            <div style="font-size: 12px; color: var(--text-muted);">
-                                Created: ${new Date(rails[railName].createdAt).toLocaleDateString()}
+        <div class="rails-modal-content">
+            <div class="rails-form">
+                <p class="rails-description" style="color: var(--text-secondary);">
+                    Manage your existing rails. Rename or delete rails here.
+                </p>
+            </div>
+            
+            <div class="rails-list-section">
+                <h4>Existing Rails</h4>
+                <div id="rails-list" class="rails-list">
+                    ${railNames.length === 0 ? 
+                        '<div class="rails-empty">No rails available. Create rails through the main interface first.</div>' :
+                        railNames.map(railName => `
+                            <div class="rails-item">
+                                <div class="rails-item-info">
+                                    <div class="rails-item-name">${railName}</div>
+                                    <div class="rails-item-details">Created: ${new Date(rails[railName].createdAt).toLocaleDateString()}</div>
+                                </div>
+                                <div class="rails-item-actions">
+                                    <button class="rails-item-btn edit-rail" data-rail="${railName}" title="Edit rail">✏️</button>
+                                    <button class="rails-item-btn delete-rail" data-rail="${railName}" title="Delete rail">🗑️</button>
+                                </div>
                             </div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="edit-rail" data-rail="${railName}" style="
-                                padding: 4px 8px;
-                                border: 1px solid var(--border);
-                                border-radius: 4px;
-                                background: var(--bg);
-                                color: var(--text);
-                                cursor: pointer;
-                                font-size: 12px;
-                            ">Edit</button>
-                            <button class="delete-rail" data-rail="${railName}" style="
-                                padding: 4px 8px;
-                                border: 1px solid var(--danger);
-                                border-radius: 4px;
-                                background: var(--danger);
-                                color: white;
-                                cursor: pointer;
-                                font-size: 12px;
-                            ">Delete</button>
-                        </div>
-                    </div>
-                `).join('')
-            }
-        </div>
-        
-        <div style="margin-top: 20px; text-align: right;">
-            <button id="close-rail-manager-btn" style="
-                padding: 8px 16px;
-                border: 1px solid var(--border);
-                border-radius: 4px;
-                background: var(--bg);
-                color: var(--text);
-                cursor: pointer;
-            ">Close</button>
+                        `).join('')
+                    }
+                </div>
+            </div>
         </div>
     `;
     
@@ -464,30 +420,33 @@ function openRailManager() {
         document.body.removeChild(overlay);
     });
     
-    document.getElementById('close-rail-manager-btn').addEventListener('click', () => {
-        document.body.removeChild(overlay);
-    });
-    
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
             document.body.removeChild(overlay);
         }
     });
     
-    // Create new rail button
-    document.getElementById('create-new-rail').addEventListener('click', () => {
-        const railName = prompt('Enter a name for the new rail:');
-        if (railName && railName.trim()) {
-            // For now, just show a message - in a real implementation, this would open a path editor
-            showNotification('Rail creation feature coming soon! For now, create rails through the main interface.', 'info');
-        }
-    });
     
-    // Edit rail buttons
+    // Edit rail buttons (rename functionality)
     document.querySelectorAll('.edit-rail').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const railName = e.target.dataset.rail;
-            showNotification(`Edit rail "${railName}" feature coming soon!`, 'info');
+            const newName = prompt(`Rename rail "${railName}" to:`, railName);
+            if (newName && newName.trim() && newName !== railName) {
+                if (typeof renameRail === 'function') {
+                    const result = renameRail(railName, newName.trim());
+                    if (result.success) {
+                        showNotification(`Rail renamed from "${railName}" to "${newName}"!`, 'success');
+                        // Close and reopen the modal to refresh the list
+                        document.body.removeChild(overlay);
+                        openRailManager();
+                    } else {
+                        showNotification(`Failed to rename rail: ${result.error}`, 'error');
+                    }
+                } else {
+                    showNotification('Rename rail function not available', 'error');
+                }
+            }
         });
     });
     
@@ -516,9 +475,15 @@ function openRailManager() {
 
 // Preview badge management functions
 function showPreviewBadge() {
+    console.log('showPreviewBadge called');
     const badge = document.getElementById('preview-badge');
+    console.log('Badge element:', badge);
     if (badge) {
         badge.classList.remove('hidden');
+        console.log('Badge classes after removing hidden:', badge.classList.toString());
+        console.log('Badge display style:', window.getComputedStyle(badge).display);
+    } else {
+        console.error('Preview badge element not found!');
     }
 }
 
