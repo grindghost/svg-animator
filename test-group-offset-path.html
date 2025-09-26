@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Group Offset-Path Animation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            margin: 20px 0;
+            padding: 20px;
+        }
+        svg {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Group Offset-Path Animation</h1>
+    
+    <div class="test-container">
+        <h2>Test 1: Group with Circles</h2>
+        <p>This group contains two circles. The group should animate along the path as a unit.</p>
+        <svg width="400" height="200" viewBox="0 0 400 200">
+            <defs>
+                <path id="test-path-1" d="M 50,100 Q 200,50 350,100" stroke="red" stroke-width="2" fill="none"/>
+            </defs>
+            <g id="group-1" transform="translate(50, 100)">
+                <circle cx="0" cy="0" r="10" fill="blue"/>
+                <circle cx="20" cy="0" r="8" fill="green"/>
+            </g>
+            <use href="#test-path-1"/>
+        </svg>
+        <br>
+        <button onclick="testGroupAnimation('group-1', 'test-path-1')">Apply Offset-Path Animation</button>
+        <button onclick="removeGroupAnimation('group-1')">Remove Animation</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 2: Group with Mixed Shapes</h2>
+        <p>This group contains a rectangle and a circle. The group should animate along the path as a unit.</p>
+        <svg width="400" height="200" viewBox="0 0 400 200">
+            <defs>
+                <path id="test-path-2" d="M 50,150 Q 200,50 350,150" stroke="red" stroke-width="2" fill="none"/>
+            </defs>
+            <g id="group-2" transform="translate(50, 120)">
+                <rect x="0" y="0" width="20" height="15" fill="purple"/>
+                <circle cx="25" cy="7.5" r="6" fill="orange"/>
+            </g>
+            <use href="#test-path-2"/>
+        </svg>
+        <br>
+        <button onclick="testGroupAnimation('group-2', 'test-path-2')">Apply Offset-Path Animation</button>
+        <button onclick="removeGroupAnimation('group-2')">Remove Animation</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test 3: Group with Existing Transform</h2>
+        <p>This group has an existing transform (rotation). The offset-path animation should work with it.</p>
+        <svg width="400" height="200" viewBox="0 0 400 200">
+            <defs>
+                <path id="test-path-3" d="M 50,100 L 350,100" stroke="red" stroke-width="2" fill="none"/>
+            </defs>
+            <g id="group-3" transform="translate(200, 100) rotate(45)">
+                <rect x="-10" y="-5" width="20" height="10" fill="red"/>
+                <circle cx="0" cy="0" r="3" fill="white"/>
+            </g>
+            <use href="#test-path-3"/>
+        </svg>
+        <br>
+        <button onclick="testGroupAnimation('group-3', 'test-path-3')">Apply Offset-Path Animation</button>
+        <button onclick="removeGroupAnimation('group-3')">Remove Animation</button>
+    </div>
+
+    <script>
+        // Mock the required functions for testing
+        function uniqueID() {
+            return 'test-' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        function getSavedRails() {
+            return {
+                'test-path-1': {
+                    pathData: 'M 50,100 Q 200,50 350,100',
+                    name: 'test-path-1'
+                },
+                'test-path-2': {
+                    pathData: 'M 50,150 Q 200,50 350,150',
+                    name: 'test-path-2'
+                },
+                'test-path-3': {
+                    pathData: 'M 50,100 L 350,100',
+                    name: 'test-path-3'
+                }
+            };
+        }
+        
+        // Mock animationsData
+        window.animationsData = {
+            'offset-path': {
+                generateKeyframes: function(params) {
+                    return {
+                        '0%': { 'offset-path': `path("${params.rail}")`, 'offset-distance': '0%' },
+                        '100%': { 'offset-path': `path("${params.rail}")`, 'offset-distance': '100%' }
+                    };
+                }
+            }
+        };
+        
+        function testGroupAnimation(groupId, pathId) {
+            const element = document.getElementById(groupId);
+            if (!element) {
+                console.error('Group not found:', groupId);
+                return;
+            }
+            
+            console.log('Testing group animation for:', groupId);
+            console.log('Element before animation:', element.outerHTML);
+            
+            // Calculate group center using getBBox
+            try {
+                const bbox = element.getBBox();
+                const centerX = bbox.x + bbox.width / 2;
+                const centerY = bbox.y + bbox.height / 2;
+                console.log('Group center calculated:', { x: centerX, y: centerY });
+                
+                // Store original transform
+                const originalTransform = element.getAttribute('transform') || '';
+                console.log('Original transform:', originalTransform);
+                
+                // Apply transform to move group to origin
+                const translateTransform = `translate(${-centerX}, ${-centerY})`;
+                const combinedTransform = originalTransform ? `${originalTransform} ${translateTransform}` : translateTransform;
+                element.setAttribute('transform', combinedTransform);
+                
+                // Add animation class
+                const animationId = uniqueID();
+                const animationName = `offset-path-${animationId}`;
+                element.classList.add(animationName);
+                element.classList.add('application-animation-class');
+                
+                // Create CSS animation
+                const style = document.createElement('style');
+                style.id = animationName;
+                style.textContent = `
+                    .${animationName} {
+                        offset-rotate: auto;
+                        animation: move-${animationId} 4s linear infinite;
+                    }
+                    
+                    @keyframes move-${animationId} {
+                        0% { offset-path: path("M 50,100 Q 200,50 350,100"); offset-distance: 0%; }
+                        100% { offset-path: path("M 50,100 Q 200,50 350,100"); offset-distance: 100%; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Store animation data
+                element.setAttribute('data-offset-path-animation', animationId);
+                element.setAttribute('data-original-cx', centerX);
+                element.setAttribute('data-original-cy', centerY);
+                element.setAttribute('data-original-transform', originalTransform);
+                element.setAttribute('data-rail-name', pathId);
+                
+                console.log('Animation applied successfully');
+                console.log('Element after animation:', element.outerHTML);
+                
+            } catch (error) {
+                console.error('Error applying group animation:', error);
+            }
+        }
+        
+        function removeGroupAnimation(groupId) {
+            const element = document.getElementById(groupId);
+            if (!element) {
+                console.error('Group not found:', groupId);
+                return;
+            }
+            
+            const animationId = element.getAttribute('data-offset-path-animation');
+            if (!animationId) {
+                console.log('No animation found on group');
+                return;
+            }
+            
+            console.log('Removing animation from group:', groupId);
+            
+            // Remove animation class
+            const animationName = `offset-path-${animationId}`;
+            element.classList.remove(animationName);
+            element.classList.remove('application-animation-class');
+            
+            // Remove style tag
+            const styleTag = document.getElementById(animationName);
+            if (styleTag) {
+                styleTag.remove();
+            }
+            
+            // Restore original transform
+            const originalTransform = element.getAttribute('data-original-transform');
+            if (originalTransform !== null && originalTransform !== undefined) {
+                element.setAttribute('transform', originalTransform);
+            } else {
+                element.removeAttribute('transform');
+            }
+            
+            // Clean up data attributes
+            element.removeAttribute('data-offset-path-animation');
+            element.removeAttribute('data-original-cx');
+            element.removeAttribute('data-original-cy');
+            element.removeAttribute('data-original-transform');
+            element.removeAttribute('data-rail-name');
+            
+            console.log('Animation removed successfully');
+            console.log('Element after removal:', element.outerHTML);
+        }
+    </script>
+</body>
+</html>

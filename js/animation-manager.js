@@ -1426,54 +1426,111 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     // Extract the actual shape element from any wrapper structure
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
-        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon, g');
         if (shapeElement) {
             actualElement = shapeElement;
         }
     }
     
+    // Check if this is a group element
+    const isGroup = actualElement.tagName.toLowerCase() === 'g';
+    
     // Get the original element's position and attributes
     // First check if we have stored position from temp animation in data attributes
-    let originalCx, originalCy, originalX, originalY;
+    let originalCx, originalCy, originalX, originalY, originalTransform;
     
-    // Check if the actual element has the original position stored in data attributes
-    const storedCx = actualElement.getAttribute('data-temp-original-cx');
-    const storedCy = actualElement.getAttribute('data-temp-original-cy');
-    const storedX = actualElement.getAttribute('data-temp-original-x');
-    const storedY = actualElement.getAttribute('data-temp-original-y');
-    
-    if (storedCx !== null && storedCy !== null) {
-        // Use the position stored during temp animation
-        originalCx = storedCx;
-        originalCy = storedCy;
-        originalX = storedX || 0;
-        originalY = storedY || 0;
-    } else {
-        // This is the first time applying offset-path animation
-        // We need to capture the original position before the element gets moved to 0,0
-        // Check if the element is already at 0,0 (which means it might have been moved by a previous animation)
-        const currentCx = actualElement.getAttribute('cx');
-        const currentCy = actualElement.getAttribute('cy');
-        const currentX = actualElement.getAttribute('x');
-        const currentY = actualElement.getAttribute('y');
+    if (isGroup) {
+        // For groups, we need to calculate the center using getBBox() and store the original transform
+        const storedTransform = actualElement.getAttribute('data-temp-original-transform');
+        const storedCenterX = actualElement.getAttribute('data-temp-original-center-x');
+        const storedCenterY = actualElement.getAttribute('data-temp-original-center-y');
         
-        if (currentCx === '0' && currentCy === '0' && currentX === '0' && currentY === '0') {
-            // Element is already at 0,0, try to get original position from data attributes
-            originalCx = actualElement.getAttribute('data-original-cx') || 0;
-            originalCy = actualElement.getAttribute('data-original-cy') || 0;
-            originalX = actualElement.getAttribute('data-original-x') || 0;
-            originalY = actualElement.getAttribute('data-original-y') || 0;
+        if (storedTransform !== null && storedCenterX !== null && storedCenterY !== null) {
+            // Use the position stored during temp animation
+            originalTransform = storedTransform;
+            originalCx = storedCenterX;
+            originalCy = storedCenterY;
+            originalX = 0; // Groups don't have x/y attributes
+            originalY = 0;
         } else {
-            // Element is at its original position, capture it
-            originalCx = currentCx || 0;
-            originalCy = currentCy || 0;
-            originalX = currentX || 0;
-            originalY = currentY || 0;
+            // This is the first time applying offset-path animation to a group
+            // Calculate the group's center using getBBox()
+            try {
+                const bbox = actualElement.getBBox();
+                const centerX = bbox.x + bbox.width / 2;
+                const centerY = bbox.y + bbox.height / 2;
+                
+                // Store the original transform (if any)
+                originalTransform = actualElement.getAttribute('transform') || '';
+                
+                originalCx = centerX;
+                originalCy = centerY;
+                originalX = 0;
+                originalY = 0;
+            } catch (error) {
+                console.error('Error calculating group bbox:', error);
+                // Fallback to 0,0 if getBBox fails
+                originalCx = 0;
+                originalCy = 0;
+                originalX = 0;
+                originalY = 0;
+                originalTransform = actualElement.getAttribute('transform') || '';
+            }
+        }
+    } else {
+        // For individual shape elements, use the existing logic
+        // Check if the actual element has the original position stored in data attributes
+        const storedCx = actualElement.getAttribute('data-temp-original-cx');
+        const storedCy = actualElement.getAttribute('data-temp-original-cy');
+        const storedX = actualElement.getAttribute('data-temp-original-x');
+        const storedY = actualElement.getAttribute('data-temp-original-y');
+        
+        if (storedCx !== null && storedCy !== null) {
+            // Use the position stored during temp animation
+            originalCx = storedCx;
+            originalCy = storedCy;
+            originalX = storedX || 0;
+            originalY = storedY || 0;
+        } else {
+            // This is the first time applying offset-path animation
+            // We need to capture the original position before the element gets moved to 0,0
+            // Check if the element is already at 0,0 (which means it might have been moved by a previous animation)
+            const currentCx = actualElement.getAttribute('cx');
+            const currentCy = actualElement.getAttribute('cy');
+            const currentX = actualElement.getAttribute('x');
+            const currentY = actualElement.getAttribute('y');
+            
+            if (currentCx === '0' && currentCy === '0' && currentX === '0' && currentY === '0') {
+                // Element is already at 0,0, try to get original position from data attributes
+                originalCx = actualElement.getAttribute('data-original-cx') || 0;
+                originalCy = actualElement.getAttribute('data-original-cy') || 0;
+                originalX = actualElement.getAttribute('data-original-x') || 0;
+                originalY = actualElement.getAttribute('data-original-y') || 0;
+            } else {
+                // Element is at its original position, capture it
+                originalCx = currentCx || 0;
+                originalCy = currentCy || 0;
+                originalX = currentX || 0;
+                originalY = currentY || 0;
+            }
         }
     }
     
     // Reset element position to 0,0 for offset-path animation
-    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+    if (isGroup) {
+        // For groups, apply a transform to move the group to the origin
+        const centerX = parseFloat(originalCx) || 0;
+        const centerY = parseFloat(originalCy) || 0;
+        
+        // Create a transform that moves the group so its center is at 0,0
+        const translateTransform = `translate(${-centerX}, ${-centerY})`;
+        
+        // Combine with existing transform if any
+        const existingTransform = actualElement.getAttribute('transform') || '';
+        const combinedTransform = existingTransform ? `${existingTransform} ${translateTransform}` : translateTransform;
+        
+        actualElement.setAttribute('transform', combinedTransform);
+    } else if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
         actualElement.setAttribute('cx', '0');
         actualElement.setAttribute('cy', '0');
     } else if (actualElement.tagName.toLowerCase() === 'rect') {
@@ -1526,11 +1583,19 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     actualElement.setAttribute('data-original-y', originalY);
     actualElement.setAttribute('data-rail-name', selectedRail);
     
+    // For groups, also store the original transform
+    if (isGroup) {
+        actualElement.setAttribute('data-original-transform', originalTransform);
+    }
+    
     // Clean up temp animation data attributes
     actualElement.removeAttribute('data-temp-original-cx');
     actualElement.removeAttribute('data-temp-original-cy');
     actualElement.removeAttribute('data-temp-original-x');
     actualElement.removeAttribute('data-temp-original-y');
+    actualElement.removeAttribute('data-temp-original-transform');
+    actualElement.removeAttribute('data-temp-original-center-x');
+    actualElement.removeAttribute('data-temp-original-center-y');
     
     // Clean up global temp position storage
     const elementId = actualElement.getAttribute('id') || actualElement.tagName;
@@ -1553,7 +1618,8 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
                 cx: originalCx,
                 cy: originalCy,
                 x: originalX,
-                y: originalY
+                y: originalY,
+                transform: isGroup ? originalTransform : undefined
             }
         };
         saveAnimation(elementId, 'offset-path', animationDataToSave);
@@ -1597,7 +1663,7 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     // Extract the actual shape element from any wrapper structure
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
-        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon, g');
         if (shapeElement) {
             actualElement = shapeElement;
         }
@@ -1605,16 +1671,60 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     
     console.log('Temp animation - actual element found:', actualElement);
     
-    // Get the original element's position and attributes from the actual element
-    const originalCx = actualElement.getAttribute('cx') || 0;
-    const originalCy = actualElement.getAttribute('cy') || 0;
-    const originalX = actualElement.getAttribute('x') || 0;
-    const originalY = actualElement.getAttribute('y') || 0;
+    // Check if this is a group element
+    const isGroup = actualElement.tagName.toLowerCase() === 'g';
     
-    console.log('Temp animation - capturing original position:', { cx: originalCx, cy: originalCy, x: originalX, y: originalY });
+    // Get the original element's position and attributes from the actual element
+    let originalCx, originalCy, originalX, originalY, originalTransform;
+    
+    if (isGroup) {
+        // For groups, calculate the center using getBBox() and store the original transform
+        try {
+            const bbox = actualElement.getBBox();
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            
+            originalCx = centerX;
+            originalCy = centerY;
+            originalX = 0; // Groups don't have x/y attributes
+            originalY = 0;
+            originalTransform = actualElement.getAttribute('transform') || '';
+            
+            console.log('Temp animation - capturing group center:', { cx: originalCx, cy: originalCy, transform: originalTransform });
+        } catch (error) {
+            console.error('Error calculating group bbox for temp animation:', error);
+            // Fallback to 0,0 if getBBox fails
+            originalCx = 0;
+            originalCy = 0;
+            originalX = 0;
+            originalY = 0;
+            originalTransform = actualElement.getAttribute('transform') || '';
+        }
+    } else {
+        // For individual shape elements, use the existing logic
+        originalCx = actualElement.getAttribute('cx') || 0;
+        originalCy = actualElement.getAttribute('cy') || 0;
+        originalX = actualElement.getAttribute('x') || 0;
+        originalY = actualElement.getAttribute('y') || 0;
+        
+        console.log('Temp animation - capturing original position:', { cx: originalCx, cy: originalCy, x: originalX, y: originalY });
+    }
     
     // Reset element position to 0,0 for offset-path animation
-    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+    if (isGroup) {
+        // For groups, apply a transform to move the group to the origin
+        const centerX = parseFloat(originalCx) || 0;
+        const centerY = parseFloat(originalCy) || 0;
+        
+        // Create a transform that moves the group so its center is at 0,0
+        const translateTransform = `translate(${-centerX}, ${-centerY})`;
+        
+        // Combine with existing transform if any
+        const existingTransform = actualElement.getAttribute('transform') || '';
+        const combinedTransform = existingTransform ? `${existingTransform} ${translateTransform}` : translateTransform;
+        
+        actualElement.setAttribute('transform', combinedTransform);
+    } else if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
         actualElement.setAttribute('cx', '0');
         actualElement.setAttribute('cy', '0');
     } else if (actualElement.tagName.toLowerCase() === 'rect') {
@@ -1674,6 +1784,13 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     actualElement.setAttribute('data-temp-original-x', originalX);
     actualElement.setAttribute('data-temp-original-y', originalY);
     
+    // For groups, also store the original transform
+    if (isGroup) {
+        actualElement.setAttribute('data-temp-original-transform', originalTransform);
+        actualElement.setAttribute('data-temp-original-center-x', originalCx);
+        actualElement.setAttribute('data-temp-original-center-y', originalCy);
+    }
+    
     // Also store in a global variable for the permanent animation to use
     const elementId = actualElement.getAttribute('id') || actualElement.tagName;
     if (!window.tempOffsetPathPositions) {
@@ -1683,7 +1800,8 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
         cx: originalCx,
         cy: originalCy,
         x: originalX,
-        y: originalY
+        y: originalY,
+        transform: isGroup ? originalTransform : undefined
     };
     console.log('Stored position in global variable for element', elementId, ':', window.tempOffsetPathPositions[elementId]);
     
@@ -1704,7 +1822,7 @@ function removeOffsetPathAnimation(element) {
     // Extract the actual shape element from any wrapper structure
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
-        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon, g');
         if (shapeElement) {
             actualElement = shapeElement;
         }
@@ -1715,6 +1833,9 @@ function removeOffsetPathAnimation(element) {
     const animationId = actualElement.getAttribute('data-offset-path-animation');
     console.log('animationId found:', animationId);
     if (!animationId) return;
+    
+    // Check if this is a group element
+    const isGroup = actualElement.tagName.toLowerCase() === 'g';
     
     // Remove the animation class
     const animationName = `offset-path-${animationId}`;
@@ -1731,7 +1852,7 @@ function removeOffsetPathAnimation(element) {
     }
     
     // Get original position from localStorage
-    let originalCx, originalCy, originalX, originalY;
+    let originalCx, originalCy, originalX, originalY, originalTransform;
     if (typeof getSavedAnimations === 'function') {
         const elementId = actualElement.getAttribute('id') || actualElement.tagName;
         const savedAnimations = getSavedAnimations();
@@ -1742,6 +1863,7 @@ function removeOffsetPathAnimation(element) {
                     originalCy = savedAnimationData.originalPosition.cy;
                     originalX = savedAnimationData.originalPosition.x;
                     originalY = savedAnimationData.originalPosition.y;
+                    originalTransform = savedAnimationData.originalPosition.transform;
                     break;
                 }
             }
@@ -1754,11 +1876,20 @@ function removeOffsetPathAnimation(element) {
         originalCy = actualElement.getAttribute('data-original-cy');
         originalX = actualElement.getAttribute('data-original-x');
         originalY = actualElement.getAttribute('data-original-y');
+        originalTransform = actualElement.getAttribute('data-original-transform');
     }
     
-    console.log('Restoring position - originalCx:', originalCx, 'originalCy:', originalCy, 'originalX:', originalX, 'originalY:', originalY);
+    console.log('Restoring position - originalCx:', originalCx, 'originalCy:', originalCy, 'originalX:', originalX, 'originalY:', originalY, 'originalTransform:', originalTransform);
     
-    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+    if (isGroup) {
+        // For groups, restore the original transform
+        if (originalTransform !== null && originalTransform !== undefined) {
+            actualElement.setAttribute('transform', originalTransform);
+        } else {
+            actualElement.removeAttribute('transform');
+        }
+        console.log('Group transform after restoration:', actualElement.getAttribute('transform'));
+    } else if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
         if (originalCx) actualElement.setAttribute('cx', originalCx);
         if (originalCy) actualElement.setAttribute('cy', originalCy);
         console.log('Circle position after restoration - cx:', actualElement.getAttribute('cx'), 'cy:', actualElement.getAttribute('cy'));
@@ -1774,6 +1905,7 @@ function removeOffsetPathAnimation(element) {
     actualElement.removeAttribute('data-original-cy');
     actualElement.removeAttribute('data-original-x');
     actualElement.removeAttribute('data-original-y');
+    actualElement.removeAttribute('data-original-transform');
     actualElement.removeAttribute('data-rail-name');
     
     // Remove animation from localStorage
@@ -1799,11 +1931,14 @@ function removeTempOffsetPathAnimation(element) {
     // Extract the actual shape element from any wrapper structure
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
-        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon, g');
         if (shapeElement) {
             actualElement = shapeElement;
         }
     }
+    
+    // Check if this is a group element
+    const isGroup = actualElement.tagName.toLowerCase() === 'g';
     
     // Remove the animation class
     actualElement.classList.remove('temp-temp-offset-path');
@@ -1820,8 +1955,16 @@ function removeTempOffsetPathAnimation(element) {
     const originalCy = actualElement.getAttribute('data-temp-original-cy');
     const originalX = actualElement.getAttribute('data-temp-original-x');
     const originalY = actualElement.getAttribute('data-temp-original-y');
+    const originalTransform = actualElement.getAttribute('data-temp-original-transform');
     
-    if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
+    if (isGroup) {
+        // For groups, restore the original transform
+        if (originalTransform !== null && originalTransform !== undefined) {
+            actualElement.setAttribute('transform', originalTransform);
+        } else {
+            actualElement.removeAttribute('transform');
+        }
+    } else if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
         if (originalCx) actualElement.setAttribute('cx', originalCx);
         if (originalCy) actualElement.setAttribute('cy', originalCy);
     } else if (actualElement.tagName.toLowerCase() === 'rect') {
@@ -1834,6 +1977,9 @@ function removeTempOffsetPathAnimation(element) {
     actualElement.removeAttribute('data-temp-original-cy');
     actualElement.removeAttribute('data-temp-original-x');
     actualElement.removeAttribute('data-temp-original-y');
+    actualElement.removeAttribute('data-temp-original-transform');
+    actualElement.removeAttribute('data-temp-original-center-x');
+    actualElement.removeAttribute('data-temp-original-center-y');
     
     // Clean up global temp position storage
     const elementId = actualElement.getAttribute('id') || actualElement.tagName;

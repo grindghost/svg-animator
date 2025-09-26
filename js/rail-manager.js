@@ -366,13 +366,24 @@ function cleanupOrphanedOffsetPathAnimation(element) {
         styleTag.remove();
     }
     
+    // Check if this is a group element
+    const isGroup = element.tagName.toLowerCase() === 'g';
+    
     // Restore original position from data attributes
     const originalCx = element.getAttribute('data-original-cx');
     const originalCy = element.getAttribute('data-original-cy');
     const originalX = element.getAttribute('data-original-x');
     const originalY = element.getAttribute('data-original-y');
+    const originalTransform = element.getAttribute('data-original-transform');
     
-    if (element.tagName.toLowerCase() === 'circle' || element.tagName.toLowerCase() === 'ellipse') {
+    if (isGroup) {
+        // For groups, restore the original transform
+        if (originalTransform !== null && originalTransform !== undefined) {
+            element.setAttribute('transform', originalTransform);
+        } else {
+            element.removeAttribute('transform');
+        }
+    } else if (element.tagName.toLowerCase() === 'circle' || element.tagName.toLowerCase() === 'ellipse') {
         if (originalCx) element.setAttribute('cx', originalCx);
         if (originalCy) element.setAttribute('cy', originalCy);
     } else if (element.tagName.toLowerCase() === 'rect') {
@@ -386,6 +397,7 @@ function cleanupOrphanedOffsetPathAnimation(element) {
     element.removeAttribute('data-original-cy');
     element.removeAttribute('data-original-x');
     element.removeAttribute('data-original-y');
+    element.removeAttribute('data-original-transform');
     element.removeAttribute('data-rail-name');
     
     console.log(`Cleaned up orphaned offset-path animation from element ${element.id}`);
