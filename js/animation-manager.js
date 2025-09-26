@@ -178,7 +178,7 @@ function stopClipPathAnimation(element, animName = undefined) {
 function removeTempPreview(wrapper) {
     if (!wrapper || !wrapper.classList.contains("temp-anim")) return;
 
-    // ✅ NEW: Handle offset-path animations specially
+    // ✅ NEW: Handle offset-path animations specially - now simplified
     if (wrapper.classList.contains("temp-temp-offset-path")) {
         removeTempOffsetPathAnimation(wrapper);
         return;
@@ -542,16 +542,11 @@ function applyTempAnimation(element, speed, animName = undefined) {
         return;
     }
 
-    // ✅ NEW: Special handling for offset-path animations - no temp wrapper
+    // ✅ NEW: Special handling for offset-path animations - skip temp animation, apply directly
     const current_selected_anim_in_dropdown = document.getElementById("animation-type").value;
     if (current_selected_anim_in_dropdown === 'offset-path') {
-        console.log('applyTempAnimation - element position before offset-path temp:', {
-            cx: element.getAttribute('cx'),
-            cy: element.getAttribute('cy'),
-            x: element.getAttribute('x'),
-            y: element.getAttribute('y')
-        });
-        return applyTempOffsetPathAnimation(element, speed, animName);
+        console.log('Skipping temp animation for offset-path, will apply directly');
+        return; // Skip temp animation for offset-path, apply directly
     }
 
     // ✅ NEW: Special handling for clipPath shapes - no temp wrapper
@@ -613,14 +608,10 @@ function applyTempAnimation(element, speed, animName = undefined) {
         }
     }
     
-    // ✅ NEW: Also clean up any standalone offset-path temp animations
-    const oldOffsetPathWrapper = document.querySelector(".temp-offset-wrapper");
-    if (oldOffsetPathWrapper) {
-        // Find the actual element inside the offset wrapper
-        const actualElement = oldOffsetPathWrapper.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
-        if (actualElement) {
-            removeTempOffsetPathAnimation(actualElement);
-        }
+    // ✅ NEW: Also clean up any standalone offset-path temp animations (now simplified)
+    const oldOffsetPathElement = document.querySelector('[class*="temp-temp-offset-path"]');
+    if (oldOffsetPathElement) {
+        removeTempOffsetPathAnimation(oldOffsetPathElement);
     }
 
 
@@ -650,7 +641,7 @@ function applyTempAnimation(element, speed, animName = undefined) {
         return; // stop here, skip keyframe logic
     }
     
-    // ✅ NEW special case: offset-path animations
+    // ✅ NEW special case: offset-path animations - apply directly without temp wrapper
     if (current_selected_anim_in_dropdown === 'offset-path') {
         applyOffsetPathAnimation(element, animationData, wrapper);
         return; // stop here, skip keyframe logic
@@ -857,7 +848,7 @@ function applyAnimation(element, speed, animName = undefined, save = true) {
             throw new Error(`Animation "${selectedAnimation}" not found.`);
         }
 
-        // ✅ NEW: Special handling for offset-path animations - no anim-wrapper groups
+        // ✅ NEW: Special handling for offset-path animations - apply directly without wrapper
         if (selectedAnimation === 'offset-path') {
             return applyOffsetPathAnimation(element, animationData, wrapper);
         }
@@ -1387,7 +1378,7 @@ function scaleAnimationIntensityForClipPath(keyframes, animationType) {
     return scaledKeyframes;
 }
 
-// Apply offset-path animation with special handling
+// Apply offset-path animation with special handling - NO WRAPPER GROUPS
 function applyOffsetPathAnimation(element, animationData, wrapper) {
     // Get the selected rail
     const selectedRail = animationData.params.rail;
@@ -1413,12 +1404,12 @@ function applyOffsetPathAnimation(element, animationData, wrapper) {
     const animationId = uniqueID();
     const animationName = `offset-path-${animationId}`;
     
-    // Extract the actual element from any wrapper structure first
+    // Extract the actual shape element from any wrapper structure
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
-        const circleElement = element.querySelector('circle, rect, ellipse, path, line, polyline, polygon');
-        if (circleElement) {
-            actualElement = circleElement;
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (shapeElement) {
+            actualElement = shapeElement;
         }
     }
     
@@ -1461,16 +1452,6 @@ function applyOffsetPathAnimation(element, animationData, wrapper) {
             originalY = currentY || 0;
         }
     }
-    
-    // actualElement was already extracted above
-    
-    // Create a wrapper group for the element
-    const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    
-    // Move the element to the wrapper and reset its position
-    const parent = actualElement.parentNode;
-    parent.insertBefore(offsetWrapper, actualElement);
-    offsetWrapper.appendChild(actualElement);
     
     // Reset element position to 0,0 for offset-path animation
     if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
@@ -1556,7 +1537,7 @@ function applyOffsetPathAnimation(element, animationData, wrapper) {
 }
 
 
-// Apply temp offset-path animation for preview
+// Apply temp offset-path animation for preview - NO WRAPPER GROUPS
 function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     // Get the selected rail
     const railSelect = document.querySelector('.param-dropdown');
@@ -1580,64 +1561,20 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
         return;
     }
     
-    // Clean up any existing temp animation
-    removeTempPreview(element);
-    
-    // ✅ NEW: Also clean up any existing temp wrapper with temp-generic animation
-    const oldWrapper = document.querySelector(".anim-wrapper.temp-anim");
-    if (oldWrapper) {
-        console.log('Found existing temp wrapper, removing it for offset-path animation');
-        
-        // Find the actual shape element inside the wrapper
-        const actualElement = oldWrapper.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
-        if (actualElement) {
-            // Restore the element's original position if it has temp offset-path data
-            const originalCx = actualElement.getAttribute('data-temp-original-cx');
-            const originalCy = actualElement.getAttribute('data-temp-original-cy');
-            const originalX = actualElement.getAttribute('data-temp-original-x');
-            const originalY = actualElement.getAttribute('data-temp-original-y');
-            
-            if (originalCx !== null && originalCy !== null) {
-                if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
-                    actualElement.setAttribute('cx', originalCx);
-                    actualElement.setAttribute('cy', originalCy);
-                } else if (actualElement.tagName.toLowerCase() === 'rect') {
-                    actualElement.setAttribute('x', originalX || 0);
-                    actualElement.setAttribute('y', originalY || 0);
-                }
-            }
-            
-            // Remove temp animation classes and data attributes
-            actualElement.classList.remove('temp-temp-offset-path', 'temp-anim');
-            actualElement.removeAttribute('data-temp-original-cx');
-            actualElement.removeAttribute('data-temp-original-cy');
-            actualElement.removeAttribute('data-temp-original-x');
-            actualElement.removeAttribute('data-temp-original-y');
-        }
-        
-        // Remove the temp-generic style tag
-        removeStyleTag("temp-generic");
-        
-        
-        // Remove the temp offset-path style tag if it exists
-        const tempStyleTag = document.getElementById('temp-temp-offset-path');
-        if (tempStyleTag) {
-            tempStyleTag.remove();
-        }
-        
-        // Unwrap the entire wrapper structure
-        unwrapWrapper(oldWrapper);
-    }
+    // Clean up any existing temp offset-path animation
+    removeTempOffsetPathAnimation(element);
     
     // Create a unique temp animation ID
     const tempAnimationId = 'temp-offset-path';
     const animationName = `temp-${tempAnimationId}`;
     
-    // Extract the actual shape element first
+    // Extract the actual shape element from any wrapper structure
     let actualElement = element;
-    if (element.classList.contains('wrapping-group')) {
-        // If element is a wrapping group, get the actual shape inside
-        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (shapeElement) {
+            actualElement = shapeElement;
+        }
     }
     
     console.log('Temp animation - actual element found:', actualElement);
@@ -1649,15 +1586,6 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     const originalY = actualElement.getAttribute('y') || 0;
     
     console.log('Temp animation - capturing original position:', { cx: originalCx, cy: originalCy, x: originalX, y: originalY });
-    
-    // Create a wrapper group for the element
-    const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    offsetWrapper.classList.add('temp-offset-wrapper');
-    
-    // Move the element to the wrapper and reset its position
-    const parent = actualElement.parentNode;
-    parent.insertBefore(offsetWrapper, actualElement);
-    offsetWrapper.appendChild(actualElement);
     
     // Reset element position to 0,0 for offset-path animation
     if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
@@ -1720,7 +1648,7 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     console.log('Applied temp offset-path animation:', animationName);
 }
 
-// Remove offset-path animation and restore original state
+// Remove offset-path animation and restore original state - SIMPLIFIED
 function removeOffsetPathAnimation(element) {
     console.log('removeOffsetPathAnimation called with element:', element);
     
@@ -1731,10 +1659,13 @@ function removeOffsetPathAnimation(element) {
         // Continue with permanent animation cleanup
     }
     
-    // Find the actual element (might be inside a wrapping group)
+    // Extract the actual shape element from any wrapper structure
     let actualElement = element;
-    if (element.classList.contains('wrapping-group')) {
-        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (shapeElement) {
+            actualElement = shapeElement;
+        }
     }
     
     console.log('actualElement found:', actualElement);
@@ -1795,61 +1726,6 @@ function removeOffsetPathAnimation(element) {
         console.log('Rect position after restoration - x:', actualElement.getAttribute('x'), 'y:', actualElement.getAttribute('y'));
     }
     
-    
-    // ✅ IMPROVED: More robust cleanup of wrapper groups
-    // Find the topmost wrapper that contains this element and unwrap all the way to the original parent
-    let currentParent = actualElement.parentNode;
-    let topmostWrapper = null;
-    
-    // Walk up the DOM tree to find the topmost wrapper
-    while (currentParent && currentParent !== svgRoot) {
-        if (currentParent.tagName === 'g' && 
-            (currentParent.classList.contains('anim-wrapper') || 
-             currentParent.classList.contains('wrapping-group') ||
-             currentParent.classList.contains('temp-offset-wrapper'))) {
-            topmostWrapper = currentParent;
-        }
-        currentParent = currentParent.parentNode;
-    }
-    
-    // If we found a topmost wrapper, unwrap all the way to the original parent
-    if (topmostWrapper) {
-        console.log('Found topmost wrapper:', topmostWrapper);
-        
-        // Find the original parent (the one that's not a wrapper)
-        let originalParent = topmostWrapper.parentNode;
-        while (originalParent && originalParent !== svgRoot && 
-               originalParent.tagName === 'g' && 
-               (originalParent.classList.contains('anim-wrapper') || 
-                originalParent.classList.contains('wrapping-group') ||
-                originalParent.classList.contains('temp-offset-wrapper'))) {
-            originalParent = originalParent.parentNode;
-        }
-        
-        if (originalParent) {
-            console.log('Moving element to original parent:', originalParent);
-            // Move the actual element to the original parent
-            originalParent.insertBefore(actualElement, topmostWrapper);
-            
-            // Remove all wrapper groups from topmost down
-            let wrapperToRemove = topmostWrapper;
-            while (wrapperToRemove) {
-                const nextWrapper = wrapperToRemove.querySelector('g');
-                wrapperToRemove.remove();
-                wrapperToRemove = nextWrapper;
-            }
-        }
-    } else {
-        // Fallback to the old logic if no topmost wrapper found
-        const offsetWrapper = actualElement.parentNode;
-        if (offsetWrapper && offsetWrapper.tagName === 'g' && offsetWrapper.children.length === 1) {
-            // Only the element is left in the wrapper, move it back
-            const grandParent = offsetWrapper.parentNode;
-            grandParent.insertBefore(actualElement, offsetWrapper);
-            offsetWrapper.remove();
-        }
-    }
-    
     // Clean up data attributes
     actualElement.removeAttribute('data-offset-path-animation');
     actualElement.removeAttribute('data-original-cx');
@@ -1876,12 +1752,15 @@ function removeOffsetPathAnimation(element) {
     console.log('Removed offset-path animation:', animationName);
 }
 
-// Remove temp offset-path animation and restore original state
+// Remove temp offset-path animation and restore original state - SIMPLIFIED
 function removeTempOffsetPathAnimation(element) {
-    // Find the actual element (might be inside a wrapping group)
+    // Extract the actual shape element from any wrapper structure
     let actualElement = element;
-    if (element.classList.contains('wrapping-group')) {
-        actualElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon') || element;
+    if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
+        const shapeElement = element.querySelector('circle, ellipse, rect, path, line, polyline, polygon');
+        if (shapeElement) {
+            actualElement = shapeElement;
+        }
     }
     
     // Remove the animation class
@@ -1906,61 +1785,6 @@ function removeTempOffsetPathAnimation(element) {
     } else if (actualElement.tagName.toLowerCase() === 'rect') {
         if (originalX) actualElement.setAttribute('x', originalX);
         if (originalY) actualElement.setAttribute('y', originalY);
-    }
-    
-    // ✅ IMPROVED: More robust cleanup of wrapper groups for temp animations
-    // Find the topmost wrapper that contains this element and unwrap all the way to the original parent
-    let currentParent = actualElement.parentNode;
-    let topmostWrapper = null;
-    
-    // Walk up the DOM tree to find the topmost wrapper
-    while (currentParent && currentParent !== svgRoot) {
-        if (currentParent.tagName === 'g' && 
-            (currentParent.classList.contains('anim-wrapper') || 
-             currentParent.classList.contains('wrapping-group') ||
-             currentParent.classList.contains('temp-offset-wrapper'))) {
-            topmostWrapper = currentParent;
-        }
-        currentParent = currentParent.parentNode;
-    }
-    
-    // If we found a topmost wrapper, unwrap all the way to the original parent
-    if (topmostWrapper) {
-        console.log('Found topmost wrapper for temp animation:', topmostWrapper);
-        
-        // Find the original parent (the one that's not a wrapper)
-        let originalParent = topmostWrapper.parentNode;
-        while (originalParent && originalParent !== svgRoot && 
-               originalParent.tagName === 'g' && 
-               (originalParent.classList.contains('anim-wrapper') || 
-                originalParent.classList.contains('wrapping-group') ||
-                originalParent.classList.contains('temp-offset-wrapper'))) {
-            originalParent = originalParent.parentNode;
-        }
-        
-        if (originalParent) {
-            console.log('Moving element to original parent for temp animation:', originalParent);
-            // Move the actual element to the original parent
-            originalParent.insertBefore(actualElement, topmostWrapper);
-            
-            // Remove all wrapper groups from topmost down
-            let wrapperToRemove = topmostWrapper;
-            while (wrapperToRemove) {
-                const nextWrapper = wrapperToRemove.querySelector('g');
-                wrapperToRemove.remove();
-                wrapperToRemove = nextWrapper;
-            }
-        }
-    } else {
-        // Fallback to the old logic if no topmost wrapper found
-        const tempWrapper = actualElement.parentNode;
-        if (tempWrapper && tempWrapper.classList.contains('temp-offset-wrapper')) {
-            
-            // Move element back to its original parent
-            const grandParent = tempWrapper.parentNode;
-            grandParent.insertBefore(actualElement, tempWrapper);
-            tempWrapper.remove();
-        }
     }
     
     // Clean up data attributes

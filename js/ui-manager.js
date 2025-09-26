@@ -58,6 +58,16 @@ function updateAnimationListUI(selectedElementId) {
                 actualElementId = offsetElementId;
             }
         });
+        
+        // ✅ NEW: Also check if the selected element itself has offset-path animations
+        if (selectedElement.hasAttribute('data-offset-path-animation')) {
+            const selectedElementId = selectedElement.getAttribute('id');
+            if (selectedElementId && data.animations[selectedElementId]) {
+                // Merge animations from the selected element itself
+                elementAnimations = { ...elementAnimations, ...data.animations[selectedElementId] };
+                actualElementId = selectedElementId;
+            }
+        }
     }
 
     if (Object.keys(elementAnimations).length > 0) {
@@ -1138,6 +1148,15 @@ function getAnimationCount(elementId) {
                 elementAnimations = { ...elementAnimations, ...data.animations[offsetElementId] };
             }
         });
+        
+        // ✅ NEW: Also check if the selected element itself has offset-path animations
+        if (selectedElement.hasAttribute('data-offset-path-animation')) {
+            const selectedElementId = selectedElement.getAttribute('id');
+            if (selectedElementId && data.animations[selectedElementId]) {
+                // Merge animations from the selected element itself
+                elementAnimations = { ...elementAnimations, ...data.animations[selectedElementId] };
+            }
+        }
     }
     
     if (!elementAnimations) return 0;
@@ -1214,6 +1233,16 @@ function updateAnimationNamesList(elementId) {
                 actualElementId = offsetElementId;
             }
         });
+        
+        // ✅ NEW: Also check if the selected element itself has offset-path animations
+        if (selectedElement.hasAttribute('data-offset-path-animation')) {
+            const selectedElementId = selectedElement.getAttribute('id');
+            if (selectedElementId && data.animations[selectedElementId]) {
+                // Merge animations from the selected element itself
+                elementAnimations = { ...elementAnimations, ...data.animations[selectedElementId] };
+                actualElementId = selectedElementId;
+            }
+        }
     }
     
     if (!elementAnimations || Object.keys(elementAnimations).length === 0) {
