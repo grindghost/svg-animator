@@ -462,6 +462,43 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
                 controlWrapper.appendChild(span);
                 paramControls.appendChild(controlWrapper);
                 
+                // Add event listener for real-time updates
+                input.addEventListener("input", () => {
+                    const newValue = parseFloat(input.value);
+                    workingParams[param] = newValue;
+                    span.textContent = newValue;
+                    
+                    // Update the global animation data
+                    if (window.animationsData && window.animationsData[animationType]) {
+                        window.animationsData[animationType].params = workingParams;
+                    }
+                    
+                    // For offset-path animations, update the animation in real-time
+                    if (animationType === 'offset-path') {
+                        // Find the element that has this animation applied
+                        let elementWithAnimation;
+                        if (animationType === 'offset-path') {
+                            // Get the animation class name from the animation data
+                            const animationClassName = animationData.animationName;
+                            elementWithAnimation = document.querySelector(`.${animationClassName}`);
+                        } else {
+                            elementWithAnimation = document.querySelector(`[data-offset-path-animation="${animationId}"]`);
+                        }
+                        
+                        if (elementWithAnimation) {
+                            console.log('Updating offset-path animation with new direction:', newValue);
+                            // Remove the existing animation
+                            removeOffsetPathAnimation(elementWithAnimation);
+                            
+                            // Apply the updated animation with new parameters
+                            const updatedAnimationData = {
+                                params: workingParams
+                            };
+                            applyOffsetPathAnimation(elementWithAnimation, updatedAnimationData, null);
+                        }
+                    }
+                });
+                
                 // Update the working parameters with the current value
                 workingParams[param] = paramValue;
             }

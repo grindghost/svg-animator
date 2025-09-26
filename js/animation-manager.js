@@ -1485,28 +1485,34 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     actualElement.classList.add(animationName);
     actualElement.classList.add('application-animation-class');
     
-    // Create the CSS animation
-    const direction = animationData.params.direction || 0;
+    // Create the CSS animation using the generateKeyframes function
     const speed = animationData.params.speed || 1.0;
     const duration = 8 / speed; // Base duration of 8 seconds adjusted by speed
     
-    const startDistance = direction === 0 ? "0%" : "100%";
-    const endDistance = direction === 0 ? "100%" : "0%";
+    // Use the generateKeyframes function from the animation definition
+    const keyframes = animationsData['offset-path'].generateKeyframes(animationData.params);
+    
+    // Convert keyframes to CSS string
+    let keyframesString = '';
+    for (const percentage in keyframes) {
+        const properties = keyframes[percentage];
+        const propsString = Object.keys(properties)
+            .map(prop => `${prop}: ${properties[prop]};`)
+            .join(' ');
+        keyframesString += `${percentage} { ${propsString} } `;
+    }
     
     const style = document.createElement('style');
     style.id = animationName;
     style.setAttribute('data-anikit', '');
     style.textContent = `
         .${animationName} {
-            offset-path: path("${railData.pathData}");
             offset-rotate: auto;
             animation: move-${animationId} ${duration}s linear infinite;
         }
         
         @keyframes move-${animationId} {
-            to {
-                offset-distance: ${endDistance};
-            }
+            ${keyframesString}
         }
     `;
     
@@ -1534,7 +1540,8 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
     
     // Save animation to localStorage for the animation selector
     if (typeof getSavedAnimations === 'function' && typeof saveAnimation === 'function') {
-        const animationData = {
+        const direction = animationData.params.direction || 0;
+        const animationDataToSave = {
             type: 'offset-path',
             animationName: animationName,
             params: {
@@ -1549,7 +1556,7 @@ function applyOffsetPathAnimation(element, animationData, wrapper = null) {
                 y: originalY
             }
         };
-        saveAnimation(elementId, 'offset-path', animationData);
+        saveAnimation(elementId, 'offset-path', animationDataToSave);
     }
     
     console.log('Applied offset-path animation:', animationName);
@@ -1619,27 +1626,43 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     actualElement.classList.add(animationName);
     actualElement.classList.add('temp-anim');
     
-    // Create the CSS animation
-    const direction = 0; // Default direction for temp preview
+    // Create the CSS animation using the generateKeyframes function
     const duration = 8 / (speed || 1.0); // Base duration of 8 seconds adjusted by speed
     
-    const startDistance = direction === 0 ? "0%" : "100%";
-    const endDistance = direction === 0 ? "100%" : "0%";
+    // Get current direction from the UI if available, otherwise default to 0
+    const directionSlider = document.querySelector('.param-slider[data-param="direction"]');
+    const currentDirection = directionSlider ? parseInt(directionSlider.value) : 0;
+    
+    // Create params object for generateKeyframes
+    const tempParams = {
+        direction: currentDirection,
+        rail: selectedRail
+    };
+    
+    // Use the generateKeyframes function from the animation definition
+    const keyframes = animationsData['offset-path'].generateKeyframes(tempParams);
+    
+    // Convert keyframes to CSS string
+    let keyframesString = '';
+    for (const percentage in keyframes) {
+        const properties = keyframes[percentage];
+        const propsString = Object.keys(properties)
+            .map(prop => `${prop}: ${properties[prop]};`)
+            .join(' ');
+        keyframesString += `${percentage} { ${propsString} } `;
+    }
     
     const style = document.createElement('style');
     style.id = animationName;
     style.setAttribute('data-temp', 'true');
     style.textContent = `
         .${animationName} {
-            offset-path: path("${railData.pathData}");
             offset-rotate: auto;
             animation: temp-move-${tempAnimationId} ${duration}s linear infinite;
         }
         
         @keyframes temp-move-${tempAnimationId} {
-            to {
-                offset-distance: ${endDistance};
-            }
+            ${keyframesString}
         }
     `;
     
