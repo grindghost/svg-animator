@@ -841,7 +841,6 @@ let animationsData =
 "offset-path": {
   "type": "geometry",
   "params": {
-    "speed": 1.0,
     "direction": 0,    // 0 = left to right, 1 = right to left
     "rail": ""        // Selected rail name
   },

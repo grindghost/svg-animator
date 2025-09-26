@@ -1122,7 +1122,23 @@ function getAnimationCount(elementId) {
     if (!elementId) return 0;
     
     const data = getSavedAnimations();
-    const elementAnimations = data.animations[elementId];
+    
+    // Check for animations on the selected element
+    let elementAnimations = data.animations[elementId] || {};
+    
+    // ✅ NEW: Also check for offset-path animations in nested elements
+    const selectedElement = document.getElementById(elementId);
+    if (selectedElement) {
+        // Look for elements with offset-path animations inside the selected element
+        const offsetPathElements = selectedElement.querySelectorAll('[data-offset-path-animation]');
+        offsetPathElements.forEach(offsetElement => {
+            const offsetElementId = offsetElement.getAttribute('id');
+            if (offsetElementId && data.animations[offsetElementId]) {
+                // Merge animations from the nested offset-path element
+                elementAnimations = { ...elementAnimations, ...data.animations[offsetElementId] };
+            }
+        });
+    }
     
     if (!elementAnimations) return 0;
     
@@ -1179,7 +1195,26 @@ function updateAnimationNamesList(elementId) {
     if (!namesListDiv) return;
     
     const data = getSavedAnimations();
-    const elementAnimations = data.animations[elementId];
+    
+    // Check for animations on the selected element
+    let elementAnimations = data.animations[elementId] || {};
+    let actualElementId = elementId; // Track the actual element ID that has animations
+    
+    // ✅ NEW: Also check for offset-path animations in nested elements
+    const selectedElement = document.getElementById(elementId);
+    if (selectedElement) {
+        // Look for elements with offset-path animations inside the selected element
+        const offsetPathElements = selectedElement.querySelectorAll('[data-offset-path-animation]');
+        offsetPathElements.forEach(offsetElement => {
+            const offsetElementId = offsetElement.getAttribute('id');
+            if (offsetElementId && data.animations[offsetElementId]) {
+                // Merge animations from the nested offset-path element
+                elementAnimations = { ...elementAnimations, ...data.animations[offsetElementId] };
+                // ✅ FIX: Use the actual element ID that has the animations
+                actualElementId = offsetElementId;
+            }
+        });
+    }
     
     if (!elementAnimations || Object.keys(elementAnimations).length === 0) {
         namesListDiv.style.display = 'none';
@@ -1205,7 +1240,8 @@ function updateAnimationNamesList(elementId) {
         // Add click handler to trigger the animation editor
         nameLink.addEventListener('click', (e) => {
             e.preventDefault();
-            selectAnimationForEditing(elementId, animationId, animationType, animationData);
+            // ✅ FIX: Use the actual element ID that has the animations
+            selectAnimationForEditing(actualElementId, animationId, animationType, animationData);
             
             // Smooth scroll to the editor tab
             const editorTab = document.getElementById('editor-tab');

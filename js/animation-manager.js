@@ -603,9 +603,6 @@ function applyTempAnimation(element, speed, animName = undefined) {
             // Remove the temp-generic style tag
             removeStyleTag("temp-generic");
             
-            // Remove any rail clones
-            const railClones = oldWrapper.querySelectorAll('[id$="-clone"]');
-            railClones.forEach(clone => clone.remove());
             
             // Unwrap the entire wrapper structure
             unwrapWrapper(oldWrapper);
@@ -1465,21 +1462,15 @@ function applyOffsetPathAnimation(element, animationData, wrapper) {
         }
     }
     
-    // Create a clone of the rail path
-    const railClone = createRailClone(railData.pathData, selectedRail);
-    
     // actualElement was already extracted above
     
-    // Create a wrapper group for the element and rail
+    // Create a wrapper group for the element
     const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
     // Move the element to the wrapper and reset its position
     const parent = actualElement.parentNode;
     parent.insertBefore(offsetWrapper, actualElement);
     offsetWrapper.appendChild(actualElement);
-    
-    // Add the rail clone to the wrapper
-    offsetWrapper.appendChild(railClone);
     
     // Reset element position to 0,0 for offset-path animation
     if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
@@ -1564,17 +1555,6 @@ function applyOffsetPathAnimation(element, animationData, wrapper) {
     console.log('Applied offset-path animation:', animationName);
 }
 
-// Create a clone of the rail path
-function createRailClone(pathData, railName) {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathData);
-    path.setAttribute('id', `${railName}-clone`);
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#000');
-    path.setAttribute('stroke-miterlimit', '10');
-    path.setAttribute('stroke-width', '5px');
-    return path;
-}
 
 // Apply temp offset-path animation for preview
 function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
@@ -1638,9 +1618,6 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
         // Remove the temp-generic style tag
         removeStyleTag("temp-generic");
         
-        // Remove any rail clones
-        const railClones = oldWrapper.querySelectorAll('[id$="-clone"]');
-        railClones.forEach(clone => clone.remove());
         
         // Remove the temp offset-path style tag if it exists
         const tempStyleTag = document.getElementById('temp-temp-offset-path');
@@ -1673,10 +1650,7 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     
     console.log('Temp animation - capturing original position:', { cx: originalCx, cy: originalCy, x: originalX, y: originalY });
     
-    // Create a clone of the rail path
-    const railClone = createRailClone(railData.pathData, selectedRail);
-    
-    // Create a wrapper group for the element and rail
+    // Create a wrapper group for the element
     const offsetWrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     offsetWrapper.classList.add('temp-offset-wrapper');
     
@@ -1684,9 +1658,6 @@ function applyTempOffsetPathAnimation(element, speed, animName = undefined) {
     const parent = actualElement.parentNode;
     parent.insertBefore(offsetWrapper, actualElement);
     offsetWrapper.appendChild(actualElement);
-    
-    // Add the rail clone to the wrapper
-    offsetWrapper.appendChild(railClone);
     
     // Reset element position to 0,0 for offset-path animation
     if (actualElement.tagName.toLowerCase() === 'circle' || actualElement.tagName.toLowerCase() === 'ellipse') {
@@ -1824,14 +1795,6 @@ function removeOffsetPathAnimation(element) {
         console.log('Rect position after restoration - x:', actualElement.getAttribute('x'), 'y:', actualElement.getAttribute('y'));
     }
     
-    // Remove the rail clone
-    const railName = actualElement.getAttribute('data-rail-name');
-    if (railName) {
-        const railClone = document.getElementById(`${railName}-clone`);
-        if (railClone) {
-            railClone.remove();
-        }
-    }
     
     // ✅ IMPROVED: More robust cleanup of wrapper groups
     // Find the topmost wrapper that contains this element and unwrap all the way to the original parent
@@ -1992,8 +1955,6 @@ function removeTempOffsetPathAnimation(element) {
         // Fallback to the old logic if no topmost wrapper found
         const tempWrapper = actualElement.parentNode;
         if (tempWrapper && tempWrapper.classList.contains('temp-offset-wrapper')) {
-            const railClones = tempWrapper.querySelectorAll('[id$="-clone"]');
-            railClones.forEach(clone => clone.remove());
             
             // Move element back to its original parent
             const grandParent = tempWrapper.parentNode;
