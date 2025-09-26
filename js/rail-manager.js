@@ -306,25 +306,89 @@ function removeOffsetPathAnimationsFromDOM(railName) {
     
     elementsWithOffsetPath.forEach(element => {
         const animationId = element.getAttribute('data-offset-path-animation');
+        const elementId = element.getAttribute('id');
+        const dataRailName = element.getAttribute('data-rail-name');
         
-        // Check if this animation uses the deleted rail
-        if (typeof getSavedAnimations === 'function') {
+        // Check if this element uses the deleted rail (either from localStorage or data attributes)
+        let shouldRemove = false;
+        
+        if (typeof getSavedAnimations === 'function' && elementId) {
             const savedAnimations = getSavedAnimations();
-            const elementId = element.getAttribute('id');
             
-            if (elementId && savedAnimations.animations[elementId] && savedAnimations.animations[elementId][animationId]) {
+            // Check if the animation still exists in localStorage
+            if (savedAnimations.animations[elementId] && savedAnimations.animations[elementId][animationId]) {
                 const animationData = savedAnimations.animations[elementId][animationId];
                 
                 if (animationData.type === 'offset-path' && animationData.params && animationData.params.rail === railName) {
-                    // Remove the offset-path animation from this element
-                    if (typeof removeOffsetPathAnimation === 'function') {
-                        removeOffsetPathAnimation(element);
-                        console.log(`Removed offset-path animation from DOM element ${elementId}`);
-                    }
+                    shouldRemove = true;
                 }
+            } else if (dataRailName === railName) {
+                // Animation data was already removed from localStorage, but element has data-rail-name attribute
+                shouldRemove = true;
+            }
+        } else if (dataRailName === railName) {
+            // Fallback: check data-rail-name attribute
+            shouldRemove = true;
+        }
+        
+        if (shouldRemove) {
+            // Use the existing removeOffsetPathAnimation function if possible
+            if (typeof removeOffsetPathAnimation === 'function' && elementId && typeof getSavedAnimations === 'function') {
+                const savedAnimations = getSavedAnimations();
+                if (savedAnimations.animations[elementId] && savedAnimations.animations[elementId][animationId]) {
+                    removeOffsetPathAnimation(element);
+                    console.log(`Removed offset-path animation from DOM element ${elementId}`);
+                } else {
+                    // Animation data was already removed, clean up manually
+                    cleanupOrphanedOffsetPathAnimation(element);
+                }
+            } else {
+                // Clean up manually
+                cleanupOrphanedOffsetPathAnimation(element);
             }
         }
     });
+}
+
+// ✅ NEW: Clean up orphaned offset-path animations (when localStorage data is already removed)
+function cleanupOrphanedOffsetPathAnimation(element) {
+    const animationId = element.getAttribute('data-offset-path-animation');
+    if (!animationId) return;
+    
+    // Remove animation classes
+    const animationName = `offset-path-${animationId}`;
+    element.classList.remove(animationName);
+    element.classList.remove('application-animation-class');
+    
+    // Remove the style tag
+    const styleTag = document.getElementById(animationName);
+    if (styleTag) {
+        styleTag.remove();
+    }
+    
+    // Restore original position from data attributes
+    const originalCx = element.getAttribute('data-original-cx');
+    const originalCy = element.getAttribute('data-original-cy');
+    const originalX = element.getAttribute('data-original-x');
+    const originalY = element.getAttribute('data-original-y');
+    
+    if (element.tagName.toLowerCase() === 'circle' || element.tagName.toLowerCase() === 'ellipse') {
+        if (originalCx) element.setAttribute('cx', originalCx);
+        if (originalCy) element.setAttribute('cy', originalCy);
+    } else if (element.tagName.toLowerCase() === 'rect') {
+        if (originalX) element.setAttribute('x', originalX);
+        if (originalY) element.setAttribute('y', originalY);
+    }
+    
+    // Clean up data attributes
+    element.removeAttribute('data-offset-path-animation');
+    element.removeAttribute('data-original-cx');
+    element.removeAttribute('data-original-cy');
+    element.removeAttribute('data-original-x');
+    element.removeAttribute('data-original-y');
+    element.removeAttribute('data-rail-name');
+    
+    console.log(`Cleaned up orphaned offset-path animation from element ${element.id}`);
 }
 
 // ✅ NEW: Refresh all rail dropdowns in the UI
@@ -384,4 +448,5 @@ window.extractPathDataFromElement = extractPathDataFromElement;
 window.updateAnimationsWithRenamedRail = updateAnimationsWithRenamedRail;
 window.removeAnimationsWithDeletedRail = removeAnimationsWithDeletedRail;
 window.removeOffsetPathAnimationsFromDOM = removeOffsetPathAnimationsFromDOM;
+window.cleanupOrphanedOffsetPathAnimation = cleanupOrphanedOffsetPathAnimation;
 window.refreshRailDropdowns = refreshRailDropdowns;
