@@ -379,6 +379,12 @@ function applyAnimationFromContextMenu(animationName) {
     const animationData = window.animationsData[animationName];
     const defaultSpeed = animationData?.defaultSpeed || '1.0';
     
+    // Special handling for offset-path animations - require rail selection
+    if (animationName === 'offset-path') {
+        handleOffsetPathAnimationFromContextMenu();
+        return;
+    }
+    
     // Apply the animation using the existing applyAnimation function
     if (typeof applyAnimation === 'function') {
         try {
@@ -391,6 +397,188 @@ function applyAnimationFromContextMenu(animationName) {
     } else {
         console.error('applyAnimation function not available');
         showNotification('Animation system not available', 'error');
+    }
+}
+
+// Handle offset-path animation from context menu
+function handleOffsetPathAnimationFromContextMenu() {
+    // Check if rails are available
+    if (typeof getSavedRails !== 'function') {
+        showNotification('Rail system not available', 'error');
+        return;
+    }
+    
+    const rails = getSavedRails();
+    const railNames = Object.keys(rails);
+    
+    if (railNames.length === 0) {
+        showNotification('No rails available. Please create a rail first by right-clicking on a path or shape element.', 'error');
+        return;
+    }
+    
+    // If only one rail exists, use it automatically
+    if (railNames.length === 1) {
+        const railName = railNames[0];
+        console.log(`Using the only available rail: ${railName}`);
+        applyOffsetPathAnimationWithRail(railName, currentTargetElement);
+        return;
+    }
+    
+    // Multiple rails available - show selection dialog
+    showRailSelectionDialog(railNames);
+}
+
+// Show rail selection dialog for offset-path animation
+function showRailSelectionDialog(railNames) {
+    // Store the target element before showing dialog to prevent it from being lost
+    const targetElement = currentTargetElement;
+    
+    // Create a simple selection dialog
+    const dialog = document.createElement('div');
+    dialog.className = 'rail-selection-dialog';
+    dialog.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        z-index: 10000;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        min-width: 300px;
+    `;
+    
+    dialog.innerHTML = `
+        <h3 style="margin: 0 0 15px 0; color: var(--text-primary);">Select a Rail for Offset-Path Animation</h3>
+        <p style="margin: 0 0 15px 0; color: var(--text-secondary); font-size: 0.9rem;">
+            Choose which rail to use for the offset-path animation:
+        </p>
+        <select id="rail-selection-dropdown" style="
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin-bottom: 15px;
+        ">
+            <option value="">Select a rail...</option>
+        </select>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button id="rail-cancel-btn" style="
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                background: var(--bg-secondary);
+                color: var(--text-primary);
+                cursor: pointer;
+            ">Cancel</button>
+            <button id="rail-apply-btn" style="
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background: var(--accent);
+                color: white;
+                cursor: pointer;
+            " disabled>Apply</button>
+        </div>
+    `;
+    
+    // Add to document
+    document.body.appendChild(dialog);
+    
+    // Populate dropdown
+    const dropdown = dialog.querySelector('#rail-selection-dropdown');
+    railNames.forEach(railName => {
+        const option = document.createElement('option');
+        option.value = railName;
+        option.textContent = railName;
+        dropdown.appendChild(option);
+    });
+    
+    // Enable/disable apply button based on selection
+    dropdown.addEventListener('change', () => {
+        const applyBtn = dialog.querySelector('#rail-apply-btn');
+        applyBtn.disabled = !dropdown.value;
+    });
+    
+    // Event listeners
+    dialog.querySelector('#rail-cancel-btn').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+    });
+    
+    dialog.querySelector('#rail-apply-btn').addEventListener('click', () => {
+        const selectedRail = dropdown.value;
+        if (selectedRail) {
+            // Pass the stored target element to the apply function
+            applyOffsetPathAnimationWithRail(selectedRail, targetElement);
+            document.body.removeChild(dialog);
+        }
+    });
+    
+    // Close on escape key
+    const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+            document.body.removeChild(dialog);
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Close on outside click
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+            document.body.removeChild(dialog);
+            document.removeEventListener('keydown', handleKeyDown);
+        }
+    });
+}
+
+// Apply offset-path animation with selected rail
+function applyOffsetPathAnimationWithRail(railName, targetElement = null) {
+    // Get the target element - use provided element, currentTargetElement, or try to find it from the context
+    let element = targetElement || currentTargetElement;
+    
+    if (!element) {
+        // Try to find the currently selected element as a fallback
+        element = document.querySelector('.selected-element');
+        if (!element) {
+            console.error('No target element for offset-path animation');
+            showNotification('No element selected for offset-path animation', 'error');
+            return;
+        }
+    }
+    
+    console.log('Applying offset-path animation to element:', element);
+    
+    // Get default speed for the animation
+    const animationData = window.animationsData['offset-path'];
+    const defaultSpeed = animationData?.defaultSpeed || '1.0';
+    
+    // Create animation data with rail parameter
+    const animationDataWithRail = {
+        ...animationData,
+        params: {
+            ...animationData.params,
+            rail: railName
+        }
+    };
+    
+    // Apply the offset-path animation directly
+    if (typeof applyOffsetPathAnimation === 'function') {
+        try {
+            applyOffsetPathAnimation(element, animationDataWithRail, null);
+            console.log(`Applied offset-path animation with rail "${railName}" to element`);
+            showNotification(`🚂 Offset-path animation applied with rail "${railName}"!`, 'success');
+        } catch (error) {
+            console.error('Error applying offset-path animation:', error);
+            showNotification(`Error applying offset-path animation: ${error.message}`, 'error');
+        }
+    } else {
+        console.error('applyOffsetPathAnimation function not available');
+        showNotification('Offset-path animation system not available', 'error');
     }
 }
 
@@ -518,3 +706,6 @@ window.initializeContextMenu = initializeContextMenu;
 window.reinitializeContextMenu = reinitializeContextMenu;
 window.updateContextMenuRecipeSubmenu = updateContextMenuRecipeSubmenu;
 window.handleNewRailFromShape = handleNewRailFromShape;
+window.handleOffsetPathAnimationFromContextMenu = handleOffsetPathAnimationFromContextMenu;
+window.showRailSelectionDialog = showRailSelectionDialog;
+window.applyOffsetPathAnimationWithRail = applyOffsetPathAnimationWithRail;
