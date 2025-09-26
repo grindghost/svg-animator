@@ -105,50 +105,39 @@ function showOffsetPathRailSelection(element, speed, animationName) {
     `;
     
     const modal = document.createElement('div');
-    modal.className = 'rail-selection-modal';
+    modal.className = 'rails-modal';
     modal.style.cssText = `
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 24px;
         max-width: 400px;
         width: 90%;
-        box-shadow: var(--shadow);
     `;
     
     modal.innerHTML = `
-        <h3 style="margin: 0 0 16px 0; color: var(--text);">Select Rail for Offset Path Animation</h3>
-        <p style="margin: 0 0 16px 0; color: var(--text-muted); font-size: 14px;">
-            Choose which rail to use for the offset path animation:
-        </p>
-        <select id="rail-selection-dropdown" style="
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--bg);
-            color: var(--text);
-            margin-bottom: 16px;
-        ">
-            <option value="">Select a rail...</option>
-        </select>
-        <div style="display: flex; gap: 8px; justify-content: flex-end;">
-            <button id="cancel-rail-selection" style="
-                padding: 8px 16px;
-                border: 1px solid var(--border);
-                border-radius: 4px;
-                background: var(--bg);
-                color: var(--text);
-                cursor: pointer;
-            ">Cancel</button>
-            <button id="apply-rail-selection" disabled style="
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-                background: var(--primary);
-                color: white;
-                cursor: pointer;
-            ">Apply Animation</button>
+        <div class="rails-modal-header">
+            <h3>🛤️ Select Rail for Offset Path Animation</h3>
+            <button id="cancel-rail-selection" class="rails-close-btn" title="Cancel">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="rails-modal-content">
+            <div class="rails-form">
+                <p class="rails-description" style="color: var(--text-secondary);">
+                    Choose which rail to use for the offset path animation:
+                </p>
+                
+                <div class="form-group">
+                    <label for="rail-selection-dropdown" class="form-label">Select Rail</label>
+                    <select id="rail-selection-dropdown" class="form-input">
+                        <option value="">Select a rail...</option>
+                    </select>
+                </div>
+                
+                <div class="rails-actions">
+                    <button id="apply-rail-selection" class="btn btn-primary" disabled>Apply Animation</button>
+                </div>
+            </div>
         </div>
     `;
     
@@ -203,7 +192,7 @@ function showOffsetPathRailSelection(element, speed, animationName) {
         }
     });
     
-    // Handle cancel button click
+    // Handle cancel button click (now in header)
     document.getElementById('cancel-rail-selection').addEventListener('click', function() {
         document.getElementById('animation-type').value = 'none';
         document.body.removeChild(overlay);
