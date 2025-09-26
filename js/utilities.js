@@ -504,6 +504,11 @@ function saveParameterChange(editingAnimation, paramName, value) {
 
 // Helper function to update animation preview in real-time
 function updateAnimationPreview(element, speed, editingAnimation) {
+    // ✅ NEW: Handle offset-path animations specially
+    if (editingAnimation.animationType === 'offset-path') {
+        return updateOffsetPathAnimationPreview(element, speed, editingAnimation);
+    }
+    
     // ✅ NEW: Handle clipPath elements differently - they don't use anim-wrapper groups
     const isClipPathElement = isInsideClipPath(element);
     
@@ -605,6 +610,97 @@ function updateAnimationPreview(element, speed, editingAnimation) {
     }
 }
 
+// ✅ NEW: Helper function to update offset-path animation preview in real-time
+function updateOffsetPathAnimationPreview(element, speed, editingAnimation) {
+    console.log('updateOffsetPathAnimationPreview called with:', {
+        element: element,
+        speed: speed,
+        editingAnimation: editingAnimation
+    });
+    
+    // Get the saved animation data
+    const data = getSavedAnimations();
+    console.log('Saved animations data:', data);
+    console.log('Looking for elementId:', editingAnimation.elementId);
+    console.log('Looking for animationId:', editingAnimation.animationId);
+    
+    const savedAnimationData = data.animations[editingAnimation.elementId] && data.animations[editingAnimation.elementId][editingAnimation.animationId];
+    
+    if (!savedAnimationData) {
+        console.error('No saved animation data found for offset-path animation');
+        console.log('Available elementIds:', Object.keys(data.animations));
+        if (data.animations[editingAnimation.elementId]) {
+            console.log('Available animationIds for element:', Object.keys(data.animations[editingAnimation.elementId]));
+        }
+        return;
+    }
+    
+    const originalAnimationName = savedAnimationData.animationName;
+    const animationParams = savedAnimationData.params || {};
+    
+    // Find the actual element with the offset-path animation
+    let actualElement = element;
+    if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
+        const shapeElement = element.querySelector('circle, rect, ellipse, path, line, polyline, polygon');
+        if (shapeElement) {
+            actualElement = shapeElement;
+        }
+    }
+    
+    // Check if this element has an offset-path animation
+    const animationId = actualElement.getAttribute('data-offset-path-animation');
+    if (!animationId) {
+        console.error('No offset-path animation ID found on element');
+        return;
+    }
+    
+    // Get the rail data
+    if (typeof getSavedRails !== 'function') {
+        console.error('getSavedRails function not available');
+        return;
+    }
+    
+    const rails = getSavedRails();
+    const selectedRail = animationParams.rail;
+    if (!selectedRail || !rails[selectedRail]) {
+        console.error('Rail not found:', selectedRail);
+        return;
+    }
+    
+    const railData = rails[selectedRail];
+    const direction = animationParams.direction || 0;
+    const duration = 8 / speed; // Base duration of 8 seconds adjusted by speed
+    
+    const startDistance = direction === 0 ? "0%" : "100%";
+    const endDistance = direction === 0 ? "100%" : "0%";
+    
+    // Update the existing style tag
+    const existingStyle = document.getElementById(originalAnimationName);
+    if (existingStyle) {
+        // Extract the animation ID from the original animation name
+        const moveAnimationId = originalAnimationName.replace('offset-path-', '');
+        
+        const newCSS = `
+            .${originalAnimationName} {
+                offset-path: path("${railData.pathData}");
+                offset-rotate: auto;
+                animation: move-${moveAnimationId} ${duration}s linear infinite;
+            }
+            
+            @keyframes move-${moveAnimationId} {
+                to {
+                    offset-distance: ${endDistance};
+                }
+            }
+        `;
+        
+        existingStyle.textContent = newCSS;
+        console.log('Updated offset-path animation preview with speed:', speed, 'duration:', duration);
+    } else {
+        console.error('No existing style tag found with ID:', originalAnimationName);
+    }
+}
+
 // Helper function to update an applied animation
 function updateAppliedAnimation(elementId, animationId, speed, params) {
     const data = getSavedAnimations();
@@ -647,6 +743,7 @@ window.initializeDropdowns = initializeDropdowns;
 window.setupAppliedAnimationEditorListeners = setupAppliedAnimationEditorListeners;
 window.updateAppliedAnimation = updateAppliedAnimation;
 window.updateAnimationPreview = updateAnimationPreview;
+window.updateOffsetPathAnimationPreview = updateOffsetPathAnimationPreview;
 window.saveParameterChange = saveParameterChange;
 
 // Function to switch between tabs

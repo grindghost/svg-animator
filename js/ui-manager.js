@@ -42,6 +42,7 @@ function updateAnimationListUI(selectedElementId) {
 
     // Check for animations on the selected element
     let elementAnimations = data.animations[selectedElementId] || {};
+    let actualElementId = selectedElementId; // Track the actual element ID that has animations
     
     // ✅ NEW: Also check for offset-path animations in nested elements
     const selectedElement = document.getElementById(selectedElementId);
@@ -53,6 +54,8 @@ function updateAnimationListUI(selectedElementId) {
             if (offsetElementId && data.animations[offsetElementId]) {
                 // Merge animations from the nested offset-path element
                 elementAnimations = { ...elementAnimations, ...data.animations[offsetElementId] };
+                // ✅ FIX: Use the actual element ID that has the animations
+                actualElementId = offsetElementId;
             }
         });
     }
@@ -79,7 +82,19 @@ function updateAnimationListUI(selectedElementId) {
             
             const animationSpeed = document.createElement('div');
             animationSpeed.classList.add('animation-speed');
-            animationSpeed.textContent = `Speed: ${animationData.speed}s`;
+            // ✅ FIX: Handle different animation data structures for speed display
+            let speedValue;
+            if (animationData.speed !== undefined) {
+                // Regular animations store speed directly
+                speedValue = animationData.speed;
+            } else if (animationData.params && animationData.params.speed !== undefined) {
+                // Offset-path and other parametric animations store speed in params
+                speedValue = animationData.params.speed;
+            } else {
+                // Fallback to default speed
+                speedValue = 1.0;
+            }
+            animationSpeed.textContent = `Speed: ${speedValue}s`;
 
             animationInfo.appendChild(animationName);
             animationInfo.appendChild(animationSpeed);
@@ -90,7 +105,8 @@ function updateAnimationListUI(selectedElementId) {
             removeButton.title = 'Remove animation';
 
             removeButton.addEventListener('click', (e) => {
-                removeAnimation(selectedElementId, animationId);
+                // ✅ FIX: Use the actual element ID that has the animations
+                removeAnimation(actualElementId, animationId);
                 e.stopPropagation();
                 e.preventDefault();
             });
@@ -98,7 +114,16 @@ function updateAnimationListUI(selectedElementId) {
             // Add click handler for animation selection
             animationDiv.addEventListener('click', (e) => {
                 if (e.target === removeButton) return; // Don't select when clicking remove
-                selectAnimationForEditing(selectedElementId, animationId, animationType, animationData);
+                // ✅ DEBUG: Log the data being passed
+                console.log('selectAnimationForEditing called with:', {
+                    selectedElementId: selectedElementId,
+                    actualElementId: actualElementId,
+                    animationId: animationId,
+                    animationType: animationType,
+                    animationData: animationData
+                });
+                // ✅ FIX: Use the actual element ID that has the animations
+                selectAnimationForEditing(actualElementId, animationId, animationType, animationData);
 
                 // Smooth scroll to .animation-id-display
                 // add offset of 100px
@@ -175,6 +200,9 @@ function selectAnimationForEditing(elementId, animationId, animationType, animat
         animationData: animationData
     };
     
+    // ✅ DEBUG: Log the stored editing state
+    console.log('currentlyEditingAnimation set to:', currentlyEditingAnimation);
+    
     // Show the applied animation editor
     showAppliedAnimationEditor(animationType, animationData, animationId);
 }
@@ -221,8 +249,21 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
     
     if (anim && anim.defaultSpeedSlider !== false) {
         // Show speed controls
-        speedSlider.value = animationData.speed;
-        speedDisplay.textContent = `${animationData.speed}s`;
+        // ✅ FIX: Handle different animation data structures
+        let speedValue;
+        if (animationData.speed !== undefined) {
+            // Regular animations store speed directly
+            speedValue = animationData.speed;
+        } else if (animationData.params && animationData.params.speed !== undefined) {
+            // Offset-path and other parametric animations store speed in params
+            speedValue = animationData.params.speed;
+        } else {
+            // Fallback to default speed
+            speedValue = 1.0;
+        }
+        
+        speedSlider.value = speedValue;
+        speedDisplay.textContent = `${speedValue}s`;
         if (speedControlGroup) {
             speedControlGroup.style.display = 'block';
         }
