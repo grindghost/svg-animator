@@ -134,11 +134,30 @@ function downloadAnimatedSVG() {
 
     removeHandles();
 
+    // Include external styles if no internal styles exist
     const externalStyle = document.querySelector('style');
     if (externalStyle && !svgRoot.querySelector('style')) {
         const embeddedStyle = externalStyle.cloneNode(true);
         svgRoot.prepend(embeddedStyle);
     }
+    
+    // ✅ NEW: Ensure all dynamic style tags are included in the SVG
+    // This is crucial for offset-path animations and other dynamic animations
+    const allStyleTags = document.querySelectorAll('style');
+    allStyleTags.forEach(styleTag => {
+        // Skip if this style tag is already inside the SVG
+        if (svgRoot.contains(styleTag)) {
+            return;
+        }
+        
+        // Check if this style tag contains animation keyframes or offset-path properties
+        const styleContent = styleTag.textContent || styleTag.innerHTML;
+        if (styleContent.includes('@keyframes') || styleContent.includes('offset-path') || styleContent.includes('offset-distance')) {
+            // Clone the style tag and add it to the SVG
+            const clonedStyle = styleTag.cloneNode(true);
+            svgRoot.prepend(clonedStyle);
+        }
+    });
 
     const existingMetadata = svgRoot.querySelector('metadata');
     if (!existingMetadata) {
