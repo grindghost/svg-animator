@@ -167,7 +167,22 @@ function convertShapeToPath(element) {
             let pathData = '';
             
             pointPairs.forEach((point, index) => {
-                const [x, y] = point.split(',').map(parseFloat);
+                // Handle both comma-separated (x,y) and space-separated (x y) formats
+                let x, y;
+                if (point.includes(',')) {
+                    // Comma-separated format: "x,y"
+                    [x, y] = point.split(',').map(parseFloat);
+                } else {
+                    // Space-separated format: "x y" - need to pair up coordinates
+                    const coords = points.trim().split(/\s+/).map(parseFloat);
+                    if (index * 2 + 1 < coords.length) {
+                        x = coords[index * 2];
+                        y = coords[index * 2 + 1];
+                    } else {
+                        return; // Skip if we don't have enough coordinates
+                    }
+                }
+                
                 if (index === 0) {
                     pathData += `M ${x},${y}`;
                 } else {
