@@ -84,6 +84,139 @@ function setupEventListeners() {
 
     // Applied animation editor event listeners
     setupAppliedAnimationEditorListeners();
+}
+
+// ✅ NEW: Show rail selection for offset path animations
+function showOffsetPathRailSelection(element, speed, animationName) {
+    // Create a simple rail selection modal/overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'rail-selection-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'rail-selection-modal';
+    modal.style.cssText = `
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: var(--shadow);
+    `;
+    
+    modal.innerHTML = `
+        <h3 style="margin: 0 0 16px 0; color: var(--text);">Select Rail for Offset Path Animation</h3>
+        <p style="margin: 0 0 16px 0; color: var(--text-muted); font-size: 14px;">
+            Choose which rail to use for the offset path animation:
+        </p>
+        <select id="rail-selection-dropdown" style="
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text);
+            margin-bottom: 16px;
+        ">
+            <option value="">Select a rail...</option>
+        </select>
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button id="cancel-rail-selection" style="
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                background: var(--bg);
+                color: var(--text);
+                cursor: pointer;
+            ">Cancel</button>
+            <button id="apply-rail-selection" disabled style="
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+                background: var(--primary);
+                color: white;
+                cursor: pointer;
+            ">Apply Animation</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Populate rail dropdown
+    const dropdown = document.getElementById('rail-selection-dropdown');
+    const rails = getSavedRails();
+    const railNames = Object.keys(rails).sort();
+    
+    railNames.forEach(railName => {
+        const option = document.createElement('option');
+        option.value = railName;
+        option.textContent = railName;
+        dropdown.appendChild(option);
+    });
+    
+    // Handle rail selection change
+    dropdown.addEventListener('change', function() {
+        const applyButton = document.getElementById('apply-rail-selection');
+        applyButton.disabled = !this.value;
+    });
+    
+    // Handle apply button click
+    document.getElementById('apply-rail-selection').addEventListener('click', function() {
+        const selectedRail = dropdown.value;
+        if (selectedRail) {
+            const animationData = {
+                params: {
+                    rail: selectedRail,
+                    speed: parseFloat(speed),
+                    direction: 0
+                }
+            };
+            applyOffsetPathAnimation(element, animationData, null);
+            updateStatusBar(`Applied "${animationName}" animation with rail "${selectedRail}"! ✨`);
+            showNotification(`Applied "${animationName}" animation successfully!`, "success");
+            
+            // Disable apply button since animation is already applied
+            document.getElementById('apply-animation').setAttribute('disabled', 'disabled');
+            
+            // Hide parameter panel for offset-path animations (use editor tab instead)
+            document.getElementById('animation-param-panel').style.display = 'none';
+            
+            // Update animation count and UI
+            updateAnimationCountMessage(element.getAttribute('id'));
+            refreshLeftPanel(element.getAttribute('id'), element);
+            
+            // Close modal
+            document.body.removeChild(overlay);
+        }
+    });
+    
+    // Handle cancel button click
+    document.getElementById('cancel-rail-selection').addEventListener('click', function() {
+        document.getElementById('animation-type').value = 'none';
+        document.body.removeChild(overlay);
+    });
+    
+    // Handle overlay click to close
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            document.getElementById('animation-type').value = 'none';
+            document.body.removeChild(overlay);
+        }
+    });
+}
 
     // Animation type dropdown
     document.getElementById('animation-type').addEventListener('change', function() {
@@ -105,13 +238,63 @@ function setupEventListeners() {
             // Render parameter controls for parametric animations
             renderParamControls(animationName);
             
-            applyTempAnimation(selectedElement, speed, animationName, false);
-            document.getElementById('speed-slider').removeAttribute('disabled');
-            document.getElementById('speed-slider').value = "1.5";
-            document.getElementById('speedDisplay').textContent = "1.5s";
-            document.getElementById('apply-animation').removeAttribute('disabled');
-            updateStatusBar(`Previewing "${animationName}" animation 🎬`);
-            showPreviewBadge();
+            // ✅ NEW: Special handling for offset-path animations - show rail selection first
+            if (animationName === 'offset-path') {
+                // Check if rails are available
+                if (typeof getSavedRails === 'function') {
+                    const rails = getSavedRails();
+                    const railNames = Object.keys(rails);
+                    
+                    if (railNames.length === 0) {
+                        // No rails available - show error message
+                        updateStatusBar('No rails available! Please create a rail first. 🛤️');
+                        showNotification('No rails available! Please create a rail first.', 'error');
+                        document.getElementById('animation-type').value = 'none';
+                        return;
+                    } else if (railNames.length === 1) {
+                        // Only one rail available - use it automatically
+                        const railName = railNames[0];
+                        const animationData = {
+                            params: {
+                                rail: railName,
+                                speed: parseFloat(speed),
+                                direction: 0
+                            }
+                        };
+                        applyOffsetPathAnimation(selectedElement, animationData, null);
+                        updateStatusBar(`Applied "${animationName}" animation with rail "${railName}"! ✨`);
+                        showNotification(`Applied "${animationName}" animation successfully!`, "success");
+                        
+                        // Disable apply button since animation is already applied
+                        document.getElementById('apply-animation').setAttribute('disabled', 'disabled');
+                        
+                        // Hide parameter panel for offset-path animations (use editor tab instead)
+                        document.getElementById('animation-param-panel').style.display = 'none';
+                        
+                        // Update animation count and UI
+                        updateAnimationCountMessage(selectedElement.getAttribute('id'));
+                        refreshLeftPanel(selectedElement.getAttribute('id'), selectedElement);
+                    } else {
+                        // Multiple rails available - show rail selection
+                        showOffsetPathRailSelection(selectedElement, speed, animationName);
+                    }
+                } else {
+                    // getSavedRails function not available
+                    updateStatusBar('Rail system not available! Please check your setup. ❌');
+                    showNotification('Rail system not available! Please check your setup.', 'error');
+                    document.getElementById('animation-type').value = 'none';
+                    return;
+                }
+            } else {
+                // Regular animations - show preview and apply button
+                applyTempAnimation(selectedElement, speed, animationName, false);
+                document.getElementById('speed-slider').removeAttribute('disabled');
+                document.getElementById('speed-slider').value = "1.5";
+                document.getElementById('speedDisplay').textContent = "1.5s";
+                document.getElementById('apply-animation').removeAttribute('disabled');
+                updateStatusBar(`Previewing "${animationName}" animation 🎬`);
+                showPreviewBadge();
+            }
         } else {
             // Hide parameter panel when no animation is selected
             document.getElementById('animation-param-panel').style.display = 'none';
@@ -148,6 +331,186 @@ function setupEventListeners() {
                 hidePreviewBadge();
             }
         }
+    });
+
+// ✅ NEW: Rail management modal
+function openRailManager() {
+    // Create rail management modal
+    const overlay = document.createElement('div');
+    overlay.className = 'rail-manager-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    `;
+    
+    const modal = document.createElement('div');
+    modal.className = 'rail-manager-modal';
+    modal.style.cssText = `
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 24px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow);
+    `;
+    
+    // Get current rails
+    const rails = getSavedRails();
+    const railNames = Object.keys(rails).sort();
+    
+    modal.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: var(--text);">🛤️ Manage Rails</h3>
+            <button id="close-rail-manager" style="
+                background: none;
+                border: none;
+                font-size: 24px;
+                color: var(--text-muted);
+                cursor: pointer;
+                padding: 4px;
+            ">×</button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <p style="margin: 0 0 12px 0; color: var(--text-muted); font-size: 14px;">
+                Rails are paths that define the movement for offset-path animations. Create, edit, or delete rails here.
+            </p>
+            <button id="create-new-rail" style="
+                padding: 8px 16px;
+                border: 1px solid var(--primary);
+                border-radius: 4px;
+                background: var(--primary);
+                color: white;
+                cursor: pointer;
+                font-size: 14px;
+            ">+ Create New Rail</button>
+        </div>
+        
+        <div id="rails-list" style="
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        ">
+            ${railNames.length === 0 ? 
+                '<div style="padding: 20px; text-align: center; color: var(--text-muted);">No rails created yet</div>' :
+                railNames.map(railName => `
+                    <div class="rail-item" style="
+                        padding: 12px 16px;
+                        border-bottom: 1px solid var(--border);
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
+                        <div>
+                            <div style="font-weight: 500; color: var(--text);">${railName}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">
+                                Created: ${new Date(rails[railName].createdAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="edit-rail" data-rail="${railName}" style="
+                                padding: 4px 8px;
+                                border: 1px solid var(--border);
+                                border-radius: 4px;
+                                background: var(--bg);
+                                color: var(--text);
+                                cursor: pointer;
+                                font-size: 12px;
+                            ">Edit</button>
+                            <button class="delete-rail" data-rail="${railName}" style="
+                                padding: 4px 8px;
+                                border: 1px solid var(--danger);
+                                border-radius: 4px;
+                                background: var(--danger);
+                                color: white;
+                                cursor: pointer;
+                                font-size: 12px;
+                            ">Delete</button>
+                        </div>
+                    </div>
+                `).join('')
+            }
+        </div>
+        
+        <div style="margin-top: 20px; text-align: right;">
+            <button id="close-rail-manager-btn" style="
+                padding: 8px 16px;
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                background: var(--bg);
+                color: var(--text);
+                cursor: pointer;
+            ">Close</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Event listeners
+    document.getElementById('close-rail-manager').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    document.getElementById('close-rail-manager-btn').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+    
+    // Create new rail button
+    document.getElementById('create-new-rail').addEventListener('click', () => {
+        const railName = prompt('Enter a name for the new rail:');
+        if (railName && railName.trim()) {
+            // For now, just show a message - in a real implementation, this would open a path editor
+            showNotification('Rail creation feature coming soon! For now, create rails through the main interface.', 'info');
+        }
+    });
+    
+    // Edit rail buttons
+    document.querySelectorAll('.edit-rail').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const railName = e.target.dataset.rail;
+            showNotification(`Edit rail "${railName}" feature coming soon!`, 'info');
+        });
+    });
+    
+    // Delete rail buttons
+    document.querySelectorAll('.delete-rail').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const railName = e.target.dataset.rail;
+            if (confirm(`Are you sure you want to delete the rail "${railName}"?`)) {
+                if (typeof deleteRail === 'function') {
+                    const result = deleteRail(railName);
+                    if (result.success) {
+                        showNotification(`Rail "${railName}" deleted successfully!`, 'success');
+                        // Close and reopen the modal to refresh the list
+                        document.body.removeChild(overlay);
+                        openRailManager();
+                    } else {
+                        showNotification(`Failed to delete rail: ${result.error}`, 'error');
+                    }
+                } else {
+                    showNotification('Delete rail function not available', 'error');
+                }
+            }
+        });
     });
 }
 

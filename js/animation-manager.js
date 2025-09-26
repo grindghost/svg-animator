@@ -1008,6 +1008,12 @@ function renderParamControls(animationName) {
     // Clear existing controls
     controlsContainer.innerHTML = "";
     
+    // ✅ NEW: Hide parameter panel for offset-path animations (use editor tab instead)
+    if (animationName === 'offset-path') {
+        panel.style.display = "none";
+        return;
+    }
+    
     if (!anim || !anim.params) {
         // No parameters - hide the panel
         panel.style.display = "none";

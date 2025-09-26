@@ -371,6 +371,44 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
             if (window.animationsData && window.animationsData[animationType]) {
                 window.animationsData[animationType].params = workingParams;
             }
+            
+            // ✅ NEW: Add "Manage Rails" link for offset-path animations
+            if (animationType === 'offset-path') {
+                const manageRailsLink = document.createElement('div');
+                manageRailsLink.className = 'manage-rails-link';
+                manageRailsLink.style.cssText = `
+                    margin-top: 16px;
+                    padding: 8px 12px;
+                    background: var(--secondary-bg);
+                    border: 1px solid var(--border);
+                    border-radius: 4px;
+                    text-align: center;
+                `;
+                
+                const link = document.createElement('a');
+                link.href = '#';
+                link.textContent = '🛤️ Manage Rails';
+                link.style.cssText = `
+                    color: var(--primary);
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 500;
+                `;
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Open the rail management modal
+                    if (typeof openRailManager === 'function') {
+                        openRailManager();
+                    } else {
+                        console.warn('Rail manager not available');
+                        showNotification('Rail manager not available', 'error');
+                    }
+                });
+                
+                manageRailsLink.appendChild(link);
+                paramControls.appendChild(manageRailsLink);
+            }
         }
     }
     console.log('Switching to editor tab');
