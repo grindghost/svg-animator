@@ -299,6 +299,100 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
                 Object.assign(workingParams, animationData.params);
             }
             
+            // ✅ NEW: For offset-path animations, render rail parameter first
+            if (animationType === 'offset-path' && anim.params.rail !== undefined) {
+                const param = 'rail';
+                const defaultValue = anim.params.rail;
+                const paramValue = workingParams[param] !== undefined ? workingParams[param] : defaultValue;
+                
+                const controlWrapper = document.createElement("div");
+                controlWrapper.className = "param-control";
+                
+                const label = document.createElement("label");
+                label.className = "param-label";
+                label.textContent = `${param}: `;
+                
+                // Special handling for offset-path rail parameter - use dropdown instead of slider
+                const select = document.createElement("select");
+                select.className = "param-dropdown";
+                select.dataset.param = param;
+                
+                // Add default option
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.textContent = "Select a rail...";
+                select.appendChild(defaultOption);
+                
+                // Populate with available rails
+                if (typeof getSavedRails === 'function') {
+                    const rails = getSavedRails();
+                    const railNames = Object.keys(rails).sort();
+                    
+                    railNames.forEach(railName => {
+                        const option = document.createElement("option");
+                        option.value = railName;
+                        option.textContent = railName;
+                        select.appendChild(option);
+                    });
+                }
+                
+                // Set current value
+                select.value = paramValue || "";
+                
+                // Add event listener for real-time updates
+                select.addEventListener("change", () => {
+                    const newValue = select.value;
+                    console.log('Rail dropdown changed to:', newValue);
+                    workingParams[param] = newValue;
+                    
+                    // Update the global animation data
+                    if (window.animationsData && window.animationsData[animationType]) {
+                        window.animationsData[animationType].params = workingParams;
+                    }
+                    
+                    // Find the element that has this animation applied
+                    // For offset-path animations, we need to find the element by looking for the animation class name
+                    let elementWithAnimation;
+                    if (animationType === 'offset-path') {
+                        // Get the animation class name from the animation data
+                        const animationClassName = animationData.animationName; // e.g., "offset-path-offset-path-4xxxmeiow"
+                        console.log('Looking for element with animation class:', animationClassName);
+                        
+                        // Find element by the animation class name
+                        elementWithAnimation = document.querySelector(`.${animationClassName}`);
+                        console.log('Element found by class:', elementWithAnimation);
+                    } else {
+                        elementWithAnimation = document.querySelector(`[data-offset-path-animation="${animationId}"]`);
+                    }
+                    console.log('Element with animation found:', elementWithAnimation);
+                    console.log('Animation ID:', animationId);
+                    
+                    if (elementWithAnimation) {
+                        console.log('Removing existing offset path animation...');
+                        // First remove the existing offset path animation
+                        removeOffsetPathAnimation(elementWithAnimation);
+                        
+                        console.log('Applying updated animation with rail:', newValue);
+                        // Then apply the updated animation with the new rail
+                        const updatedAnimationData = {
+                            params: workingParams
+                        };
+                        console.log('Updated animation data:', updatedAnimationData);
+                        applyOffsetPathAnimation(elementWithAnimation, updatedAnimationData, null);
+                        
+                        // Update the data attribute to reflect the new rail
+                        elementWithAnimation.setAttribute('data-rail-name', newValue);
+                        console.log('Rail update completed');
+                    } else {
+                        console.error('No element found with animation ID:', animationId);
+                    }
+                });
+                
+                controlWrapper.appendChild(label);
+                controlWrapper.appendChild(select);
+                paramControls.appendChild(controlWrapper);
+            }
+            
             for (const [param, defaultValue] of Object.entries(anim.params)) {
                 // Use saved parameter values if available, otherwise use defaults
                 const paramValue = workingParams[param] !== undefined ? workingParams[param] : defaultValue;
@@ -310,87 +404,9 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
                 label.className = "param-label";
                 label.textContent = `${param}: `;
                 
-                // ✅ NEW: Special handling for offset-path rail parameter - use dropdown instead of slider
+                // Skip rail parameter for offset-path animations since it's handled first
                 if (animationType === 'offset-path' && param === 'rail') {
-                    const select = document.createElement("select");
-                    select.className = "param-dropdown";
-                    select.dataset.param = param;
-                    
-                    // Add default option
-                    const defaultOption = document.createElement("option");
-                    defaultOption.value = "";
-                    defaultOption.textContent = "Select a rail...";
-                    select.appendChild(defaultOption);
-                    
-                    // Populate with available rails
-                    if (typeof getSavedRails === 'function') {
-                        const rails = getSavedRails();
-                        const railNames = Object.keys(rails).sort();
-                        
-                        railNames.forEach(railName => {
-                            const option = document.createElement("option");
-                            option.value = railName;
-                            option.textContent = railName;
-                            select.appendChild(option);
-                        });
-                    }
-                    
-                    // Set current value
-                    select.value = paramValue || "";
-                    
-                    // Add event listener for real-time updates
-                    select.addEventListener("change", () => {
-                        const newValue = select.value;
-                        console.log('Rail dropdown changed to:', newValue);
-                        workingParams[param] = newValue;
-                        
-                        // Update the global animation data
-                        if (window.animationsData && window.animationsData[animationType]) {
-                            window.animationsData[animationType].params = workingParams;
-                        }
-                        
-                        // Find the element that has this animation applied
-                        // For offset-path animations, we need to find the element by looking for the animation class name
-                        let elementWithAnimation;
-                        if (animationType === 'offset-path') {
-                            // Get the animation class name from the animation data
-                            const animationClassName = animationData.animationName; // e.g., "offset-path-offset-path-4xxxmeiow"
-                            console.log('Looking for element with animation class:', animationClassName);
-                            
-                            // Find element by the animation class name
-                            elementWithAnimation = document.querySelector(`.${animationClassName}`);
-                            console.log('Element found by class:', elementWithAnimation);
-                        } else {
-                            elementWithAnimation = document.querySelector(`[data-offset-path-animation="${animationId}"]`);
-                        }
-                        console.log('Element with animation found:', elementWithAnimation);
-                        console.log('Animation ID:', animationId);
-                        
-                        if (elementWithAnimation) {
-                            console.log('Removing existing offset path animation...');
-                            // First remove the existing offset path animation
-                            removeOffsetPathAnimation(elementWithAnimation);
-                            
-                            console.log('Applying updated animation with rail:', newValue);
-                            // Then apply the updated animation with the new rail
-                            const updatedAnimationData = {
-                                params: workingParams
-                            };
-                            console.log('Updated animation data:', updatedAnimationData);
-                            applyOffsetPathAnimation(elementWithAnimation, updatedAnimationData, null);
-                            
-                            // Update the data attribute to reflect the new rail
-                            elementWithAnimation.setAttribute('data-rail-name', newValue);
-                            console.log('Rail update completed');
-                        } else {
-                            console.error('No element found with animation ID:', animationId);
-                        }
-                    });
-                    
-                    controlWrapper.appendChild(label);
-                    controlWrapper.appendChild(select);
-                    paramControls.appendChild(controlWrapper);
-                    continue; // Skip the slider creation below
+                    continue;
                 }
                 
                 const input = document.createElement("input");
