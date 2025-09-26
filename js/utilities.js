@@ -429,6 +429,10 @@ function openRailManager() {
                         // Close and reopen the modal to refresh the list
                         document.body.removeChild(overlay);
                         openRailManager();
+                        // ✅ NEW: Refresh the left panel to show updated animations
+                        if (typeof refreshLeftPanel === 'function' && selectedElement) {
+                            refreshLeftPanel(selectedElement.getAttribute('id'), selectedElement);
+                        }
                     } else {
                         showNotification(`Failed to rename rail: ${result.error}`, 'error');
                     }
@@ -451,6 +455,10 @@ function openRailManager() {
                         // Close and reopen the modal to refresh the list
                         document.body.removeChild(overlay);
                         openRailManager();
+                        // ✅ NEW: Refresh the left panel to show updated animations
+                        if (typeof refreshLeftPanel === 'function' && selectedElement) {
+                            refreshLeftPanel(selectedElement.getAttribute('id'), selectedElement);
+                        }
                     } else {
                         showNotification(`Failed to delete rail: ${result.error}`, 'error');
                     }

@@ -37,8 +37,15 @@ function deleteRail(railName) {
     const rails = getSavedRails();
     
     if (rails[railName]) {
+        // ✅ NEW: Remove all offset-path animations that use this rail
+        removeAnimationsWithDeletedRail(railName);
+        
         delete rails[railName];
         localStorage.setItem(RAILS_STORAGE_KEY, JSON.stringify(rails));
+        
+        // ✅ NEW: Refresh rail dropdowns in the UI
+        refreshRailDropdowns();
+        
         return { success: true };
     }
     
@@ -71,6 +78,12 @@ function renameRail(oldName, newName) {
     delete rails[oldName];
     
     localStorage.setItem(RAILS_STORAGE_KEY, JSON.stringify(rails));
+    
+    // ✅ NEW: Update all offset-path animations that reference this rail
+    updateAnimationsWithRenamedRail(oldName, newName);
+    
+    // ✅ NEW: Refresh rail dropdowns in the UI
+    refreshRailDropdowns();
     
     return { success: true };
 }
@@ -201,6 +214,166 @@ function convertShapeToPath(element) {
     }
 }
 
+// ✅ NEW: Update all offset-path animations that reference a renamed rail
+function updateAnimationsWithRenamedRail(oldRailName, newRailName) {
+    if (typeof getSavedAnimations !== 'function') {
+        console.warn('getSavedAnimations function not available');
+        return;
+    }
+    
+    const savedAnimations = getSavedAnimations();
+    let hasChanges = false;
+    
+    // Iterate through all elements and their animations
+    Object.keys(savedAnimations.animations).forEach(elementId => {
+        const elementAnimations = savedAnimations.animations[elementId];
+        
+        Object.keys(elementAnimations).forEach(animationId => {
+            const animationData = elementAnimations[animationId];
+            
+            // Check if this is an offset-path animation that uses the renamed rail
+            if (animationData.type === 'offset-path' && animationData.params && animationData.params.rail === oldRailName) {
+                // Update the rail reference
+                animationData.params.rail = newRailName;
+                hasChanges = true;
+                
+                console.log(`Updated offset-path animation ${animationId} on element ${elementId} to use rail "${newRailName}"`);
+            }
+        });
+    });
+    
+    // Save the updated animations if there were changes
+    if (hasChanges) {
+        localStorage.setItem('svg-animations', JSON.stringify(savedAnimations));
+        console.log(`Updated ${Object.keys(savedAnimations.animations).length} elements with renamed rail references`);
+    }
+}
+
+// ✅ NEW: Remove all offset-path animations that use a deleted rail
+function removeAnimationsWithDeletedRail(railName) {
+    if (typeof getSavedAnimations !== 'function') {
+        console.warn('getSavedAnimations function not available');
+        return;
+    }
+    
+    const savedAnimations = getSavedAnimations();
+    let hasChanges = false;
+    let removedCount = 0;
+    
+    // Iterate through all elements and their animations
+    Object.keys(savedAnimations.animations).forEach(elementId => {
+        const elementAnimations = savedAnimations.animations[elementId];
+        const animationsToRemove = [];
+        
+        Object.keys(elementAnimations).forEach(animationId => {
+            const animationData = elementAnimations[animationId];
+            
+            // Check if this is an offset-path animation that uses the deleted rail
+            if (animationData.type === 'offset-path' && animationData.params && animationData.params.rail === railName) {
+                animationsToRemove.push(animationId);
+                hasChanges = true;
+                removedCount++;
+                
+                console.log(`Marking offset-path animation ${animationId} on element ${elementId} for removal (uses deleted rail "${railName}")`);
+            }
+        });
+        
+        // Remove the marked animations
+        animationsToRemove.forEach(animationId => {
+            delete elementAnimations[animationId];
+        });
+        
+        // If no animations left for this element, remove the element entirely
+        if (Object.keys(elementAnimations).length === 0) {
+            delete savedAnimations.animations[elementId];
+        }
+    });
+    
+    // Save the updated animations if there were changes
+    if (hasChanges) {
+        localStorage.setItem('svg-animations', JSON.stringify(savedAnimations));
+        console.log(`Removed ${removedCount} offset-path animations that used deleted rail "${railName}"`);
+        
+        // ✅ NEW: Also remove the animations from the DOM
+        removeOffsetPathAnimationsFromDOM(railName);
+    }
+}
+
+// ✅ NEW: Remove offset-path animations from DOM elements
+function removeOffsetPathAnimationsFromDOM(railName) {
+    // Find all elements with offset-path animations
+    const elementsWithOffsetPath = document.querySelectorAll('[data-offset-path-animation]');
+    
+    elementsWithOffsetPath.forEach(element => {
+        const animationId = element.getAttribute('data-offset-path-animation');
+        
+        // Check if this animation uses the deleted rail
+        if (typeof getSavedAnimations === 'function') {
+            const savedAnimations = getSavedAnimations();
+            const elementId = element.getAttribute('id');
+            
+            if (elementId && savedAnimations.animations[elementId] && savedAnimations.animations[elementId][animationId]) {
+                const animationData = savedAnimations.animations[elementId][animationId];
+                
+                if (animationData.type === 'offset-path' && animationData.params && animationData.params.rail === railName) {
+                    // Remove the offset-path animation from this element
+                    if (typeof removeOffsetPathAnimation === 'function') {
+                        removeOffsetPathAnimation(element);
+                        console.log(`Removed offset-path animation from DOM element ${elementId}`);
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ✅ NEW: Refresh all rail dropdowns in the UI
+function refreshRailDropdowns() {
+    // Get current rails
+    const rails = getSavedRails();
+    const railNames = Object.keys(rails).sort();
+    
+    // Find all rail dropdowns in the UI
+    const railDropdowns = document.querySelectorAll('.param-dropdown[data-param="rail"], #rail-selection-dropdown');
+    
+    railDropdowns.forEach(dropdown => {
+        // Store the current selected value
+        const currentValue = dropdown.value;
+        
+        // Clear existing options (except the first default option)
+        const defaultOption = dropdown.querySelector('option[value=""]');
+        dropdown.innerHTML = '';
+        
+        // Add back the default option
+        if (defaultOption) {
+            dropdown.appendChild(defaultOption);
+        } else {
+            // Create default option if it doesn't exist
+            const newDefaultOption = document.createElement('option');
+            newDefaultOption.value = '';
+            newDefaultOption.textContent = 'Select a rail...';
+            dropdown.appendChild(newDefaultOption);
+        }
+        
+        // Add all available rails
+        railNames.forEach(railName => {
+            const option = document.createElement('option');
+            option.value = railName;
+            option.textContent = railName;
+            dropdown.appendChild(option);
+        });
+        
+        // Restore the selected value if it still exists
+        if (currentValue && railNames.includes(currentValue)) {
+            dropdown.value = currentValue;
+        } else {
+            dropdown.value = '';
+        }
+    });
+    
+    console.log(`Refreshed ${railDropdowns.length} rail dropdowns with ${railNames.length} rails`);
+}
+
 // Export functions for global access
 window.getSavedRails = getSavedRails;
 window.saveRail = saveRail;
@@ -208,3 +381,7 @@ window.deleteRail = deleteRail;
 window.renameRail = renameRail;
 window.validateRailName = validateRailName;
 window.extractPathDataFromElement = extractPathDataFromElement;
+window.updateAnimationsWithRenamedRail = updateAnimationsWithRenamedRail;
+window.removeAnimationsWithDeletedRail = removeAnimationsWithDeletedRail;
+window.removeOffsetPathAnimationsFromDOM = removeOffsetPathAnimationsFromDOM;
+window.refreshRailDropdowns = refreshRailDropdowns;
