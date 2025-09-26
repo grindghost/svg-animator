@@ -63,7 +63,51 @@ function setupEventListeners() {
     document.getElementById('speed-slider').addEventListener('input', function() {
         if (selectedElement) {
             const speed = this.value;
-            applyTempAnimation(selectedElement, speed, undefined, false);
+            
+            // ✅ NEW: Check if the selected element has an offset-path animation
+            const offsetPathElement = selectedElement.querySelector('[data-offset-path-animation]') || 
+                                    (selectedElement.hasAttribute('data-offset-path-animation') ? selectedElement : null);
+            
+            if (offsetPathElement) {
+                // Handle offset-path animation speed change
+                const animationId = offsetPathElement.getAttribute('data-offset-path-animation');
+                const elementId = offsetPathElement.getAttribute('id');
+                
+                if (animationId && elementId) {
+                    // Find the animation data in localStorage by looking for any offset-path animation
+                    const data = getSavedAnimations();
+                    let savedAnimationData = null;
+                    let foundAnimationId = null;
+                    
+                    if (data.animations[elementId]) {
+                        // Look for any offset-path animation for this element
+                        for (const [animId, animData] of Object.entries(data.animations[elementId])) {
+                            if (animData.type === 'offset-path') {
+                                savedAnimationData = animData;
+                                foundAnimationId = animId;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (savedAnimationData) {
+                        // Create a mock editing animation object for updateOffsetPathAnimationPreview
+                        const editingAnimation = {
+                            elementId: elementId,
+                            animationId: foundAnimationId,
+                            animationType: 'offset-path'
+                        };
+                        
+                        updateOffsetPathAnimationPreview(selectedElement, speed, editingAnimation);
+                    } else {
+                        console.warn('Could not find animation data for offset-path animation:', animationId);
+                    }
+                }
+            } else {
+                // Handle regular animations
+                applyTempAnimation(selectedElement, speed, undefined, false);
+            }
+            
             document.getElementById('speedDisplay').textContent = `${speed}s`;
         }
     });
@@ -943,26 +987,6 @@ function updateOffsetPathAnimationPreview(element, speed, editingAnimation) {
         editingAnimation: editingAnimation
     });
     
-    // Get the saved animation data
-    const data = getSavedAnimations();
-    console.log('Saved animations data:', data);
-    console.log('Looking for elementId:', editingAnimation.elementId);
-    console.log('Looking for animationId:', editingAnimation.animationId);
-    
-    const savedAnimationData = data.animations[editingAnimation.elementId] && data.animations[editingAnimation.elementId][editingAnimation.animationId];
-    
-    if (!savedAnimationData) {
-        console.error('No saved animation data found for offset-path animation');
-        console.log('Available elementIds:', Object.keys(data.animations));
-        if (data.animations[editingAnimation.elementId]) {
-            console.log('Available animationIds for element:', Object.keys(data.animations[editingAnimation.elementId]));
-        }
-        return;
-    }
-    
-    const originalAnimationName = savedAnimationData.animationName;
-    const animationParams = savedAnimationData.params || {};
-    
     // Find the actual element with the offset-path animation
     let actualElement = element;
     if (element.classList.contains('wrapping-group') || element.classList.contains('anim-wrapper')) {
@@ -973,9 +997,16 @@ function updateOffsetPathAnimationPreview(element, speed, editingAnimation) {
     }
     
     // Check if this element has an offset-path animation
-    const animationId = actualElement.getAttribute('data-offset-path-animation');
-    if (!animationId) {
+    const currentAnimationId = actualElement.getAttribute('data-offset-path-animation');
+    if (!currentAnimationId) {
         console.error('No offset-path animation ID found on element');
+        return;
+    }
+    
+    // Get the rail data from the element's data attributes
+    const railName = actualElement.getAttribute('data-rail-name');
+    if (!railName) {
+        console.error('No rail name found on element');
         return;
     }
     
@@ -986,44 +1017,54 @@ function updateOffsetPathAnimationPreview(element, speed, editingAnimation) {
     }
     
     const rails = getSavedRails();
-    const selectedRail = animationParams.rail;
-    if (!selectedRail || !rails[selectedRail]) {
-        console.error('Rail not found:', selectedRail);
+    if (!rails[railName]) {
+        console.error('Rail not found:', railName);
         return;
     }
     
-    const railData = rails[selectedRail];
-    const direction = animationParams.direction || 0;
-    const duration = 8 / speed; // Base duration of 8 seconds adjusted by speed
+    const railData = rails[railName];
     
-    const startDistance = direction === 0 ? "0%" : "100%";
-    const endDistance = direction === 0 ? "100%" : "0%";
+    // Get direction from the element's class or data attributes
+    // The direction is encoded in the offset-distance value in the existing CSS
+    const currentAnimationName = `offset-path-${currentAnimationId}`;
+    const existingStyle = document.getElementById(currentAnimationName);
+    
+    if (!existingStyle) {
+        console.error('No existing style tag found with ID:', currentAnimationName);
+        return;
+    }
+    
+    // Parse the current CSS to determine direction from the keyframes
+    const currentCSS = existingStyle.textContent;
+    // Look for the keyframes to determine the intended direction
+    // Direction 0: starts at 0%, ends at 100%
+    // Direction 1: starts at 100%, ends at 0%
+    const keyframesMatch = currentCSS.match(/(100%|to)\s*\{[^}]*offset-distance:\s*(\d+)%/);
+    // If keyframes end at 100%, it's direction 0 (normal)
+    // If keyframes end at 0%, it's direction 1 (reversed)
+    const currentDirection = keyframesMatch ? (parseInt(keyframesMatch[2]) === 100 ? 0 : 1) : 0;
+    
+    const duration = 8 / speed; // Base duration of 8 seconds adjusted by speed
+    const startDistance = currentDirection === 0 ? "0%" : "100%";
+    const endDistance = currentDirection === 0 ? "100%" : "0%";
     
     // Update the existing style tag
-    const existingStyle = document.getElementById(originalAnimationName);
-    if (existingStyle) {
-        // Extract the animation ID from the original animation name
-        const moveAnimationId = originalAnimationName.replace('offset-path-', '');
+    const moveAnimationId = currentAnimationId;
+    
+    const newCSS = `
+        .${currentAnimationName} {
+            offset-path: path("${railData.pathData}");
+            offset-rotate: auto;
+            animation: move-${moveAnimationId} ${duration}s linear infinite;
+        }
         
-        const newCSS = `
-            .${originalAnimationName} {
-                offset-path: path("${railData.pathData}");
-                offset-rotate: auto;
-                animation: move-${moveAnimationId} ${duration}s linear infinite;
-            }
-            
             @keyframes move-${moveAnimationId} {
-                to {
-                    offset-distance: ${endDistance};
-                }
-            }
-        `;
-        
-        existingStyle.textContent = newCSS;
-        console.log('Updated offset-path animation preview with speed:', speed, 'duration:', duration);
-    } else {
-        console.error('No existing style tag found with ID:', originalAnimationName);
-    }
+                0% { offset-path: path("${railData.pathData}"); offset-distance: ${startDistance}; }
+                100% { offset-path: path("${railData.pathData}"); offset-distance: ${endDistance}; }
+            }    `;
+    
+    existingStyle.textContent = newCSS;
+    console.log('Updated offset-path animation preview with speed:', speed, 'duration:', duration, 'direction:', currentDirection);
 }
 
 // Helper function to update an applied animation

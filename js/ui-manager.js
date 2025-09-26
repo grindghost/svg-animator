@@ -253,6 +253,12 @@ function showAppliedAnimationEditor(animationType, animationData, animationId) {
         tabContentHeader.appendChild(idDisplay);
     }
     
+    // Disable main speed slider when editing applied animations
+    const mainSpeedSlider = document.getElementById('speed-slider');
+    if (mainSpeedSlider) {
+        mainSpeedSlider.setAttribute('disabled', true);
+    }
+    
     // Update speed controls (only if the animation uses defaultSpeedSlider)
     const anim = window.animationsData && window.animationsData[animationType] ? window.animationsData[animationType] : null;
     const speedControlGroup = document.querySelector('.applied-animation-controls .control-group');
@@ -586,6 +592,12 @@ function hideAppliedAnimationEditor() {
         if (existingIdDisplay) {
             existingIdDisplay.remove();
         }
+    }
+    
+    // Re-enable main speed slider when hiding applied animation editor
+    const mainSpeedSlider = document.getElementById('speed-slider');
+    if (mainSpeedSlider) {
+        mainSpeedSlider.removeAttribute('disabled');
     }
     
     // Switch back to controls tab
