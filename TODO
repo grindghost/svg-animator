@@ -11,6 +11,63 @@
 ✅ Seo optimisation and favicons.
 ✅ Disable lottie export and add badge saying: "soon".
 
+***
+
+▢ Enhance the selection experience for animated element. 
+
+** Problem: 
+Currently, when we select an animated item, the selection box is drawn but the element keep moving, which create a weird UX experience when trying to move, resize it. The selection box is drawn over a region that seems empty.
+
+** Idea and solution:
+• Detect if the element have some animation attached to it.
+• If no, proceed to the current usual behavior for the selection.
+• If yes, create a semi transparent overlay that cover everything on the svg, with a small button "quit" at the bottom left corner. And on top of this overlay, create a static (not animated) duplicate of the targeted shape at its original position (without the attached animation). We would need logic to strip the element from the outter anim-wrapper and duplicate only the element.
+• The static duplicate shape should contain a reference to the original animated shape, and to it's outter wrapping-group <g>, which contains the matrix transformations.
+• We would still see the animated original under the overlay, and the overlay would act as a click blocker to facilitate the shape resizing and translating by the user.
+
+
+▢ Create a beautiful hero section.
+▢ Create a section with sample card to display the animation type (cards with a simple animated circle).
+
+▢ Simplify the index and move the editor in a dedicated page?
+▢ Request a page inspection from Google.
+
+▢ Implement a clock animation with step and direction params (and some offshoot).
+▢ Possibility to add loop (true/false) param to the animation, and a delay param.
+▢ Study the offset path animation, and how we could reconcile them with the other type of animation (because the other animation currently update also the offset path coordinates...).
+▢ Animation "graph" view, which would display elements under animation type, with possibility to click to open the editor tab, and to delete them. This could be in a separate tab, under the svg viewer:
+```
+   Bounce:
+      - id-dsdsaa [x]
+      - id-wewfsd [x]
+      - id-...    [x]
+
+   Blink:
+      - id-dsdsaa [x]
+      - id-wewfsd [x]
+      - id-...    [x]
+
+
+```
+▢ In the bottom (tab), add a tab that would display the standalone svg code of the currently selected element. Allow user to copy and save it (not to edit it directly). 
+
+▢ Update all style tags (to sync them all visually). This could be a simple button in the header of the svg viewer.
+
+▢ On right click:
+   • Copy and paste selected item.
+   • Delete selected item
+   • Wrap in group selected item (+ update layer tree)
+
+▢ Make sure the offset path animation are exported/imported correctly on project export and import.
+
+▢ Option to hide the panels (animation controls, layer tree), to maximize the svg viewer.
+
+▢ Enhance the layer tree, so the user can select multiple elements (via a checkbox) and apply animation to multiples. Option to delete the element. Move the element (would that be possible?).
+
+▢ Hide Github & Linkedin. Change the credentials on the buymeacoffee page.
+
+***
+
 ▢ Wrap in vite app (simple js).
 ▢ Layer tree: Display custom id (layer name) if found. 
 ▢ Support to hide animations/shapes.
