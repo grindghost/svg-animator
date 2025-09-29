@@ -599,10 +599,17 @@ let animationsData =
   defaultSpeed: "5.0",
   defaultSpeedSlider: false,
   apply: function (element, p) {
-    let defs = document.querySelector("svg defs");
+    // Get the correct SVG element (the one in the viewer, not the header logo)
+    const targetSvg = svgRoot || document.querySelector('#svg-viewer svg');
+    if (!targetSvg) {
+      console.error('Could not find target SVG element for boiled animation');
+      return;
+    }
+    
+    let defs = targetSvg.querySelector("defs");
     if (!defs) {
       defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      document.querySelector("svg").prepend(defs);
+      targetSvg.prepend(defs);
     }
 
     // Check if element already has a boiled filter
