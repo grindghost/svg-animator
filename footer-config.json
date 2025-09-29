@@ -1,0 +1,49 @@
+{
+  "footer": {
+    "sections": [
+      {
+        "title": "SVG Animator Pro",
+        "description": "Professional SVG animation tool for designers and developers",
+        "isMainSection": true
+      },
+      {
+        "title": "Legal",
+        "links": [
+          {
+            "href": "privacy-policy.html",
+            "text": "Privacy Policy"
+          },
+          {
+            "href": "terms-of-service.html",
+            "text": "Terms of Service"
+          },
+          {
+            "href": "origin-story.html",
+            "text": "Origin Story"
+          }
+        ]
+      },
+      {
+        "title": "Support",
+        "links": [
+          {
+            "href": "documentation.html",
+            "text": "Documentation"
+          },
+          {
+            "href": "mailto:contact@svg-animator.com",
+            "text": "Contact"
+          },
+          {
+            "href": "https://buymeacoffee.com/cwz3xh98n",
+            "text": "☕ Buy me a coffee",
+            "target": "_blank",
+            "rel": "noopener noreferrer",
+            "className": "buy-me-coffee"
+          }
+        ]
+      }
+    ],
+    "bottomText": "&copy; 2024 SVG Animator Pro. All rights reserved."
+  }
+}
