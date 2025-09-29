@@ -242,7 +242,7 @@ function overrideExistingRail(event) {
     }
     
     // Update existing rail
-    const result = saveRail(railName, pathData);
+    const result = saveRail(railName, pathData, true); // Pass override=true
     if (result.success) {
         showNotification(`🚂 Rail "${railName}" updated successfully!`, 'success');
         hideRailsOverlay();

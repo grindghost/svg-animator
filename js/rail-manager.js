@@ -11,13 +11,15 @@ function getSavedRails() {
 }
 
 // Save rail to localStorage
-function saveRail(railName, pathData) {
+function saveRail(railName, pathData, override = false) {
     const rails = getSavedRails();
     
-    // Validate rail name
-    const validation = validateRailName(railName);
-    if (!validation.valid) {
-        return { success: false, error: validation.error };
+    // Validate rail name (skip validation if overriding)
+    if (!override) {
+        const validation = validateRailName(railName);
+        if (!validation.valid) {
+            return { success: false, error: validation.error };
+        }
     }
     
     // Save rail data
