@@ -134,13 +134,6 @@ function downloadAnimatedSVG() {
 
     removeHandles();
 
-    // Include external styles if no internal styles exist
-    const externalStyle = document.querySelector('style');
-    if (externalStyle && !svgRoot.querySelector('style')) {
-        const embeddedStyle = externalStyle.cloneNode(true);
-        svgRoot.prepend(embeddedStyle);
-    }
-    
     // ✅ NEW: Ensure only animation-related style tags are included in the SVG
     // This is crucial for offset-path animations and other dynamic animations
     const allStyleTags = document.querySelectorAll('style');
@@ -168,6 +161,21 @@ function downloadAnimatedSVG() {
             svgRoot.prepend(clonedStyle);
         }
     });
+
+    // Include external styles if no internal styles exist (moved after filtering)
+    const externalStyle = document.querySelector('style');
+    if (externalStyle && !svgRoot.querySelector('style')) {
+        // Double-check that this isn't a UI style before adding
+        const styleId = externalStyle.id;
+        if (styleId !== 'tools-gallery-styles' && 
+            styleId !== 'notification-styles' &&
+            !externalStyle.textContent.includes('.tool-card') &&
+            !externalStyle.textContent.includes('.notification-content') &&
+            !externalStyle.textContent.includes('.notification-close')) {
+            const embeddedStyle = externalStyle.cloneNode(true);
+            svgRoot.prepend(embeddedStyle);
+        }
+    }
 
     const existingMetadata = svgRoot.querySelector('metadata');
     if (!existingMetadata) {
