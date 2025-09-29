@@ -115,6 +115,7 @@ function showNotification(message, type = 'info') {
 
 // Add CSS animation for notifications
 const style = document.createElement('style');
+style.id = 'notification-styles';
 style.textContent = `
     @keyframes slideIn {
         from {

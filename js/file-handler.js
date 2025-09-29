@@ -141,12 +141,22 @@ function downloadAnimatedSVG() {
         svgRoot.prepend(embeddedStyle);
     }
     
-    // ✅ NEW: Ensure all dynamic style tags are included in the SVG
+    // ✅ NEW: Ensure only animation-related style tags are included in the SVG
     // This is crucial for offset-path animations and other dynamic animations
     const allStyleTags = document.querySelectorAll('style');
     allStyleTags.forEach(styleTag => {
         // Skip if this style tag is already inside the SVG
         if (svgRoot.contains(styleTag)) {
+            return;
+        }
+        
+        // Skip UI-specific styles that shouldn't be in exported SVG
+        const styleId = styleTag.id;
+        if (styleId === 'tools-gallery-styles' || 
+            styleId === 'notification-styles' ||
+            styleTag.textContent.includes('.tool-card') ||
+            styleTag.textContent.includes('.notification-content') ||
+            styleTag.textContent.includes('.notification-close')) {
             return;
         }
         
