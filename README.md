@@ -1,6 +1,6 @@
 # SVG Animator Pro
 
-A professional SVG animation tool for designers and developers.
+An SVG Animation Lab for designers and developers.
 
 ## New Features
 

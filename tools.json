@@ -51,7 +51,7 @@
     },
     {
       "name": "SVGator",
-      "description": "Online SVG animation tool for creating interactive and animated SVG graphics.",
+      "description": "Online SVG animation lab for creating interactive and animated SVG graphics.",
       "image": "../assets/img/tool-svgator.png",
       "url": "https://www.svgator.com/",
       "tags": ["animating", "authoring", "browser-based", "free", "vector", "graphics", "interactive", "web"]

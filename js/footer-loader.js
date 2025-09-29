@@ -50,7 +50,7 @@ class FooterLoader {
                     sections: [
                         {
                             title: "SVG Animator Pro",
-                            description: "Professional SVG animation tool for designers and developers",
+                            description: "SVG Animation Lab for designers and developers",
                             isMainSection: true
                         }
                     ],
