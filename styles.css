@@ -3658,7 +3658,6 @@ blockquote {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     padding: 60px 0;
-    margin-top: 40px;
 }
 
 .gallery-header {
@@ -4227,7 +4226,6 @@ blockquote {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     padding: 60px 0;
-    margin-top: 40px;
 }
 
 .articles-header {
@@ -5661,6 +5659,13 @@ blockquote {
     flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+    .social-proof {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
 .avatars {
     display: flex;
     align-items: center;
@@ -5680,17 +5685,14 @@ blockquote {
     border: 3px solid var(--bg-primary);
     margin-left: -12px;
     transition: transform 0.3s ease;
+    object-fit: cover;
+    object-position: center;
 }
 
 .avatar:first-child {
     margin-left: 0;
 }
 
-.avatar:hover {
-    transform: scale(1.1);
-    z-index: 10;
-    position: relative;
-}
 
 .rating-section {
     display: flex;
@@ -5721,23 +5723,42 @@ blockquote {
     justify-content: center;
 }
 
-.demo-video-placeholder {
-    background: var(--card-bg);
-    border: 2px dashed var(--border);
-    border-radius: 16px;
-    padding: 60px 40px;
-    text-align: center;
-    max-width: 400px;
+.demo-video-container {
+    position: relative;
+    max-width: 800px;
     width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    background: var(--card-bg);
+}
+
+.demo-video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 16px;
+}
+
+.demo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
     transition: all 0.3s ease;
     cursor: pointer;
 }
 
-.demo-video-placeholder:hover {
-    border-color: var(--primary);
-    background: var(--bg-secondary);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
+.demo-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .play-button {
@@ -5753,15 +5774,16 @@ blockquote {
     transition: all 0.3s ease;
 }
 
-.demo-video-placeholder:hover .play-button {
+.demo-overlay:hover .play-button {
     background: var(--primary-dark);
     transform: scale(1.1);
 }
 
-.demo-video-placeholder p {
-    color: var(--text-secondary);
+.demo-overlay p {
+    color: white;
     font-weight: 500;
     margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .features-section {
@@ -5858,11 +5880,6 @@ blockquote {
         max-width: 300px;
     }
     
-    .social-proof {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
     .avatars {
         justify-content: center;
     }
@@ -5897,5 +5914,98 @@ blockquote {
     .features-section h2 {
         font-size: 2rem;
         margin-bottom: 40px;
+    }
+    
+    .demo-video-container {
+        max-width: 100%;
+        margin: 0 20px;
+    }
+    
+    .play-button {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .demo-overlay p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Page Header Styles */
+.page-header {
+    padding: 40px 0 60px;
+}
+
+.page-header .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.page-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Tools Gallery Page Adjustments */
+.tools-gallery {
+    padding: 60px 0;
+}
+
+.tools-gallery .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Articles Section Page Adjustments */
+.articles-section {
+    padding: 60px 0;
+}
+
+.articles-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Responsive Page Headers */
+@media (max-width: 768px) {
+    .page-header {
+        padding: 30px 0 40px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.875rem;
+    }
+    
+    .page-header p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        padding: 24px 0 32px;
+    }
+    
+    .page-header h1 {
+        font-size: 1.625rem;
+    }
+    
+    .page-header p {
+        font-size: 0.9rem;
     }
 }

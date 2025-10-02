@@ -10,6 +10,21 @@
             "icon": "🏠"
           },
           {
+            "href": "editor.html",
+            "text": "🎨 Editor",
+            "icon": "🎨"
+          },
+          {
+            "href": "tools.html",
+            "text": "🛠️ Tools & Resources",
+            "icon": "🛠️"
+          },
+          {
+            "href": "articles.html",
+            "text": "📚 Articles",
+            "icon": "📚"
+          },
+          {
             "href": "origin-story.html",
             "text": "📖 Origin Story",
             "icon": "📖"
@@ -22,26 +37,6 @@
         ]
       }
     ],
-    "pageSpecificSections": {
-      "index.html": [
-        {
-          "title": "Index Sections",
-          "links": [
-            {
-              "href": "#tools-gallery",
-              "text": "Tools & Resources",
-              "icon": "🛠️",
-              "isScrollLink": true
-            },
-            {
-              "href": "#articles-section",
-              "text": "Interesting Articles",
-              "icon": "📚",
-              "isScrollLink": true
-            }
-          ]
-        }
-      ]
-    }
+    "pageSpecificSections": {}
   }
 }

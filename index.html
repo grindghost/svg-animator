@@ -164,7 +164,9 @@
                 </a>
                 <a href="documentation.html" class="btn btn-secondary btn-large">
                     <svg width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm0 2h12v10H4V5z"/>
+                        <path d="M6 7h8v2H6V7zm0 3h8v2H6v-2zm0 3h5v2H6v-2z"/>
+                        <path d="M4 3l2 2-2 2V3z" fill="currentColor" opacity="0.6"/>
                     </svg>
                     Documentation
                 </a>
@@ -206,17 +208,23 @@
             </div>
         </div>
 
-        <!-- Demo Video Placeholder -->
-        <div class="demo-section">
-            <div class="demo-video-placeholder">
-                <div class="play-button">
-                    <svg width="60" height="60" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
+            <!-- Demo Video -->
+            <div class="demo-section">
+                <div class="demo-video-container">
+                    <video class="demo-video" autoplay muted loop playsinline poster="assets/demo-poster.jpg">
+                        <source src="assets/demo.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="demo-overlay">
+                        <div class="play-button" id="play-button">
+                            <svg width="60" height="60" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                        </div>
+                        <p>Click to play demo</p>
+                    </div>
                 </div>
-                <p>Watch a quick demo</p>
             </div>
-        </div>
     </section>
 
     <div class="container">
@@ -248,60 +256,6 @@
         </section>
     </div>
 
-    <!-- SVG Tools Gallery -->
-    <section id="tools-gallery" class="tools-gallery" data-robots="noindex">
-        <div class="container">
-            <div class="gallery-header">
-                <h2>🛠️ SVG Tools & Resources</h2>
-                <p>Discover powerful tools to enhance your SVG workflow</p>
-            </div>
-            
-            <!-- Filter Bar -->
-            <div class="filter-bar">
-                <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        <input type="text" id="search-input" placeholder="Search tools by name, description, or tags..." class="search-input">
-                        <button id="clear-search" class="clear-search" title="Clear search">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-                
-                   <div class="tag-filters">
-                       <div class="tag-filters-header">
-                           <span class="tag-filters-label">Filter by category:</span>
-                           <button id="clear-tags" class="clear-tags-btn">Clear all</button>
-                       </div>
-                       <div class="tag-buttons" id="tag-buttons">
-                           <!-- Tag filter buttons will be dynamically loaded here -->
-                       </div>
-                   </div>
-            </div>
-            
-            <div class="tools-grid" id="tools-grid">
-                <!-- Tools will be dynamically loaded here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Articles Section -->
-    <section id="articles-section" class="articles-section" data-robots="noindex">
-        <div class="container">
-            <div class="articles-header">
-                <h2>Interesting Articles</h2>
-                <p>Discover insightful articles about SVG animation and web development</p>
-            </div>
-            
-            <div class="articles-grid" id="articles-grid">
-                <!-- Articles will be dynamically loaded here -->
-            </div>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer class="app-footer">
@@ -311,103 +265,40 @@
     <!-- SVG Minifier - Browser Compatible -->
     <script src="js/svg-minifier-browser.js"></script>
     
-    <script src="js/animations.js"></script>
-    <script src="js/core.js"></script>
-    <script src="js/storage-manager.js"></script>
-    <script src="js/svg-handlers.js"></script>
-    <script src="js/animation-manager.js"></script>
-    <script src="js/ui-manager.js"></script>
-    <script src="js/file-handler.js"></script>
-    <script src="js/utilities.js"></script>
-    <script src="js/shape-styling.js"></script>
-    <script src="js/project-manager.js"></script>
-    <script src="js/recipe-manager.js"></script>
-    <script src="js/recipe-ui.js"></script>
-    <script src="js/rail-manager.js"></script>
-    <script src="js/rail-ui.js"></script>
-    <script src="js/named-destinations.js"></script>
-    <script type="module" src="js/lottie-exporter.js"></script>
-    <script src="js/tools-gallery.js"></script>
-    <script src="js/articles.js"></script>
     <script src="js/hamburger-menu.js"></script>
-    <script src="js/context-menu.js"></script>
     <script src="js/footer-loader.js"></script>
-    <script src="js/main.js"></script>
-
-    <!-- Recipe Creation Overlay -->
-    <div id="recipe-overlay" class="recipe-overlay hidden">
-        <div class="recipe-modal">
-            <div class="recipe-modal-header">
-                <h3>🧪 Create Animation Recipe</h3>
-                <button id="recipe-close-btn" class="recipe-close-btn" title="Close">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+    
+    <script>
+        // Demo video functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.querySelector('.demo-video');
+            const overlay = document.querySelector('.demo-overlay');
             
-            <div class="recipe-modal-content">
-                <div class="recipe-form">
-                    <p class="recipe-description">Save the current animations on the selected element as a reusable recipe.</p>
-                    
-                    <div class="form-group">
-                        <label for="recipe-name" class="form-label">Recipe Name</label>
-                        <input type="text" id="recipe-name" class="form-input" placeholder="Enter recipe name..." maxlength="50">
-                        <div id="recipe-name-error" class="form-error hidden"></div>
-                    </div>
-                    
-                    <div class="recipe-actions">
-                        <button id="recipe-cancel-btn" class="btn btn-secondary">Cancel</button>
-                        <button id="recipe-save-btn" class="btn btn-primary" disabled>Save Recipe</button>
-                    </div>
-                </div>
+            if (video && overlay) {
+                // Hide overlay when video starts playing
+                video.addEventListener('play', function() {
+                    overlay.classList.add('hidden');
+                });
                 
-                <div class="recipe-list-section">
-                    <h4>Existing Recipes</h4>
-                    <div id="recipe-list" class="recipe-list">
-                        <div class="recipe-placeholder">No recipes saved yet</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                // Show overlay when video is paused
+                video.addEventListener('pause', function() {
+                    overlay.classList.remove('hidden');
+                });
+                
+                // Click overlay to start video (fallback for autoplay restrictions)
+                overlay.addEventListener('click', function() {
+                    video.play();
+                });
+                
+                // Ensure video starts playing (fallback for autoplay restrictions)
+                video.play().catch(function(error) {
+                    console.log('Autoplay prevented:', error);
+                    // Show overlay if autoplay fails
+                    overlay.classList.remove('hidden');
+                });
+            }
+        });
+    </script>
 
-    <!-- Rails Management Overlay -->
-    <div id="rails-overlay" class="rails-overlay hidden">
-        <div class="rails-modal">
-            <div class="rails-modal-header">
-                <h3>🚂 Manage Animation Rails</h3>
-                <button id="rails-close-btn" class="rails-close-btn" title="Close">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="rails-modal-content">
-                <div class="rails-form">
-                    <p class="rails-description">Create animation rails from selected path or shape elements for offset-path animations.</p>
-                    
-                    <div class="form-group">
-                        <label for="rail-name" class="form-label">Rail Name</label>
-                        <input type="text" id="rail-name" class="form-input" placeholder="Enter rail name..." maxlength="50">
-                        <div id="rail-name-error" class="form-error hidden"></div>
-                    </div>
-                    
-                    <div class="rails-actions">
-                        <button id="rails-cancel-btn" class="btn btn-secondary">Cancel</button>
-                        <button id="rails-save-btn" class="btn btn-primary" disabled>Save Rail</button>
-                    </div>
-                </div>
-                
-                <div class="rails-list-section">
-                    <h4>Existing Rails</h4>
-                    <div id="rails-list" class="rails-list">
-                        <div class="rails-placeholder">No rails saved yet</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

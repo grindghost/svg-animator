@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Root fallback -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="assets/site.webmanifest">
+
+    <script src="js/theme-manager.js"></script>
+    <title>SVG Tools & Resources | SVG Animator Pro</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Discover powerful SVG tools and resources to enhance your workflow. Curated collection of editors, optimizers, and utilities for SVG development.">
+    <meta name="keywords" content="SVG tools, SVG resources, vector graphics tools, SVG editors, SVG optimizers, web development tools">
+    <meta name="author" content="SVG Animator Pro">
+    <meta name="robots" content="index, follow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://svg-animator-pro.vercel.app/tools.html">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="SVG Tools & Resources | SVG Animator Pro">
+    <meta property="og:description" content="Discover powerful SVG tools and resources to enhance your workflow. Curated collection of editors, optimizers, and utilities for SVG development.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svg-animator-pro.vercel.app/tools.html">
+    <meta property="og:image" content="https://svg-animator-pro.vercel.app/assets/img/svg-animator-preview.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="SVG Animator Pro">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="msapplication-TileColor" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SVG Animator Pro">
+</head>
+
+<body>
+    <!-- Fixed Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <a href="index.html" class="header-logo">
+                <svg class="logo-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                <h2 class="header-title">SVG Animator Pro</h2>
+                <div class="version-badge">v1.1</div>
+            </a>
+            <div class="header-subtitle">SVG Animation Lab</div>
+        </div>
+    </header>
+
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+        <svg class="sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg class="moon-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
+    <!-- Hamburger Menu Button -->
+    <button class="hamburger-menu" id="hamburger-menu" title="Open navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Navigation Overlay -->
+    <div class="nav-overlay" id="nav-overlay">
+        <div class="nav-content">
+            <div class="nav-header">
+                <h3>Navigation</h3>
+                <button class="nav-close" id="nav-close" title="Close navigation">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <nav class="nav-menu">
+                <!-- Navigation content will be dynamically generated by hamburger-menu.js -->
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1>🛠️ SVG Tools & Resources</h1>
+            <p>Discover powerful tools to enhance your SVG workflow</p>
+        </div>
+    </div>
+
+    <!-- SVG Tools Gallery -->
+    <section id="tools-gallery" class="tools-gallery">
+        <div class="container">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" id="search-input" placeholder="Search tools by name, description, or tags..." class="search-input">
+                        <button id="clear-search" class="clear-search" title="Clear search">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                   <div class="tag-filters">
+                       <div class="tag-filters-header">
+                           <span class="tag-filters-label">Filter by category:</span>
+                           <button id="clear-tags" class="clear-tags-btn">Clear all</button>
+                       </div>
+                       <div class="tag-buttons" id="tag-buttons">
+                           <!-- Tag filter buttons will be dynamically loaded here -->
+                       </div>
+                   </div>
+            </div>
+            
+            <div class="tools-grid" id="tools-grid">
+                <!-- Tools will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <!-- Footer content will be loaded dynamically from footer-config.json -->
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/tools-gallery.js"></script>
+    <script src="js/hamburger-menu.js"></script>
+    <script src="js/footer-loader.js"></script>
+</body>
+</html>
